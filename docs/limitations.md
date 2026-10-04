@@ -27,3 +27,10 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 
 ### FAERS
 - One quarter only (2026 Q2). Spontaneous reports: co-reporting is not causation. Used only as an optional, labelled signal.
+
+## Drug-name normalisation (Batch 2a)
+- **Coverage is not complete.** ~13% of specific-drug mentions in n2c2 remain unmapped (e.g. senna, guaifenesin, kayexalate, polyethylene glycol — mostly drugs absent from both interaction sources). Unmapped drugs are shown to the pharmacist as "not checked", never dropped.
+- **Abbreviation list was tuned on n2c2 *train* only.** Test-split coverage (87.3%) is reported without having inspected test mentions.
+- **Wikidata aliases can be wrong.** Audit found and fixed: "sodium polystyrene sulfonate" → tolevamer, "albumin human" → perflutren, "megestrol" → nomegestrol (fuzzy). Mitigations: ID-based alias linking, RxCUI consistency filter, explicit blocklist, strict fuzzy rule.
+- **Some KB entries are duplicates of one drug** (e.g. `fluticasone` vs `fluticasone propionate`, insulin variants). To be merged by DrugBank ID when building the KB (Batch 2b).
+- **26 DrugBank-extract drugs have no DrugBank ID** (not on Wikidata, not resolvable via the interaction graph). They work by name in the KB; they lack SMILES for the Phase 2 similarity model.

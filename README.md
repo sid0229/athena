@@ -5,7 +5,7 @@
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
 Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
 
-> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–1 complete** (setup, data loaders).
+> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–1 complete; Batch 2a (drug normaliser) complete**, 2b (interaction KB) next.
 > **Next milestone:** working base pipeline demo on **7 Oct 2026**.
 > **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
 
@@ -76,7 +76,13 @@ flowchart LR
 
 Maps raw strings (`"metoprolol tartrate"`, `"ASA"`, `"Lasix"`, `"vancomycin hcl"`) to a canonical drug ID shared by all knowledge sources.
 
-Pipeline: lowercase/clean → strip salt & formulation words → abbreviation dictionary → exact match on names + synonyms → fuzzy match (with score) → otherwise **`UNMAPPED`**.
+Pipeline: drug-class / non-drug check → abbreviation & brand dictionary → exact lookup → remove brackets & doses → strip salt/formulation words (after the first token) → split combinations → typo-tolerant fuzzy match (same first 4 letters) → otherwise **`UNMAPPED`**.
+
+Lexicon (`scripts/build_lexicon.py` → `data/processed/drug_lexicon.json`): 2,442 canonical KB drugs, ~20k surface strings from DrugBank, DDInter, Wikidata aliases and RxNorm salts/brands.
+
+Statuses: `mapped` · `ambiguous` · `drug_class` (e.g. "antibiotics" — shown, not checkable) · `non_drug` (fluids, blood products, supplies) · `unmapped`.
+
+Coverage (Batch 2a): **87%** of specific-drug mentions in n2c2 (train 86.9%, untouched test 87.3%); **91%** of MIMIC-demo prescription rows that are drugs (excl. fluids/supplies).
 The match type and score are part of the extraction confidence. Unmapped drugs are **shown to the pharmacist**, never silently dropped.
 
 ### 2.3 Branch B — Verification (symbolic)
@@ -145,6 +151,8 @@ All raw data lives in `data/raw/` and is **git-ignored**. It must never be commi
 | **DrugBank benchmark** | `data/raw/drugbank_benchmark/` | DrugBank IDs, SMILES, 86 types, warm/cold-start splits | IDs, similarity model, comparable benchmark | From `jcsun-00/DrugBank` (HDN-DDI paper). |
 | **DDInter** | `data/raw/ddinter/` | Drug pairs with severity level, split by ATC code (A, B, D, H, L, P, R, V) | Severity + biologics coverage | Added beyond synopsis. 160,235 unique pairs, 1,939 drugs (files overlap across ATC codes). Levels: Moderate 59% · Unknown 21% · Major 15% · Minor 5%. |
 | **FDA FAERS 2026 Q2** | `data/raw/faers/ASCII/` | 422,459 reports; DRUG, REAC, OUTC, INDI, THER, DEMO, RPSR tables | Optional real-world signal | One quarter only. Exclude IDs in `Deleted/DELETE26Q2.txt`. |
+| **Wikidata (DrugBank IDs)** | `data/raw/wikidata/drugbank_ids.csv` | 15,405 items: DrugBank ID, English label, aliases, RxCUI (SPARQL, 4 Oct 2026) | Drug synonyms; DrugBank name↔ID mapping | CC0. Aliases linked only via matching DrugBank ID; loose aliases filtered (audit in `athena/normalize/lexicon.py`). |
+| **RxNorm Prescribable Content** | `data/raw/rxnorm/` | Release 08 Sep 2026: ingredients, salt forms, brand names + relations | Salt/brand → ingredient normalisation | NLM, free, no UMLS licence needed. |
 
 ### 3.1 Synthetic data (Option A + B)
 
@@ -295,6 +303,7 @@ streamlit run app/streamlit_app.py   # Batch 6
 | DrugBank (DDI pairs) | DrugBank extract **+ DDInter** | Free DrugBank has no severity grades and omits biologics (e.g. heparin) |
 | MIMIC-III | MIMIC-III **Demo** (open) | Notes come via n2c2 (itself built on MIMIC-III); demo `PRESCRIPTIONS` covers Branch B testing |
 | n2c2 via official channel | Unofficial copy for now | Official DBMI application in progress; files match official counts (303 / 202) |
+| — | Wikidata + RxNorm for drug-name normalisation | Official DrugBank vocabulary download unavailable; these give synonyms, brand/salt mapping and DrugBank IDs (validated: 99.9%+ of mapped pairs agree with the ID-based benchmark) |
 | — | Synthetic training data (A + B) | n2c2 train is small (303 notes); edge cases for reconciliation are rare in it |
 | Kim, Kim & Choi used Llama 3 8B | Llama 3.2 3B | 8B does not fit comfortably in 8 GB alongside the rest of the stack |
 | Fine-tuning phase | LoRA via MLX after the base demo | CPU-only fine-tuning is impractical; Apple-Silicon MLX is feasible |
