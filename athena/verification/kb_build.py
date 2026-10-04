@@ -153,14 +153,18 @@ def build_interactions(name_to_concept: dict[str, str]) -> pd.DataFrame:
     ab = [_ordered(a, b) for a, b in zip(df["ca"], df["cb"])]
     df["a"], df["b"] = [x[0] for x in ab], [x[1] for x in ab]
 
-    # One row per (pair, source). DrugBank: keep all distinct templates for the pair.
+    # One row per (pair, source). DrugBank: keep all distinct templates for the pair;
+    # `template` and `description` are aligned JSON lists (description keeps the
+    # original drug order, which the template's {A}/{B} roles depend on).
     # DDInter: after merging salts a pair may have several levels -> keep the most severe.
+    def _aligned(g):
+        items = sorted(set(zip(g["template"], g["description"])))
+        return pd.Series({"template": json.dumps([t for t, _ in items]),
+                          "description": json.dumps([d for _, d in items])})
+
+    db_df = df[df["source"] == "drugbank"].drop_duplicates(["a", "b", "template"])
     db_rows = (
-        df[df["source"] == "drugbank"]
-        .drop_duplicates(["a", "b", "template"])
-        .groupby(["a", "b"], as_index=False)
-        .agg(template=("template", lambda s: json.dumps(sorted(set(s)))),
-             description=("description", lambda s: json.dumps(sorted(set(s)))))
+        db_df.groupby(["a", "b"])[["template", "description"]].apply(_aligned).reset_index()
         .assign(source="drugbank", severity=None)
     )
     dd_rows = df[df["source"] == "ddinter"].copy()

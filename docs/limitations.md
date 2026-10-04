@@ -41,3 +41,8 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 - **24 templates have too little overlap to derive severity** (< 10 graded pairs) → `Unknown`, which is never treated as safe.
 - **Very high raw hit rate.** ~52% of all drug pairs in a MIMIC-demo admission have some KB record (DrugBank is inclusive). Tiering, not the KB, must control alert volume.
 - **Salt merges are a reviewed allow-list** (12 pairs). Four RxNorm salt→parent links were rejected as clinically different drugs (isosorbide mononitrate, choline salicylate, trastuzumab deruxtecan, radiolabelled dotatate).
+
+## Checker (Batch 3)
+- **Some clinically Major pairs are graded Moderate.** Example: oxycodone + lorazepam (opioid + benzodiazepine, FDA boxed warning) exists only in DrugBank under the generic "risk or severity of adverse effects" template (19.7% Major) → derived Moderate. Pinned by `test_known_limitation_opioid_benzo_not_major`. Possible fix: a small, cited rule set for boxed-warning classes (would be a declared addition).
+- **DDInter `Unknown` dominates the volume** (~half of interactions per MIMIC patient). These are real records with no grade; fusion must place them below graded Major/Moderate without hiding them.
+- **Medication lists in MIMIC are reconstructed** from PRESCRIPTIONS start/end dates (drugs active on the last day), not from a true discharge list.

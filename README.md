@@ -5,7 +5,7 @@
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
 Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
 
-> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–2 complete** (setup, data loaders, drug normaliser, interaction KB); Batch 3 (checker) next.
+> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–3 complete** (setup, data loaders, drug normaliser, interaction KB, Branch B checker); Batch 4 (LLM extraction) next.
 > **Next milestone:** working base pipeline demo on **7 Oct 2026**.
 > **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
 
@@ -103,6 +103,16 @@ For each pair of **active** medications the checker returns one of:
 | `INTERACTION` | Found in ≥1 source → mechanism, severity, sources listed |
 | `NO_KNOWN_INTERACTION` | Both drugs covered by the KB, no record found |
 | `NOT_COVERED` | At least one drug is missing from the KB → **"unknown", not "safe"** |
+
+Also reported by the checker: **`DUPLICATE_THERAPY`** (same drug concept in two medications, e.g. Percocet + Tylenol → acetaminophen twice), **unchecked medications** (drug classes, unmapped, ambiguous — shown, never dropped), and **inactive** medications (held/stopped — not paired). Components of one combination product are not paired with each other.
+
+Interaction severity: DDInter grade if Major/Moderate/Minor → else most severe *derived* DrugBank template → else DDInter `Unknown`. Each result carries sources, DDInter level, the original DrugBank sentence(s) and the template evidence.
+
+```bash
+python scripts/check_meds.py "coumadin 5 mg" "ASA 81" "Lasix 40" "Percocet" "tylenol" "simvastatin:held"
+```
+
+Performance (Batch 3): all 122 MIMIC-demo admissions (drugs active on the last day) in 0.8 s — **7 ms per patient**. Per patient: median 17 medications, 78 pairs, 49 interactions of which **1 Major**, 16 Moderate, 22 `Unknown`.
 
 **Severity taxonomy:** DDInter levels `Major > Moderate > Minor > Unknown`. When only DrugBank has the pair, severity is **derived from data**: for each of the 86 DrugBank mechanism templates, look at pairs that DDInter also grades — `Major` if ≥ 50% of them are Major, `Minor` if ≥ 50% Minor, otherwise `Moderate`; `Unknown` if fewer than 10 graded overlapping pairs. Result: 10 Major templates (e.g. QTc-prolongation risk 93% Major, serotonergic 91%, respiratory depression 100%), 51 Moderate, 1 Minor, 24 Unknown. Each derived severity is stored with its evidence (`template_severity` table) and marked `derived`.
 
