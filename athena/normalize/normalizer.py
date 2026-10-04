@@ -85,7 +85,7 @@ SALT_AND_FORM_WORDS = (
     "bromide|chloride|hyclate|lactate|gluconate|disodium|dihydrate|monohydrate|"
     "syringe|neb|nebulizer|soln|solution|inj|injection|tab|tablet|tablets|cap|capsule|capsules|"
     "powder|liquid|oral|susp|suspension|ointment|cream|gel|lotion|patch|drops|enema|inhaler|hfa|"
-    "spray|nasal|ophthalmic|ophth|topical|jelly|preserv|free|generic|rectal|er|sr|xl|xr|cr|dr|ec|odt|disintegrating|"
+    "spray|nasal|ophthalmic|ophth|topical|jelly|mdi|diskus|discus|respimat|flexpen|kwikpen|solostar|preserv|free|generic|rectal|er|sr|xl|xr|cr|dr|ec|odt|disintegrating|"
     "extended|release|immediate|delayed|chewable|pf|p\\.f|sl|iv|po|pr|im|sc|subq|pca|"
     "premix|desensitization|vial|bag|flush|mini|plus|excel"
 )

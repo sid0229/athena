@@ -32,17 +32,29 @@ extraction:
 normalize:
   fuzzy_match_threshold: 92
 
-fusion:                             # v1 proposal — see README §2.4
+fusion:                             # v1 — see README §2.4; to be calibrated in Phase 2 (Batch 12)
   severity_weight:
     Major: 1.0
     Moderate: 0.6
     Minor: 0.3
-    Unknown: 0.5
+    Unknown: 0.25                   # DDInter record without a grade: shown, but Info tier
   derived_severity_factor: 0.8      # severity from DrugBank template map only
   evidence_weight:
     two_sources: 1.0
     one_source: 0.85
   tiers:
     critical: 0.7
-    review: 0.3
-  never_suppress_major: true
+    review: 0.5                     # v1: Moderate needs a DDInter grade or 2 sources to reach Review
+  never_suppress_major: true        # Major is never below Review, whatever the confidence
+  confidence_weights:               # per-medication extraction confidence (sum = 1)
+    detection: 0.4                  # agreement between LLM / scispaCy / dictionary
+    normalization: 0.4              # drug-name match quality
+    status: 0.2                     # how certain we are the drug is active
+  detection_score:
+    llm+other: 1.0
+    llm: 0.85
+    other_multi: 0.85               # scispaCy + dictionary agree
+    other: 0.75
+  status_score:
+    discharge_list: 1.0
+    inferred: 0.6

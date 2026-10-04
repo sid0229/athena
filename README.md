@@ -5,7 +5,7 @@
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
 Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
 
-> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–3 complete** (setup, data loaders, drug normaliser, interaction KB, Branch B checker); Batch 4 (LLM extraction) next.
+> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–5 complete** (setup, data, normaliser, interaction KB, checker, extraction, fusion); Batch 6 (dashboard) next.
 > **Next milestone:** working base pipeline demo on **7 Oct 2026**.
 > **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
 
@@ -70,7 +70,11 @@ flowchart LR
 | Long notes | Split by section headers, then chunk to fit a ~4k-token context with overlap; de-duplicate across chunks. |
 | Grounding | Every extracted value must be found verbatim (or near-verbatim) in the source text → gives character offsets for n2c2 scoring and highlighting in the UI. Values that cannot be located are **dropped** (anti-hallucination guard). |
 | Fallback / cross-check | scispaCy (`en_core_sci_md` + `en_ner_bc5cdr_md`) for drug mentions. LLM–scispaCy agreement feeds extraction confidence. If Ollama is unavailable, scispaCy + rules run alone. |
+| Rules ensemble (Batch 4) | Deterministic drug dictionary (KB + RxNorm names, abbreviations, classes), lab-section mask, regex attribute finder per drug window, slot repair for column-shifted LLM rows. Hybrid precedence chosen on the **validation** split: LLM first for Strength/Frequency, rules first for Route/Form, rules only for Dosage/Duration. |
+| Modes | `scispacy` (baseline) · `llm` · `rules` (no LLM — automatic fallback when Ollama is down) · `hybrid` (default) |
 | Out of scope (v1) | `Reason` and `ADE` entities from n2c2 (kept for later; not needed for reconciliation v1). |
+
+**n2c2 validation (38 notes), micro F1 over 7 types, strict / lenient:** scispaCy .337/.362 · LLM-only .622/.693 · rules-only .775/.863 · **hybrid .792/.870** (Drug .860/.916). Full tables: `docs/results/extraction_val.json`. Test-split numbers are reported once, after freezing (`docs/results/extraction_test_40.json`).
 
 ### 2.2 Drug normalisation (deterministic)
 
@@ -120,25 +124,29 @@ Performance (Batch 3): all 122 MIMIC-demo admissions (drugs active on the last d
 
 **Alert-volume finding:** on MIMIC-demo, drugs active together on the last hospital day give a median of 13 drugs → **49 interacting pairs but ~1 Major** per patient. Showing every KB hit would cause alert fatigue; the fusion tiers (§2.4) are what keep the pharmacist's list short.
 
-### 2.4 Fusion layer (v1 proposal — to be tuned)
+### 2.4 Fusion layer (Batch 5)
 
-For an interaction between drugs *i* and *j*:
+`athena.fusion.report.analyze(note_text) -> Report` (CLI: `python scripts/run_pipeline.py --n2c2 train:100035`)
+
+1. **Sections:** "Medications on Admission" / "Discharge Medications" located (234 / 265 train notes have both). `Sig:` lines never end a section.
+2. **Medication list:** mentions grouped per drug concept. Status: `active` if on the discharge list; `held`/`stopped` if the LLM or a deterministic cue ("held", "discontinued" in the same sentence) says so; otherwise `mentioned` (narrative only — not paired). Without a discharge list, all non-held drugs are treated as active (over-flagging, with a warning).
+3. **Reconciliation:** admission vs discharge → `OMISSION` (Review if unexplained, Info if held/stopped is stated), `NEW_MEDICATION` (Info), `DOSE_CHANGE` (Review).
+4. **Checker** (Branch B) on active drugs → `INTERACTION`, `DUPLICATE_THERAPY`, `NOT_CHECKED`, `NOT_COVERED`.
+5. **Risk and tier** for interactions:
 
 ```
-risk(i,j)   = S(severity) × E(evidence) × C(i,j)
-
-S           : Major 1.0 · Moderate 0.6 · Minor 0.3 · Unknown 0.5 · derived-only ×0.8
-E           : 1.0 if both DrugBank and DDInter agree, 0.85 if one source
-C(i,j)      = min(conf_i, conf_j)
-conf_drug   = weighted mix of: LLM/scispaCy agreement, normalisation match quality,
-              grounding (verbatim match), status certainty
+risk       = S(severity) × E(evidence) × min(conf_a, conf_b)
+S          : Major 1.0 · Moderate 0.6 · Minor 0.3 · Unknown 0.25 · ×0.8 if severity is derived
+E          : 1.0 if DrugBank and DDInter both have the pair, else 0.85
+conf_drug  = 0.4 detection agreement (LLM+rules 1.0 … single rule 0.75)
+           + 0.4 normalisation score
+           + 0.2 status certainty (on discharge list 1.0, inferred 0.6)
+tiers      : Critical ≥ 0.7 · Review ≥ 0.5 · Info < 0.5      (configs/default.yaml)
 ```
 
-Tiers: **Critical** (risk ≥ 0.7) · **Review** (0.3–0.7) · **Info** (< 0.3).
+**Safety override:** a `Major` interaction is never below Review; if its risk is below Critical it is flagged *"verify extraction"*. Low confidence changes how an item is presented, never whether a dangerous item is shown.
 
-**Safety override:** a `Major` interaction is **never suppressed** because of low extraction confidence — it is shown as *"Possible Major interaction — verify extraction"*. Low confidence changes *how* an item is presented, not *whether* a dangerous item is shown.
-
-Every report line carries its explanation: which text span, which normalised drug, which source record, which severity, and each confidence component.
+Every finding carries its explanation (note text → canonical drug, DDInter grade, DrugBank sentences, derived-severity evidence, the risk arithmetic) and the report carries a SHA-256 hash for the audit log. Weights and thresholds are v1 settings; calibration on synthetic planted-interaction patients is Batch 12.
 
 ### 2.5 Human-in-the-loop review
 
@@ -321,6 +329,8 @@ streamlit run app/streamlit_app.py   # Batch 6
 | — | Synthetic training data (A + B) | n2c2 train is small (303 notes); edge cases for reconciliation are rare in it |
 | Kim, Kim & Choi used Llama 3 8B | Llama 3.2 3B | 8B does not fit comfortably in 8 GB alongside the rest of the stack |
 | Fine-tuning phase | LoRA via MLX after the base demo | CPU-only fine-tuning is impractical; Apple-Silicon MLX is feasible |
+| Branch A = LLM extraction (scispaCy fallback) | LLM + deterministic rules ensemble; rules-only fallback | On n2c2 validation the rules ensemble (.775) nearly matches hybrid (.792); the LLM adds most on drug names and narrative text. Reported openly as an ablation. |
+| Fusion: extraction + DDI verification | + admission-vs-discharge reconciliation (omissions, new drugs, dose changes) | Directly targets the reconciliation gap in the problem statement; fully deterministic |
 
 ---
 

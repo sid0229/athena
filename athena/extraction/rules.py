@@ -36,6 +36,13 @@ DETECTION_STOPWORDS = {
     "bowel regimen", "repletion", "immunosuppression", "lytes", "potassium hydroxide", "thrive",
 }
 
+# Common inpatient drugs missing from both KB and the RxNorm prescribable subset
+# (frequent unmapped n2c2 *train* mentions). Detected, then reported as "not checked".
+EXTRA_DRUG_WORDS = {
+    "senna", "sennosides", "bicarb", "sodium bicarb", "kayexalate", "sodium polystyrene sulfonate",
+    "polyethylene glycol", "peg", "golytely", "integrilin", "integrillin", "epo", "epogen",
+}
+
 # Treatments n2c2 annotates as Drug although they are not interaction-checkable.
 THERAPY_WORDS = {
     "ivf", "iv fluids", "prbc", "prbcs", "ffp", "platelets", "blood transfusion", "tpn",
@@ -77,7 +84,7 @@ def detection_vocabulary() -> frozenset[str]:
     con = pd.read_csv(rrf, sep="|", header=None, dtype=str, usecols=[11, 12, 14], names=["sab", "tty", "str"])
     con = con[(con["sab"] == "RXNORM") & con["tty"].isin(["IN", "BN", "PIN"])]
     vocab |= set(con["str"].map(norm))
-    vocab |= set(ABBREVIATIONS) | DRUG_CLASSES | THERAPY_WORDS
+    vocab |= set(ABBREVIATIONS) | DRUG_CLASSES | THERAPY_WORDS | EXTRA_DRUG_WORDS
     vocab = {v for v in vocab if len(v) >= 3 and not v.isdigit()}
     return frozenset(vocab - AMBIGUOUS_WORDS - DETECTION_STOPWORDS)
 

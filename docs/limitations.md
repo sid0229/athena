@@ -46,3 +46,15 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 - **Some clinically Major pairs are graded Moderate.** Example: oxycodone + lorazepam (opioid + benzodiazepine, FDA boxed warning) exists only in DrugBank under the generic "risk or severity of adverse effects" template (19.7% Major) → derived Moderate. Pinned by `test_known_limitation_opioid_benzo_not_major`. Possible fix: a small, cited rule set for boxed-warning classes (would be a declared addition).
 - **DDInter `Unknown` dominates the volume** (~half of interactions per MIMIC patient). These are real records with no grade; fusion must place them below graded Major/Moderate without hiding them.
 - **Medication lists in MIMIC are reconstructed** from PRESCRIPTIONS start/end dates (drugs active on the last day), not from a true discharge list.
+
+## Extraction (Batch 4)
+- **Tuned on the validation split** (prompt, per-type precedence, stopwords from train). Test results are measured once after freezing; a 40-note test subset is used until the full 202-note run (≈ 4 h on the laptop).
+- **The rules ensemble does most of the work on n2c2.** Discharge medication lists are highly regular; rules-only scores .775 vs hybrid .792 (strict micro F1, val). The LLM's main contribution is drug names in narrative text and status words. This is an honest ablation result, not hidden.
+- **47.5% of LLM attribute values are dropped by grounding** (val). Inspection shows these are mostly invented defaults ("IV", "Tablet") or column shifts — the guard working as intended — plus placeholder junk ("Unspecified").
+- **Runaway generation.** The 3B model occasionally repeats rows until the context fills; capped by `num_predict` with complete rows salvaged (9 / 142 calls on val).
+- **Speed:** ~1–1.3 min per note with the LLM on an M2 8 GB; rules-only < 1 s per note.
+
+## Fusion (Batch 5)
+- **Thresholds/weights are uncalibrated v1 values.** Review threshold raised 0.3 → 0.5 after a first look at real notes (24 Review items on one note). Calibration planned on synthetic planted-interaction patients.
+- **Route not used yet:** a lidocaine *patch* is checked as systemic lidocaine (e.g. tramadol + lidocaine flagged Major). Over-flags.
+- **Section parsing is heuristic** (header regexes). Notes without a discharge list fall back to "all non-held drugs active" with a warning.
