@@ -12,13 +12,13 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 
 ### MIMIC-III Clinical Database Demo
 - **No clinical notes.** `NOTEEVENTS` is empty in the demo. Real note text comes only from n2c2 (itself drawn from MIMIC-III).
-- **Drug names don't match DrugBank directly.** Only 183 / 592 distinct prescription names (35% of rows) match DrugBank names exactly (salt forms, abbreviations like `ns`/`d5w`, formulation suffixes). *Handling:* drug normaliser (Batch 2).
+- **Drug names don't match DrugBank directly.** Only 183 / 592 distinct prescription names (35% of rows) match DrugBank names exactly. *Resolved in Batch 2a:* normaliser maps 91% of drug rows (fluids/supplies excluded).
 
 ### DrugBank (Kaggle extract + jcsun-00 benchmark)
 - **Subset, ~2017 snapshot.** 1,701–1,706 approved small-molecule drugs, ~191k pairs; current DrugBank is far larger.
 - **No biologics.** e.g. heparin, insulin absent. *Handling:* DDInter added; KB reports `NOT_COVERED` rather than "no interaction".
 - **No severity.** *Handling:* severity from DDInter; otherwise from a documented template→severity map, marked `derived`.
-- **No name↔ID mapping between the two files.** Row orders differ, so they cannot be aligned. *Handling:* needs the DrugBank open vocabulary (CC0), which must be downloaded while logged in to DrugBank.
+- **No name↔ID mapping between the two files** (row orders differ). *Resolved in Batch 2a:* Wikidata label/alias match + interaction-graph matching maps 1,678 / 1,701 names; mapped pairs agree with the benchmark >99.9%.
 
 ### DDInter
 - **21% of pairs graded `Unknown`.** *Handling:* `Unknown` is never treated as safe; it has its own weight in fusion.
