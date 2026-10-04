@@ -1,0 +1,317 @@
+# Athena
+
+**Neuro-Symbolic Medication Safety: Fusing Local LLM Extraction with Verified Drug-Interaction Reasoning**
+
+Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
+Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
+
+> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batch 0 (setup) complete**.
+> **Next milestone:** working base pipeline demo on **7 Oct 2026**.
+> **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
+
+---
+
+## 1. What Athena does
+
+Athena assists **medication reconciliation**: given a patient's unstructured clinical text (e.g. a discharge summary), it
+
+1. **extracts** every medication with its strength, dose, route, frequency and status (active / held / stopped),
+2. **verifies** every pair of active medications against curated drug-interaction databases,
+3. **fuses** extraction confidence and interaction evidence into a single, explainable risk report, and
+4. **presents** that report to a pharmacist, who confirms or overrides each item — with every decision written to an audit log.
+
+It runs **entirely on a laptop** (8 GB unified memory, no dedicated GPU). No patient text leaves the machine at inference time.
+
+### Why this design
+
+| Approach | Strength | Failure mode |
+|---|---|---|
+| Rule / database lookup only | Precise, auditable | Cannot read free text; misses context ("held", brand names, abbreviations) |
+| LLM only | Reads free text fluently | Hallucinates drugs and interactions; over-flags; not auditable |
+| **Athena (hybrid)** | LLM reads, database decides | Each component is used only for what it is good at |
+
+**Core rule:** the LLM is used **only for extraction**. It never decides whether an interaction exists or how dangerous it is. Every interaction flag Athena shows must be traceable to a database record (or, later, to an explicitly labelled *predicted / unverified* model score).
+
+---
+
+## 2. System design
+
+```mermaid
+flowchart LR
+    T[Clinical note<br/>free text] --> A1
+
+    subgraph A[Branch A — Extraction &#40;neural&#41;]
+        A1[Section split<br/>+ chunking] --> A2[Local LLM<br/>Llama 3.2 3B Q4 via Ollama<br/>JSON-schema output]
+        A1 --> A3[scispaCy NER<br/>fallback / cross-check]
+        A2 --> A4[Span alignment<br/>+ merge]
+        A3 --> A4
+    end
+
+    A4 --> N[Drug normalisation<br/>salts · abbreviations · brands · synonyms<br/>→ canonical drug ID]
+
+    subgraph B[Branch B — Verification &#40;symbolic&#41;]
+        N --> B1[Pairwise check<br/>all active-drug pairs]
+        KB[(Interaction KB<br/>DrugBank + DDInter<br/>SQLite)] --> B1
+        B1 --> B2[Evidence record per pair<br/>sources · mechanism · severity · coverage]
+    end
+
+    A4 -- extraction confidence --> F
+    B2 -- evidence --> F[Fusion layer<br/>confidence-weighted risk score<br/>+ tier + explanation]
+    F --> UI[Streamlit review dashboard<br/>pharmacist confirm / override]
+    UI --> LOG[(Append-only audit log<br/>SQLite)]
+```
+
+### 2.1 Branch A — Extraction (LLM, extraction only)
+
+| Item | Decision (v1) |
+|---|---|
+| Model | **Llama 3.2 3B Instruct, Q4_K_M** via Ollama (~2 GB). Phi-3-mini as comparison model. |
+| Output | Strict JSON schema (Ollama `format=`), temperature 0. One object per medication: `drug`, `strength`, `dosage`, `route`, `frequency`, `duration`, `form`, `status`, `evidence_text`. |
+| Long notes | Split by section headers, then chunk to fit a ~4k-token context with overlap; de-duplicate across chunks. |
+| Grounding | Every extracted value must be found verbatim (or near-verbatim) in the source text → gives character offsets for n2c2 scoring and highlighting in the UI. Values that cannot be located are **dropped** (anti-hallucination guard). |
+| Fallback / cross-check | scispaCy (`en_core_sci_md` + `en_ner_bc5cdr_md`) for drug mentions. LLM–scispaCy agreement feeds extraction confidence. If Ollama is unavailable, scispaCy + rules run alone. |
+| Out of scope (v1) | `Reason` and `ADE` entities from n2c2 (kept for later; not needed for reconciliation v1). |
+
+### 2.2 Drug normalisation (deterministic)
+
+Maps raw strings (`"metoprolol tartrate"`, `"ASA"`, `"Lasix"`, `"vancomycin hcl"`) to a canonical drug ID shared by all knowledge sources.
+
+Pipeline: lowercase/clean → strip salt & formulation words → abbreviation dictionary → exact match on names + synonyms → fuzzy match (with score) → otherwise **`UNMAPPED`**.
+The match type and score are part of the extraction confidence. Unmapped drugs are **shown to the pharmacist**, never silently dropped.
+
+### 2.3 Branch B — Verification (symbolic)
+
+**Interaction knowledge base** (built once, stored as SQLite):
+
+| Source | Gives us | Notes |
+|---|---|---|
+| DrugBank DDI extract (Kaggle, `db_drug_interactions.csv`) | 191,541 pairs, 1,701 drugs, 86 mechanism templates | No severity. Small-molecule only. ~2017 snapshot. |
+| DrugBank benchmark (`jcsun-00/DrugBank`) | DrugBank IDs, SMILES, 86 type labels, standard splits | Same pairs as above; used for IDs and for the similarity model (later batch). |
+| DDInter (`ddinter_downloads_code_*.csv`) | Pairwise **severity**: Major / Moderate / Minor / Unknown; covers biologics (e.g. heparin) | **Added beyond synopsis** — needed because free DrugBank has no severity. |
+| FAERS 2026 Q2 | Real-world co-report counts | Optional supporting signal (later batch), never a sole basis for a flag. |
+
+For each pair of **active** medications the checker returns one of:
+
+| Result | Meaning |
+|---|---|
+| `INTERACTION` | Found in ≥1 source → mechanism, severity, sources listed |
+| `NO_KNOWN_INTERACTION` | Both drugs covered by the KB, no record found |
+| `NOT_COVERED` | At least one drug is missing from the KB → **"unknown", not "safe"** |
+
+**Severity taxonomy:** DDInter levels `Major > Moderate > Minor > Unknown`. When only DrugBank has the pair, severity comes from a hand-written, documented mapping of the 86 mechanism templates (e.g. QTc-prolonging, anticoagulant, CNS-depressant → *Major-candidate*), marked as `derived`.
+
+### 2.4 Fusion layer (v1 proposal — to be tuned)
+
+For an interaction between drugs *i* and *j*:
+
+```
+risk(i,j)   = S(severity) × E(evidence) × C(i,j)
+
+S           : Major 1.0 · Moderate 0.6 · Minor 0.3 · Unknown 0.5 · derived-only ×0.8
+E           : 1.0 if both DrugBank and DDInter agree, 0.85 if one source
+C(i,j)      = min(conf_i, conf_j)
+conf_drug   = weighted mix of: LLM/scispaCy agreement, normalisation match quality,
+              grounding (verbatim match), status certainty
+```
+
+Tiers: **Critical** (risk ≥ 0.7) · **Review** (0.3–0.7) · **Info** (< 0.3).
+
+**Safety override:** a `Major` interaction is **never suppressed** because of low extraction confidence — it is shown as *"Possible Major interaction — verify extraction"*. Low confidence changes *how* an item is presented, not *whether* a dangerous item is shown.
+
+Every report line carries its explanation: which text span, which normalised drug, which source record, which severity, and each confidence component.
+
+### 2.5 Human-in-the-loop review
+
+Streamlit dashboard:
+
+- Source note with extracted medications highlighted.
+- Medication table (editable: pharmacist can correct a drug/dose).
+- Interaction list sorted by tier, each with evidence and confidence breakdown.
+- Per item: **Confirm** / **Override** (reason code required: *not clinically relevant*, *already managed*, *extraction error*, *other + free text*).
+
+**Audit log** — append-only SQLite table: timestamp, reviewer, case ID, item ID, action, reason code, comment, and a hash of the system output being reviewed. Nothing is updated or deleted; corrections are new rows.
+
+---
+
+## 3. Data
+
+All raw data lives in `data/raw/` and is **git-ignored**. It must never be committed or uploaded.
+
+| Dataset | Location | Content | Role | Provenance / caveats |
+|---|---|---|---|---|
+| **n2c2 2018 Track 2** | `data/raw/n2c2_2018_track2/` | 303 train (265 + 38 val) + 202 test notes, BRAT `.txt/.ann` | Branch A training & **evaluation (gold standard)** | Unofficial copy from `varunchaudharycs/biomedical_ner`. Official DBMI access to be obtained; 38-note val split is author-defined. |
+| **MIMIC-III Clinical Database Demo v1.4** | `data/raw/mimic_iii_demo/` | 26 tables, 100 patients; `PRESCRIPTIONS` = 10,398 rows, 122 admissions, 573 drug names | Real medication lists for Branch B testing and synthetic-note seeds | Open access (ODbL). `NOTEEVENTS` is empty in the demo. Full MIMIC-III not required. |
+| **DrugBank DDI extract** | `data/raw/drugbank_kaggle/` | Drug 1, Drug 2, description | Interaction existence + mechanism | Kaggle redistribution of the DeepDDI DrugBank benchmark; version unknown. Swap in official DrugBank 5.1.x when licence/download works. |
+| **DrugBank benchmark** | `data/raw/drugbank_benchmark/` | DrugBank IDs, SMILES, 86 types, warm/cold-start splits | IDs, similarity model, comparable benchmark | From `jcsun-00/DrugBank` (HDN-DDI paper). |
+| **DDInter** | `data/raw/ddinter/` | Drug pairs with severity level, split by ATC code (A, B, D, H, L, P, R, V) | Severity + biologics coverage | Added beyond synopsis. 160,235 unique pairs, 1,939 drugs (files overlap across ATC codes). Levels: Moderate 59% · Unknown 21% · Major 15% · Minor 5%. |
+| **FDA FAERS 2026 Q2** | `data/raw/faers/ASCII/` | 422,459 reports; DRUG, REAC, OUTC, INDI, THER, DEMO, RPSR tables | Optional real-world signal | One quarter only. Exclude IDs in `Deleted/DELETE26Q2.txt`. |
+
+### 3.1 Synthetic data (Option A + B)
+
+Purpose: more and harder training/test examples for **Branch A**, and planted-interaction patients for **end-to-end evaluation**.
+
+| Generator | How | Use |
+|---|---|---|
+| **A — templates & rules** (local Python) | Real MIMIC-demo medication lists → sentence templates with abbreviations, brand names, misspellings, held/stopped/changed drugs. Labels and offsets known by construction. | Volume, edge cases |
+| **B — Claude-written notes** (development time only) | Claude writes realistic discharge-summary passages from MIMIC-demo medication lists. Offsets recovered and **validated by code**; any note whose labels don't align is discarded. | Natural language variety |
+
+**Rules:**
+- Synthetic data is **never** used as the final test set; headline results are on the **real n2c2 test set** only.
+- **No n2c2 text is ever sent to a cloud model** (data-use agreement). Generator B is seeded only from open MIMIC-demo data.
+- Results are reported **with and without** synthetic data, and real vs. synthetic scores are reported separately.
+- Synthetic data is **never** used to create interaction facts. Branch B knowledge comes only from the databases above.
+- Use of a cloud model for dev-time data generation is declared in the report.
+
+---
+
+## 4. Evaluation plan
+
+| What | Data | Metric |
+|---|---|---|
+| Medication extraction (Branch A) | n2c2 2018 Track 2 **test** (202 notes) | Strict & lenient entity-level P/R/F1 per type (Drug, Strength, Dosage, Route, Frequency, Duration, Form); attribute→drug relation F1 |
+| Normalisation | Hand-checked sample of MIMIC-demo drug names | Mapping accuracy, % unmapped |
+| KB coverage | MIMIC-demo admissions | % drugs covered, % pairs `NOT_COVERED` |
+| End-to-end safety | Synthetic patients with planted interactions | Major-interaction sensitivity (missed dangers), false alarms per patient, review burden (items shown per patient) |
+| Resource use | Laptop (Apple M2, 8 GB) | Peak RAM, seconds per note |
+| Ablations (later) | n2c2 test | LLM only vs scispaCy only vs hybrid; ± synthetic data; ± fine-tuning; Llama 3.2 3B vs Phi-3-mini |
+
+Limitations are documented honestly in `docs/limitations.md` as they are found.
+
+---
+
+## 5. Implementation batches
+
+Work is done in small, self-contained batches. Each batch ends with something runnable and tested.
+
+### Phase 1 — Base system (target: **demo on 7 Oct 2026**)
+
+| Batch | When | Deliverable | Done when |
+|---|---|---|---|
+| **0 — Setup** | 4–5 Oct | Repo layout, Python 3.11 venv, `requirements.txt`, `.gitignore`, config file, Ollama + model pulled | `pytest` runs; `ollama run llama3.2:3b` responds |
+| **1 — Data loaders** | 5 Oct | n2c2 BRAT reader (from zips), MIMIC `PRESCRIPTIONS` loader, DrugBank / DDInter / benchmark loaders | Unit tests: 303/202 notes, entity counts, 191k pairs load |
+| **2 — Normalisation + KB** | 5 Oct | Drug normaliser; SQLite interaction KB merging DrugBank + DDInter with severity and coverage; template→severity map | Known pairs found (warfarin–aspirin, simvastatin–clarithromycin, heparin–ketorolac); MIMIC coverage report |
+| **3 — Branch B checker** | 5–6 Oct | Pairwise checker returning `INTERACTION` / `NO_KNOWN_INTERACTION` / `NOT_COVERED` with evidence | Runs on every MIMIC-demo admission; tests pass |
+| **4 — Branch A extractor** | 6 Oct | Ollama JSON-schema extraction, chunking, span grounding, scispaCy cross-check, n2c2 scorer | **Baseline F1 on n2c2 test** (zero/few-shot, no fine-tuning) |
+| **5 — Fusion + report** | 6 Oct | Confidence components, risk score, tiers, explanations | End-to-end JSON report for a note |
+| **6 — Dashboard + audit** | 6–7 Oct | Streamlit review UI, confirm/override with reason codes, SQLite audit log | Live demo: paste note → report → review → audit row written |
+| **Demo prep** | 7 Oct | Demo script, 3–5 showcase notes (synthetic + n2c2 train), baseline numbers slide | — |
+
+**"Base model" for 7 Oct = the complete pipeline working end to end with a non-fine-tuned LLM and first baseline numbers.** Fine-tuning and synthetic-data training come after.
+
+### Phase 2 — Improve (8 Oct – 31 Oct)
+
+| Batch | Deliverable |
+|---|---|
+| **7 — Synthetic data A** | Template generator + validator; edge-case suite (abbreviations, brands, held/stopped, dose changes) |
+| **8 — Synthetic data B** | Claude-written notes from MIMIC-demo med lists, validated and versioned in `data/synthetic/` |
+| **9 — Fine-tuning** | LoRA fine-tune of the 3B model (MLX on Apple Silicon) on n2c2 train + synthetic; export back to GGUF for Ollama; compare vs baseline |
+| **10 — Similarity model** | Shtar-style DDI predictor (graph/structure similarity + XGBoost/LightGBM) for pairs not in the KB — shown only as *predicted / unverified* |
+| **11 — FAERS signal** | Co-report statistics as an extra, clearly labelled evidence feature |
+| **12 — Fusion tuning** | Calibrate weights/thresholds on synthetic planted-interaction patients |
+
+### Phase 3 — Evaluate & write (1 Nov – 24 Nov, buffer to mid-Dec)
+
+| Batch | Deliverable |
+|---|---|
+| **13 — Full evaluation** | All metrics in §4, ablations, resource measurements |
+| **14 — Report** | Final report, limitations, figures |
+| **15 — Paper** | Short paper draft (if results justify it) |
+
+---
+
+## 6. Repository layout (planned)
+
+```
+minor/
+├── README.md
+├── requirements.txt
+├── .gitignore                 # data/raw, data/processed, *.db, models
+├── configs/
+│   └── default.yaml           # model name, chunk size, fusion weights, thresholds, paths
+├── athena/
+│   ├── data/                  # n2c2.py, mimic.py, drugbank.py, ddinter.py, faers.py
+│   ├── normalize/             # drug-name normaliser, abbreviation & salt lists
+│   ├── extraction/            # llm_extractor.py, scispacy_extractor.py, align.py, prompts/
+│   ├── verification/          # kb_build.py, checker.py, severity_map.py
+│   ├── fusion/                # confidence.py, scoring.py, report.py
+│   ├── review/                # audit.py
+│   ├── synth/                 # templates.py, claude_notes.py, validate.py
+│   └── eval/                  # n2c2_metrics.py, pipeline_eval.py
+├── app/
+│   └── streamlit_app.py
+├── scripts/                   # build_kb.py, eval_extraction.py, run_pipeline.py
+├── tests/
+├── docs/                      # limitations.md, design notes, results
+└── data/
+    ├── raw/                   # downloaded datasets (git-ignored)
+    ├── processed/             # KB SQLite, cleaned tables (git-ignored)
+    └── synthetic/             # generated notes + labels
+```
+
+---
+
+## 7. Environment & constraints
+
+| Constraint | How it is met |
+|---|---|
+| 8 GB unified memory, no GPU (Apple M2) | 3B model at 4-bit (~2–2.5 GB runtime); KB in SQLite, not in RAM; FAERS processed in streaming chunks |
+| Local only at inference | Ollama on `localhost`; no network calls in the pipeline. Internet used only during development (downloads, synthetic generation B) |
+| Python 3.10+ | Use **Python 3.11** venv (system Python is 3.14, which spaCy/scispaCy may not support yet) |
+
+**Stack:** Python 3.11 · Ollama · scispaCy · pandas / NumPy · scikit-learn · XGBoost / LightGBM · SQLite · Streamlit · (MLX for fine-tuning in Phase 2)
+
+**Estimated disk use:** ~5–7 GB total (datasets ~0.5 GB, models ~2–4.5 GB, environment ~1.5 GB); +6–8 GB temporarily during fine-tuning.
+
+### Setup
+
+```bash
+# 1. System dependencies (macOS)
+brew install ollama libomp          # libomp: OpenMP runtime for XGBoost/LightGBM
+
+# 2. Start the local LLM server and pull the model (~2 GB)
+OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 ollama serve &   # or: brew services start ollama
+ollama pull llama3.2:3b
+
+# 3. Python 3.11 environment
+uv venv --python 3.11 .venv && source .venv/bin/activate
+uv pip install -r requirements.txt   # includes the two scispaCy models
+
+# 4. Check everything works
+pytest                               # Batch 0 smoke tests
+
+# Later batches
+python scripts/build_kb.py           # Batch 2
+streamlit run app/streamlit_app.py   # Batch 6
+```
+
+**Measured in Batch 0 (Apple M2, 8 GB):** `llama3.2:3b` loads at 2.3 GB on Metal (4k context); Python with scispaCy peaks at ~1.5 GB → ~3.8 GB total, leaving headroom for Streamlit and the OS.
+
+---
+
+## 8. Deviations from the synopsis (declared)
+
+| Synopsis says | Athena does | Why |
+|---|---|---|
+| DrugBank (DDI pairs) | DrugBank extract **+ DDInter** | Free DrugBank has no severity grades and omits biologics (e.g. heparin) |
+| MIMIC-III | MIMIC-III **Demo** (open) | Notes come via n2c2 (itself built on MIMIC-III); demo `PRESCRIPTIONS` covers Branch B testing |
+| n2c2 via official channel | Unofficial copy for now | Official DBMI application in progress; files match official counts (303 / 202) |
+| — | Synthetic training data (A + B) | n2c2 train is small (303 notes); edge cases for reconciliation are rare in it |
+| Kim, Kim & Choi used Llama 3 8B | Llama 3.2 3B | 8B does not fit comfortably in 8 GB alongside the rest of the stack |
+| Fine-tuning phase | LoRA via MLX after the base demo | CPU-only fine-tuning is impractical; Apple-Silicon MLX is feasible |
+
+---
+
+## 9. References
+
+1. Henry et al. (2020). 2018 n2c2 shared task on ADEs and medication extraction. *JAMIA* 27(1).
+2. Ju et al. (2020). Ensemble of neural models for nested ADE and medication extraction with subwords. *JAMIA* 27(1).
+3. Christopoulou et al. (2020). ADE and medication relation extraction with ensemble deep learning. *JAMIA* 27(1).
+4. Kim, Oh & Jeong (2026). LLMs in ADR detection and pharmacovigilance: a systematic review. *Diagnostics* 16(15).
+5. Yao, Rao & Padman (2025). Analytical approaches for medication reconciliation: a scoping review. *medRxiv*.
+6. Ong et al. (2025). GenAI and LLMs in mitigating medication-related harm: a scoping review. *npj Digit. Med.* 8.
+7. Wiest et al. (2024). Privacy-preserving LLMs for structured medical information retrieval. *npj Digit. Med.* 7.
+8. Kim, Kim & Choi (2026). Local SLM + ML pipeline for extraction and stroke outcome prediction. *CSBJ* 35(2).
+9. Shtar, Rokach & Shapira (2019). DDI detection using ANNs and classic graph similarity measures. *PLOS ONE* 14(8).
+10. Gupta, Laghuvarapu & Priyakumar (2024). GraphDDI. *AIiH 2024, LNCS* 14975.
+
+Additional data sources: DDInter (Xiong et al., *Nucleic Acids Res.* 2022); MIMIC-III Clinical Database Demo (Johnson et al., PhysioNet); DeepDDI DrugBank benchmark (Ryu et al., *PNAS* 2018).

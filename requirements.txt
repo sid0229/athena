@@ -1,0 +1,30 @@
+# Athena — Python 3.11 (see README §7)
+# macOS: XGBoost/LightGBM need OpenMP -> `brew install libomp`
+
+# Data
+numpy==1.26.4            # <2 required: spaCy 3.7 / thinc 8.2 wheels are built against numpy 1.x
+pandas==3.0.6
+pyarrow==25.0.1
+
+# Classical ML (Branch B similarity model, Phase 2)
+scikit-learn==1.9.1
+xgboost==3.2.0
+lightgbm==4.7.0
+
+# Clinical NLP (Branch A fallback / cross-check)
+spacy==3.7.5
+scispacy==0.5.5
+en_core_sci_md @ https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_md-0.5.4.tar.gz
+en_ner_bc5cdr_md @ https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_ner_bc5cdr_md-0.5.4.tar.gz
+
+# Local LLM client + structured output
+ollama==0.6.3
+pydantic==2.13.5
+
+# Drug-name normalisation
+rapidfuzz==3.14.6
+
+# App, config, tests
+streamlit==1.65.0
+pyyaml==6.0.3
+pytest==9.1.1

@@ -1,0 +1,47 @@
+# Athena default configuration. Paths are relative to the repo root.
+
+paths:
+  raw: data/raw
+  processed: data/processed
+  synthetic: data/synthetic
+  n2c2: data/raw/n2c2_2018_track2
+  mimic_demo: data/raw/mimic_iii_demo
+  drugbank_kaggle: data/raw/drugbank_kaggle/db_drug_interactions.csv
+  drugbank_benchmark: data/raw/drugbank_benchmark
+  ddinter: data/raw/ddinter
+  faers: data/raw/faers/ASCII
+  kb_db: data/processed/interactions.db
+  audit_db: data/processed/audit.db
+
+llm:
+  host: http://localhost:11434      # local only — never a remote host
+  model: llama3.2:3b
+  comparison_model: phi3:mini
+  temperature: 0.0
+  num_ctx: 4096
+  seed: 42
+  timeout_s: 120
+
+extraction:
+  chunk_chars: 6000                 # ~1.5k tokens of note text per call
+  chunk_overlap_chars: 400
+  fuzzy_ground_threshold: 90        # rapidfuzz score to accept a near-verbatim span
+  scispacy_model: en_ner_bc5cdr_md
+
+normalize:
+  fuzzy_match_threshold: 90
+
+fusion:                             # v1 proposal — see README §2.4
+  severity_weight:
+    Major: 1.0
+    Moderate: 0.6
+    Minor: 0.3
+    Unknown: 0.5
+  derived_severity_factor: 0.8      # severity from DrugBank template map only
+  evidence_weight:
+    two_sources: 1.0
+    one_source: 0.85
+  tiers:
+    critical: 0.7
+    review: 0.3
+  never_suppress_major: true

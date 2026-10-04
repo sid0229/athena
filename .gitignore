@@ -1,0 +1,29 @@
+# --- Patient / licensed data: NEVER commit ---
+data/raw/
+data/processed/
+*.db
+*.sqlite
+*.sqlite3
+audit/
+
+# Models and fine-tuning artifacts
+models/
+*.gguf
+*.safetensors
+adapters/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Streamlit secrets
+.streamlit/secrets.toml
