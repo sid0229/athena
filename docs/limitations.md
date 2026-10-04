@@ -34,3 +34,10 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 - **Wikidata aliases can be wrong.** Audit found and fixed: "sodium polystyrene sulfonate" → tolevamer, "albumin human" → perflutren, "megestrol" → nomegestrol (fuzzy). Mitigations: ID-based alias linking, RxCUI consistency filter, explicit blocklist, strict fuzzy rule.
 - **Some KB entries are duplicates of one drug** (e.g. `fluticasone` vs `fluticasone propionate`, insulin variants). To be merged by DrugBank ID when building the KB (Batch 2b).
 - **26 DrugBank-extract drugs have no DrugBank ID** (not on Wikidata, not resolvable via the interaction graph). They work by name in the KB; they lack SMILES for the Phase 2 similarity model.
+
+## Interaction KB (Batch 2b)
+- **Route-specific drugs are not yet route-aware.** DDInter separates e.g. `timolol (ophthalmic)` from systemic `timolol`; the normaliser currently strips "ophthalmic"/"topical" and maps to the systemic concept. This **over-flags** (safe direction). Planned: use the extracted Route to choose the route-specific concept.
+- **Derived severity is coarse.** A DrugBank template is only a weak predictor of severity (most templates are mixed; e.g. "risk or severity of adverse effects" is 20% Major). Derived grades are labelled `derived` and shown with their evidence; DDInter grades always take precedence.
+- **24 templates have too little overlap to derive severity** (< 10 graded pairs) → `Unknown`, which is never treated as safe.
+- **Very high raw hit rate.** ~52% of all drug pairs in a MIMIC-demo admission have some KB record (DrugBank is inclusive). Tiering, not the KB, must control alert volume.
+- **Salt merges are a reviewed allow-list** (12 pairs). Four RxNorm salt→parent links were rejected as clinically different drugs (isosorbide mononitrate, choline salicylate, trastuzumab deruxtecan, radiolabelled dotatate).

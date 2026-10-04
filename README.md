@@ -5,7 +5,7 @@
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
 Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
 
-> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–1 complete; Batch 2a (drug normaliser) complete**, 2b (interaction KB) next.
+> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–2 complete** (setup, data loaders, drug normaliser, interaction KB); Batch 3 (checker) next.
 > **Next milestone:** working base pipeline demo on **7 Oct 2026**.
 > **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
 
@@ -104,7 +104,11 @@ For each pair of **active** medications the checker returns one of:
 | `NO_KNOWN_INTERACTION` | Both drugs covered by the KB, no record found |
 | `NOT_COVERED` | At least one drug is missing from the KB → **"unknown", not "safe"** |
 
-**Severity taxonomy:** DDInter levels `Major > Moderate > Minor > Unknown`. When only DrugBank has the pair, severity comes from a hand-written, documented mapping of the 86 mechanism templates (e.g. QTc-prolonging, anticoagulant, CNS-depressant → *Major-candidate*), marked as `derived`.
+**Severity taxonomy:** DDInter levels `Major > Moderate > Minor > Unknown`. When only DrugBank has the pair, severity is **derived from data**: for each of the 86 DrugBank mechanism templates, look at pairs that DDInter also grades — `Major` if ≥ 50% of them are Major, `Minor` if ≥ 50% Minor, otherwise `Moderate`; `Unknown` if fewer than 10 graded overlapping pairs. Result: 10 Major templates (e.g. QTc-prolongation risk 93% Major, serotonergic 91%, respiratory depression 100%), 51 Moderate, 1 Minor, 24 Unknown. Each derived severity is stored with its evidence (`template_severity` table) and marked `derived`.
+
+**KB build (Batch 2b):** `python scripts/build_kb.py` → `data/processed/interactions.db` (SQLite, ~70 MB): 2,421 drug concepts, 311,187 interacting pairs (37,680 in both sources, 152,807 DrugBank-only, 120,700 DDInter-only). Salt and insulin-type variants are merged into one concept (reviewed allow-list); **route-specific entries** (e.g. `timolol (ophthalmic)`) are kept separate because their systemic interaction profile differs.
+
+**Alert-volume finding:** on MIMIC-demo, drugs active together on the last hospital day give a median of 13 drugs → **49 interacting pairs but ~1 Major** per patient. Showing every KB hit would cause alert fatigue; the fusion tiers (§2.4) are what keep the pharmacist's list short.
 
 ### 2.4 Fusion layer (v1 proposal — to be tuned)
 

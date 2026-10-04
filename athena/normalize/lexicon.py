@@ -53,8 +53,9 @@ def _load_wikidata() -> pd.DataFrame:
     return wd
 
 
-def _load_rxnorm() -> tuple[dict[str, str], dict[str, set[str]]]:
-    """Returns (ingredient rxcui -> name, surface string -> ingredient rxcuis)."""
+def _load_rxnorm() -> tuple[dict[str, str], dict[str, set[str]], list[tuple[str, str]]]:
+    """Returns (ingredient rxcui -> name, surface string -> ingredient rxcuis,
+    [(salt-form name, ingredient name)] from PIN form_of IN)."""
     rrf = data_path("raw") / "rxnorm" / "rrf"
     con = pd.read_csv(
         rrf / "RXNCONSO.RRF", sep="|", header=None, dtype=str,
@@ -82,7 +83,16 @@ def _load_rxnorm() -> tuple[dict[str, str], dict[str, set[str]]]:
     for rxcui, s in zip(terms["rxcui"], terms["str"]):
         for c in to_in.get(rxcui, ()):
             surface[norm(s)].add(c)
-    return in_name, surface
+
+    pins = con[con["tty"] == "PIN"]
+    pin_name = dict(zip(pins["rxcui"], pins["str"].map(norm)))
+    form_of = rel[rel["rela"] == "form_of"]
+    salt_pairs = [
+        (pin_name[r2], in_name[r1])
+        for r1, r2 in zip(form_of["rxcui1"], form_of["rxcui2"])
+        if r1 in in_name and r2 in pin_name
+    ]
+    return in_name, surface, salt_pairs
 
 
 # ---------------------------------------------------------------- name <-> DrugBank ID
@@ -140,7 +150,7 @@ def resolve_drugbank_ids(wd: pd.DataFrame) -> dict[str, str]:
 
 def build_lexicon() -> dict:
     wd = _load_wikidata()
-    in_name, rx_surface = _load_rxnorm()
+    in_name, rx_surface, salt_pairs = _load_rxnorm()
 
     kag = drugbank.load_kaggle_ddi()
     canon = {norm(n) for n in set(kag["drug_a"]) | set(kag["drug_b"])}
@@ -227,6 +237,9 @@ def build_lexicon() -> dict:
         "kaggle_name_to_id": dict(sorted(name2id.items())),
         "index": {s: sorted(t) for s, t in sorted(index.items())},
         "source": source,
+        # Salt form -> parent ingredient where both are KB drugs (used to group
+        # e.g. "fluticasone propionate" with "fluticasone" in the KB).
+        "salt_of": sorted({(p, i) for p, i in salt_pairs if p in canon and i in canon and p != i}),
     }
 
 
