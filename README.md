@@ -5,7 +5,7 @@
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
 Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
 
-> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batch 0 (setup) complete**.
+> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–1 complete** (setup, data loaders).
 > **Next milestone:** working base pipeline demo on **7 Oct 2026**.
 > **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
 
