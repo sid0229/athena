@@ -58,3 +58,7 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 - **Thresholds/weights are uncalibrated v1 values.** Review threshold raised 0.3 → 0.5 after a first look at real notes (24 Review items on one note). Calibration planned on synthetic planted-interaction patients.
 - **Route not used yet:** a lidocaine *patch* is checked as systemic lidocaine (e.g. tramadol + lidocaine flagged Major). Over-flags.
 - **Section parsing is heuristic** (header regexes). Notes without a discharge list fall back to "all non-held drugs active" with a warning.
+
+## Dashboard demo findings (Batch 6) → Batch 7
+- **Classic dangerous combinations can land in Info.** sertraline + tramadol, lisinopril + spironolactone and oxycodone + lorazepam are DrugBank-only with generic templates → derived Moderate → risk < 0.5. Planned fix (Batch 7, decision pending): cited high-alert class-combination rules.
+- **Demo notes are synthetic** (`data/demo/`), written for screen-sharing; they are not evaluation data.

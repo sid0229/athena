@@ -5,9 +5,37 @@
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
 Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
 
-> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Phase 1 complete — Batches 0–6** (setup, data, normaliser, interaction KB, checker, extraction, fusion, dashboard + audit log).
-> **Next milestone:** working base pipeline demo on **7 Oct 2026**.
+> **Status (5 Oct 2026):** **Phase 1 complete — Batches 0–6 done, 111 tests passing.** Working end-to-end prototype: note → extraction → reconciliation → verified interaction check → tiered, explainable report → pharmacist review with tamper-evident audit log.
+> **Next:** demo on **7 Oct 2026**, then **Batch 7 — high-alert combination layer** (decision pending, see §5).
 > **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
+
+---
+
+## Progress summary (Phase 1, 4–5 Oct 2026)
+
+| Batch | What was built | Key result |
+|---|---|---|
+| **0 — Setup** | Python 3.11 venv (uv), pinned requirements, Ollama + `llama3.2:3b`, config, smoke tests, git | Model + scispaCy run locally; ~3.8 GB peak RAM on M2 8 GB |
+| **1 — Data** | Loaders for n2c2 2018 (from zips), MIMIC-III demo, DrugBank extract + benchmark, DDInter | Counts pinned in tests; data issues logged in `docs/limitations.md` |
+| **2a — Normaliser** | Drug lexicon from DrugBank, DDInter, Wikidata (by DrugBank ID) and RxNorm; ordered deterministic matcher | 87% of specific n2c2 drug mentions, 91% of MIMIC drug rows mapped; 3 false merges found by audit and fixed |
+| **2b — Interaction KB** | SQLite KB: 2,421 drug concepts, 311,187 pairs; severity for DrugBank-only pairs derived from DDInter overlap | 10 templates derived Major (e.g. QTc 93%, serotonergic 91%) |
+| **3 — Checker** | Every active pair → interaction / no known / not covered; duplicates, unchecked, inactive | 7 ms per MIMIC patient; median 49 interacting pairs but ~1 Major per patient |
+| **4 — Extraction** | Local LLM (compact JSON rows) + grounding guard + slot repair + rules ensemble; 4 modes | **n2c2 held-out test (35 notes): micro F1 .794 strict / .878 lenient, Drug F1 .866** (val .792 — no overfitting) |
+| **5 — Fusion** | Sections, medication list + status, admission-vs-discharge reconciliation, risk × tiers, explanations, report hash | Catches omissions, new drugs, dose changes; Major never below Review |
+| **6 — Dashboard** | Streamlit review UI (ui-ux-pro-max design), confirm/override with reasons, hash-chained append-only audit log, 3 synthetic demo patients | Runs fully offline at `localhost:8501` |
+
+**Honest findings worth reporting:** the rules ensemble alone (.777) nearly matches hybrid (.794) on n2c2's regular medication lists — the LLM adds most on drug names and narrative text; 48% of LLM attribute values are rejected by grounding (mostly invented defaults); DrugBank-only classic dangers can be under-rated (Batch 7).
+
+### How to run the demo
+
+```bash
+brew services start ollama                 # local LLM (stop: brew services stop ollama)
+source .venv/bin/activate
+streamlit run app/streamlit_app.py         # http://localhost:8501
+# shortcut: http://localhost:8501/?demo=1&mode=rules&reviewer=Your%20Name   (demo=1..3)
+python scripts/run_pipeline.py data/demo/01_af_pneumonia.txt --mode rules   # CLI report
+pytest                                     # 111 tests
+```
 
 ---
 
@@ -157,7 +185,7 @@ tiers      : Critical ≥ 0.7 · Review ≥ 0.5 · Info < 0.5      (configs/defa
 
 **Safety override:** a `Major` interaction is never below Review; if its risk is below Critical it is flagged *"verify extraction"*. Low confidence changes how an item is presented, never whether a dangerous item is shown.
 
-Every finding carries its explanation (note text → canonical drug, DDInter grade, DrugBank sentences, derived-severity evidence, the risk arithmetic) and the report carries a SHA-256 hash for the audit log. Weights and thresholds are v1 settings; calibration on synthetic planted-interaction patients is Batch 12.
+Every finding carries its explanation (note text → canonical drug, DDInter grade, DrugBank sentences, derived-severity evidence, the risk arithmetic) and the report carries a SHA-256 hash for the audit log. Weights and thresholds are v1 settings; calibration on synthetic planted-interaction patients is Batch 13.
 
 ### 2.5 Human-in-the-loop review (Batch 6)
 
@@ -241,32 +269,60 @@ Work is done in small, self-contained batches. Each batch ends with something ru
 | **4 — Branch A extractor** | 6 Oct | Ollama JSON-schema extraction, chunking, span grounding, scispaCy cross-check, n2c2 scorer | **Baseline F1 on n2c2 test** (zero/few-shot, no fine-tuning) |
 | **5 — Fusion + report** | 6 Oct | Confidence components, risk score, tiers, explanations | End-to-end JSON report for a note |
 | **6 — Dashboard + audit** | 6–7 Oct | Streamlit review UI, confirm/override with reason codes, SQLite audit log | Live demo: paste note → report → review → audit row written |
-| **Demo prep** | 7 Oct | Demo script, 3–5 showcase notes (synthetic + n2c2 train), baseline numbers slide | — |
+| **Demo prep** | 7 Oct | Demo script, 3 synthetic showcase notes (done), baseline numbers slide | — |
+
+Phase 1 status: **all batches 0–6 done** (see Progress summary).
 
 **"Base model" for 7 Oct = the complete pipeline working end to end with a non-fine-tuned LLM and first baseline numbers.** Fine-tuning and synthetic-data training come after.
 
 ### Phase 2 — Improve (8 Oct – 31 Oct)
 
+#### Batch 7 — High-alert combination layer (next; decision pending)
+
+**Problem found in Batch 6 demo testing.** Some textbook-dangerous combinations exist only in the DrugBank extract under a generic template, so their *derived* severity is Moderate and fusion places them in **Info**:
+
+| Pair | Clinical risk | KB evidence today | Tier today |
+|---|---|---|---|
+| sertraline + tramadol | serotonin syndrome, seizures | DrugBank only, "neuroexcitatory activities" template (11.5% Major) | Info |
+| lisinopril + spironolactone | hyperkalaemia | DrugBank only, generic "risk or severity of adverse effects" (19.7% Major) | Info |
+| oxycodone + lorazepam | respiratory depression (FDA boxed warning) | DrugBank only, generic template | Info |
+
+Neither source grades these Major and DDInter has no record of them. Pinned by `test_known_limitation_opioid_benzo_not_major`; listed in `docs/limitations.md`.
+
+**Options:**
+
+| | Approach | Trade-off |
+|---|---|---|
+| **A (recommended)** | Small, **cited** rule set of high-alert *class* combinations (≈10–15 rules): opioid + benzodiazepine (FDA boxed warning), serotonergic combinations (SSRI/SNRI + tramadol/triptan/linezolid/MAOI), ACE inhibitor/ARB + potassium-sparing diuretic or potassium supplement, warfarin + NSAID/antiplatelet, QT-prolonging combinations, etc. Drug-class membership from RxNorm/ATC; each rule stores its citation; matched pairs get severity **Major**, basis `rule`. | Deterministic and auditable, fits the neuro-symbolic design; a declared addition to the synopsis; citations must be checked by the author against primary sources. |
+| B | Floor: any DrugBank-recorded interaction is at least Review | Simple; brings back alert fatigue (~16 Moderate items per patient on MIMIC-demo). |
+| C | Keep as is, document only | Honest but the demo visibly under-rates classic dangers. |
+
+**Done when:** the three pairs above reach Critical/Review with a cited rule in the explanation; rule tests pass; Review volume on MIMIC-demo re-measured.
+
+#### Later Phase 2 batches
+
 | Batch | Deliverable |
 |---|---|
-| **7 — Synthetic data A** | Template generator + validator; edge-case suite (abbreviations, brands, held/stopped, dose changes) |
-| **8 — Synthetic data B** | Claude-written notes from MIMIC-demo med lists, validated and versioned in `data/synthetic/` |
-| **9 — Fine-tuning** | LoRA fine-tune of the 3B model (MLX on Apple Silicon) on n2c2 train + synthetic; export back to GGUF for Ollama; compare vs baseline |
-| **10 — Similarity model** | Shtar-style DDI predictor (graph/structure similarity + XGBoost/LightGBM) for pairs not in the KB — shown only as *predicted / unverified* |
-| **11 — FAERS signal** | Co-report statistics as an extra, clearly labelled evidence feature |
-| **12 — Fusion tuning** | Calibrate weights/thresholds on synthetic planted-interaction patients |
+| **8 — Synthetic data A** | Template generator + validator; edge-case suite (abbreviations, brands, held/stopped, dose changes) |
+| **9 — Synthetic data B** | Claude-written notes from MIMIC-demo med lists, validated and versioned in `data/synthetic/` |
+| **10 — Fine-tuning** | LoRA fine-tune of the 3B model (MLX on Apple Silicon) on n2c2 train + synthetic; export back to GGUF for Ollama; compare vs baseline |
+| **11 — Similarity model** | Shtar-style DDI predictor (graph/structure similarity + XGBoost/LightGBM) for pairs not in the KB — shown only as *predicted / unverified* |
+| **12 — FAERS signal** | Co-report statistics as an extra, clearly labelled evidence feature |
+| **13 — Fusion tuning + route awareness** | Calibrate weights/thresholds on synthetic planted-interaction patients; use extracted Route to pick route-specific concepts (e.g. lidocaine patch) |
+
+Also pending: full 202-note n2c2 test run (≈ 3–4 h LLM time, overnight); official DBMI n2c2 access; push to a private GitHub repo.
 
 ### Phase 3 — Evaluate & write (1 Nov – 24 Nov, buffer to mid-Dec)
 
 | Batch | Deliverable |
 |---|---|
-| **13 — Full evaluation** | All metrics in §4, ablations, resource measurements |
-| **14 — Report** | Final report, limitations, figures |
-| **15 — Paper** | Short paper draft (if results justify it) |
+| **14 — Full evaluation** | All metrics in §4, ablations, resource measurements |
+| **15 — Report** | Final report, limitations, figures |
+| **16 — Paper** | Short paper draft (if results justify it) |
 
 ---
 
-## 6. Repository layout (planned)
+## 6. Repository layout
 
 ```
 minor/
