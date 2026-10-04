@@ -21,10 +21,11 @@ llm:
   num_ctx: 4096
   seed: 42
   timeout_s: 120
+  num_predict: 1500                 # max generated tokens per chunk
 
 extraction:
-  chunk_chars: 6000                 # ~1.5k tokens of note text per call
-  chunk_overlap_chars: 400
+  chunk_chars: 4000                 # ~1k tokens of note text per call (llama3.2:3b, Batch 4)
+  chunk_overlap_chars: 300
   fuzzy_ground_threshold: 90        # rapidfuzz score to accept a near-verbatim span
   scispacy_model: en_ner_bc5cdr_md
 

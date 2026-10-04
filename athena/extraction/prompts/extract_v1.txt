@@ -1,0 +1,21 @@
+Extract every medication mention from the clinical text.
+Output one row per mention as a list of 8 strings:
+[drug, strength, dosage, form, route, frequency, duration, status]
+
+Rules:
+- Copy every value EXACTLY as it is written in the text. Use "" when the text does not state it.
+- drug: the medication name only (no dose, no form). Include brand names, abbreviations and drugs given in the past.
+- strength: amount per unit, e.g. "25 mg", "0.083 %".
+- dosage: how many units per dose, e.g. "One (1)", "2", "1-2".
+- form: e.g. "Tablet", "Capsule", "Solution", "Patch".
+- route: e.g. "PO", "IV", "Inhalation", "Topical".
+- frequency: e.g. "BID", "Q6H", "daily", "as needed".
+- duration: e.g. "for 7 days", "x 2 weeks".
+- status: "held", "stopped", "started", "changed" or "continued" ONLY if the text says so, else "".
+- Never invent values. Do not judge drug interactions.
+
+Example
+Text: "1. metoprolol tartrate 25 mg Tablet Sig: One (1) Tablet PO BID (2 times a day). Lasix was held."
+Rows:
+["metoprolol tartrate","25 mg","One (1)","Tablet","PO","BID","",""]
+["Lasix","","","","","","","held"]
