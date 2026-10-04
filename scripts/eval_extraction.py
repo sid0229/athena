@@ -61,7 +61,7 @@ def main():
     results = {}
     for mode in args.modes.split(","):
         ex = MedicationExtractor(mode, llm=llm)
-        use = notes if mode == "scispacy" else eligible
+        use = eligible  # every mode on the same notes, so scores are comparable
         scores, t0, dropped, total = Scores(), time.time(), 0, 0
         for note in use:
             r = ex.extract(note.text)
@@ -81,7 +81,7 @@ def main():
         meta = {"split": args.split, "limit": args.limit, "model": llm.model,
                 "prompt": "extract_v1", "chunk_chars": cfg["extraction"]["chunk_chars"],
                 "date": time.strftime("%Y-%m-%d")}
-        path = out / f"extraction_{args.split}{'_' + str(args.limit) if args.limit else ''}.json"
+        path = out / f"extraction_{args.split}_{len(eligible)}notes.json"
         path.write_text(json.dumps({"meta": meta, "results": results}, indent=1))
         print(f"\nsaved {path.relative_to(ROOT)}")
 

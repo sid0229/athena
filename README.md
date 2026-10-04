@@ -74,7 +74,18 @@ flowchart LR
 | Modes | `scispacy` (baseline) · `llm` · `rules` (no LLM — automatic fallback when Ollama is down) · `hybrid` (default) |
 | Out of scope (v1) | `Reason` and `ADE` entities from n2c2 (kept for later; not needed for reconciliation v1). |
 
-**n2c2 validation (38 notes), micro F1 over 7 types, strict / lenient:** scispaCy .337/.362 · LLM-only .622/.693 · rules-only .775/.863 · **hybrid .792/.870** (Drug .860/.916). Full tables: `docs/results/extraction_val.json`. Test-split numbers are reported once, after freezing (`docs/results/extraction_test_40.json`).
+**n2c2 validation (38 notes), micro F1 over 7 types, strict / lenient:** scispaCy .337/.362 · LLM-only .622/.693 · rules-only .775/.863 · **hybrid .792/.870** (Drug .860/.916). Full tables: `docs/results/extraction_val_38notes.json`.
+
+**n2c2 test — held-out, scored once after freezing (first 35 test notes by ID; same notes for every mode):**
+
+| Mode | Strict P / R / F1 | Lenient P / R / F1 | Drug F1 (strict) | Relations F1 (strict) |
+|---|---|---|---|---|
+| scispaCy | .938 / .211 / .344 | .987 / .222 / .362 | .707 | — |
+| LLM only | .827 / .547 / .659 | .922 / .610 / .734 | .768 | .542 |
+| Rules only | .840 / .723 / .777 | .936 / .805 / .866 | .842 | .658 |
+| **Hybrid** | **.834 / .758 / .794** | **.923 / .838 / .878** | **.866** | **.697** |
+
+Test ≈ validation (.794 vs .792 strict), so the validation tuning did not overfit. Full tables: `docs/results/extraction_test_35notes.json`. The remaining 167 test notes need ≈ 3–4 h of LLM time and will be run before the final evaluation.
 
 ### 2.2 Drug normalisation (deterministic)
 

@@ -48,7 +48,7 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 - **Medication lists in MIMIC are reconstructed** from PRESCRIPTIONS start/end dates (drugs active on the last day), not from a true discharge list.
 
 ## Extraction (Batch 4)
-- **Tuned on the validation split** (prompt, per-type precedence, stopwords from train). Test results are measured once after freezing; a 40-note test subset is used until the full 202-note run (≈ 4 h on the laptop).
+- **Tuned on the validation split** (prompt, per-type precedence, stopwords from train). Test results are measured once after freezing; a 35-note test subset (first 35 by ID) is reported until the full 202-note run (≈ 4 h on the laptop).
 - **The rules ensemble does most of the work on n2c2.** Discharge medication lists are highly regular; rules-only scores .775 vs hybrid .792 (strict micro F1, val). The LLM's main contribution is drug names in narrative text and status words. This is an honest ablation result, not hidden.
 - **47.5% of LLM attribute values are dropped by grounding** (val). Inspection shows these are mostly invented defaults ("IV", "Tablet") or column shifts — the guard working as intended — plus placeholder junk ("Unspecified").
 - **Runaway generation.** The 3B model occasionally repeats rows until the context fills; capped by `num_predict` with complete rows salvaged (9 / 142 calls on val).
