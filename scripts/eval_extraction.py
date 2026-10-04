@@ -44,7 +44,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split", choices=["train", "val", "test"])
     ap.add_argument("--limit", type=int)
-    ap.add_argument("--modes", default="scispacy,llm,hybrid")
+    ap.add_argument("--modes", default="scispacy,rules,llm,hybrid")
     ap.add_argument("--run-llm", action="store_true")
     ap.add_argument("--save", action="store_true")
     args = ap.parse_args()

@@ -84,3 +84,39 @@ def test_scoring_strict_vs_lenient():
     assert s.strict["Drug"].tp == 1 and s.strict["Strength"].tp == 1
     assert s.strict["Frequency"].tp == 0 and s.lenient["Frequency"].tp == 1
     assert s.rel_strict.tp == 1
+
+
+class _OfflineLLM:
+    """Stands in for Ollama being down."""
+    def available(self):
+        return False
+
+
+def test_rules_mode_finds_drugs_and_attributes():
+    from athena.extraction.pipeline import MedicationExtractor
+
+    r = MedicationExtractor("rules").extract(TEXT)
+    drugs = [m.drug.text for m in r.mentions]
+    assert "metoprolol tartrate" in drugs and drugs.count("Lasix") == 2
+    meto = next(m for m in r.mentions if m.drug.text == "metoprolol tartrate")
+    assert [s.text for s in meto.attributes["Strength"]] == ["25 mg"]
+    assert meto.attributes["Route"][0].text == "PO"
+    assert meto.attributes["Frequency"][0].text == "BID (2 times a day)"
+    assert meto.attributes["Dosage"][0].text == "One (1)"
+
+
+def test_hybrid_falls_back_to_rules_when_llm_unavailable():
+    from athena.extraction.pipeline import MedicationExtractor
+
+    r = MedicationExtractor("hybrid", llm=_OfflineLLM()).extract(TEXT)
+    assert r.mode == "rules" and r.warnings
+    assert any(m.drug.text == "Lasix" for m in r.mentions)
+
+
+def test_lab_sections_are_skipped_by_dictionary():
+    from athena.extraction.pipeline import MedicationExtractor
+
+    text = "Pertinent Results:\nPotassium 4.1, glucose 110, heparin level 0.4\n\nDischarge Medications:\n1. heparin 5000 units SC TID\n"
+    r = MedicationExtractor("rules").extract(text)
+    assert [m.drug.text for m in r.mentions] == ["heparin"]
+    assert r.mentions[0].drug.start > text.index("Discharge Medications")
