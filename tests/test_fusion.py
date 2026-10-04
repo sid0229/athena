@@ -104,3 +104,12 @@ def test_findings_sorted_and_hash_stable(report):
     assert tiers == sorted(tiers)
     again = analyze(NOTE, MedicationExtractor("rules"))
     assert again.report_hash == report.report_hash
+
+
+def test_status_cue_attaches_to_nearest_preceding_drug():
+    from athena.fusion.report import _rule_status
+
+    t = "Simvastatin was held while on clarithromycin. We discontinued lisinopril."
+    sp = {w: (t.index(w), t.index(w) + len(w)) for w in ("Simvastatin", "clarithromycin", "lisinopril")}
+    status = {w: _rule_status(t, *s, [o for o in sp.values() if o != s]) for w, s in sp.items()}
+    assert status == {"Simvastatin": "held", "clarithromycin": "", "lisinopril": "stopped"}

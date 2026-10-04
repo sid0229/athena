@@ -1,0 +1,36 @@
+SYNTHETIC DEMO NOTE — fictional patient, written for the Athena demo. Not real patient data.
+
+Admission Date: 2026-09-14        Discharge Date: 2026-09-21
+Service: MEDICINE
+
+Chief Complaint:
+Cough, fever and shortness of breath.
+
+History of Present Illness:
+78 year old man with atrial fibrillation on Coumadin, CHF and hyperlipidemia presenting with
+3 days of productive cough and fever. CXR showed a right lower lobe pneumonia.
+
+Medications on Admission:
+Coumadin 5 mg PO daily
+Simvastatin 40 mg PO qhs
+Lasix 80 mg PO daily
+Metoprolol succinate 50 mg PO daily
+Tylenol 500 mg PO q6h prn
+
+Brief Hospital Course:
+# Pneumonia: started on ceftriaxone, transitioned to clarithromycin at discharge.
+Simvastatin was held while on clarithromycin.
+# AF: rate controlled. Aspirin 81 mg added by cardiology for CAD.
+# CHF: euvolemic, Lasix dose reduced.
+
+Discharge Medications:
+1. warfarin 5 mg Tablet Sig: One (1) Tablet PO DAILY (Daily).
+2. aspirin 81 mg Tablet, Chewable Sig: One (1) Tablet, Chewable PO DAILY (Daily).
+3. furosemide 40 mg Tablet Sig: One (1) Tablet PO DAILY (Daily).
+4. clarithromycin 500 mg Tablet Sig: One (1) Tablet PO BID (2 times a day) for 5 days.
+5. Percocet 5-325 mg Tablet Sig: One (1) Tablet PO Q6H (every 6 hours) as needed for pain.
+6. acetaminophen 500 mg Tablet Sig: One (1) Tablet PO Q6H (every 6 hours) as needed for fever.
+7. guaifenesin 100 mg/5 mL Syrup Sig: Ten (10) mL PO Q4H (every 4 hours) as needed for cough.
+
+Discharge Disposition:
+Home with services

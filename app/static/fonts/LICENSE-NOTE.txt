@@ -1,0 +1,2 @@
+Figtree (Erik Kennedy) and Atkinson Hyperlegible (Braille Institute) — SIL Open Font License 1.1.
+Downloaded once from Google Fonts and served locally so the app makes no network calls.

@@ -1,0 +1,17 @@
+[server]
+enableStaticServing = true
+headless = true
+address = "localhost"          # local only
+
+[browser]
+gatherUsageStats = false        # no telemetry
+
+[theme]
+base = "light"
+primaryColor = "#0E7490"
+backgroundColor = "#F5F7FA"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#0F172A"
+
+[client]
+toolbarMode = "viewer"          # hide Deploy / developer menu

@@ -1,0 +1,32 @@
+SYNTHETIC DEMO NOTE — fictional patient, written for the Athena demo. Not real patient data.
+
+Admission Date: 2026-08-02        Discharge Date: 2026-08-06
+Service: ORTHOPAEDICS
+
+Chief Complaint:
+Left hip fracture after a fall.
+
+History of Present Illness:
+64 year old woman with major depression and migraine, s/p fall at home. Underwent ORIF on 08-03.
+
+Medications on Admission:
+Sertraline 100 mg PO daily
+Sumatriptan 50 mg PO prn migraine
+Lorazepam 0.5 mg PO qhs prn
+Omeprazole 20 mg PO daily
+
+Brief Hospital Course:
+Post-operative pain controlled with oxycodone, transitioned to tramadol for discharge.
+Ondansetron given for nausea. Enoxaparin started for DVT prophylaxis.
+
+Discharge Medications:
+1. sertraline 100 mg Tablet Sig: One (1) Tablet PO DAILY (Daily).
+2. tramadol 50 mg Tablet Sig: One (1) Tablet PO Q6H (every 6 hours) as needed for pain.
+3. sumatriptan 50 mg Tablet Sig: One (1) Tablet PO ONCE as needed for migraine.
+4. ondansetron 4 mg Tablet, Rapid Dissolve Sig: One (1) Tablet PO Q8H (every 8 hours) as needed for nausea.
+5. enoxaparin 40 mg/0.4 mL Syringe Sig: One (1) Subcutaneous DAILY (Daily) for 28 days.
+6. lorazepam 0.5 mg Tablet Sig: One (1) Tablet PO HS (at bedtime) as needed for insomnia.
+7. oxycodone 5 mg Tablet Sig: One (1) Tablet PO Q4H (every 4 hours) as needed for severe pain.
+
+Discharge Disposition:
+Extended care

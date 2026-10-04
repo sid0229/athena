@@ -1,0 +1,31 @@
+SYNTHETIC DEMO NOTE — fictional patient, written for the Athena demo. Not real patient data.
+
+Admission Date: 2026-07-10        Discharge Date: 2026-07-15
+Service: MEDICINE
+
+Chief Complaint:
+Hyperglycemia and leg swelling.
+
+History of Present Illness:
+70 year old man with type 2 diabetes, CKD stage 3 and hypertension admitted with glucose of 420.
+
+Medications on Admission:
+Metformin 1000 mg PO BID
+Lisinopril 20 mg PO daily
+Amlodipine 10 mg PO daily
+Ibuprofen 400 mg PO tid prn knee pain
+
+Brief Hospital Course:
+Metformin was discontinued given eGFR 28. Started on insulin glargine with sliding scale.
+Spironolactone added for edema. Potassium 5.4 on discharge labs; recheck in 3 days.
+
+Discharge Medications:
+1. insulin glargine 100 unit/mL Solution Sig: Twenty (20) units Subcutaneous at bedtime.
+2. lisinopril 20 mg Tablet Sig: One (1) Tablet PO DAILY (Daily).
+3. spironolactone 25 mg Tablet Sig: One (1) Tablet PO DAILY (Daily).
+4. potassium chloride 20 mEq Tablet, ER Particles/Crystals Sig: One (1) Tablet PO DAILY (Daily).
+5. amlodipine 5 mg Tablet Sig: One (1) Tablet PO DAILY (Daily).
+6. ibuprofen 400 mg Tablet Sig: One (1) Tablet PO Q8H (every 8 hours) as needed for pain.
+
+Discharge Disposition:
+Home

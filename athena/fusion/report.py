@@ -36,18 +36,26 @@ _STATUS_CUE = re.compile(r"\b(held|holding|stopped|discontinued|d/c'?d)\b", re.I
 _SENT_END = re.compile(r"[.;\n]\s")
 
 
-def _rule_status(text: str, start: int, end: int) -> str:
-    """'held'/'stopped' if a cue word is in the mention's sentence (within 60 chars)."""
-    lo = max(start - 60, 0)
+def _rule_status(text: str, start: int, end: int, other_drugs: list[tuple[int, int]]) -> str:
+    """'held'/'stopped' if a cue word in the mention's sentence refers to this mention.
+
+    A cue refers to the nearest drug *before* it in the sentence ("Simvastatin was held
+    while on clarithromycin" -> simvastatin); only if no drug precedes it, to the nearest
+    drug after it ("held lisinopril", "discontinued metformin")."""
+    lo = max(start - 80, 0)
     b = [m.end() for m in _SENT_END.finditer(text, lo, start)]
     lo = b[-1] if b else lo
-    m = _SENT_END.search(text, end, end + 60)
-    hi = m.start() if m else min(end + 60, len(text))
-    cue = _STATUS_CUE.search(text, lo, hi)
-    if not cue:
-        return ""
-    w = cue.group(1).lower()
-    return "held" if w.startswith("hold") or w == "held" else "stopped"
+    m = _SENT_END.search(text, end, end + 80)
+    hi = m.start() if m else min(end + 80, len(text))
+    drugs = sorted([(s0, e0) for s0, e0 in other_drugs if lo <= s0 and e0 <= hi] + [(start, end)])
+    for cue in _STATUS_CUE.finditer(text, lo, hi):
+        before = [d for d in drugs if d[1] <= cue.start()]
+        after = [d for d in drugs if d[0] >= cue.end()]
+        target = before[-1] if before else (after[0] if after else None)
+        if target == (start, end):
+            w = cue.group(1).lower()
+            return "held" if w.startswith("hold") or w == "held" else "stopped"
+    return ""
 
 
 # ---------------------------------------------------------------- data model
@@ -133,10 +141,12 @@ def _group_key(norm: Normalized, text: str) -> str:
 # ---------------------------------------------------------------- medication list
 
 def build_medications(ex: ExtractionResult, sections: list[Section], cfg: dict) -> list[MedEntry]:
+    spans = [(m.drug.start, m.drug.end) for m in ex.mentions]
     for m in ex.mentions:
         if not m.status and not section_of(m.drug.start, sections):
             # only narrative mentions: medication lists use "Sig:" lines, not status words
-            m.status = _rule_status(ex.text, m.drug.start, m.drug.end)
+            others = [sp for sp in spans if sp != (m.drug.start, m.drug.end)]
+            m.status = _rule_status(ex.text, m.drug.start, m.drug.end, others)
     groups: dict[str, list[tuple[Mention, Normalized, Section | None]]] = {}
     for m in ex.mentions:
         norm = ex.normalized[(m.drug.start, m.drug.end)]

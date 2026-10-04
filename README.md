@@ -5,7 +5,7 @@
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus
 Author: Siddhant Gahlot · Synopsis: `Minor_Project_Synopsis (2).docx`
 
-> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Batches 0–5 complete** (setup, data, normaliser, interaction KB, checker, extraction, fusion); Batch 6 (dashboard) next.
+> **Status (4 Oct 2026):** datasets acquired, design frozen for v1, **Phase 1 complete — Batches 0–6** (setup, data, normaliser, interaction KB, checker, extraction, fusion, dashboard + audit log).
 > **Next milestone:** working base pipeline demo on **7 Oct 2026**.
 > **Final evaluation:** 24 Nov 2026 (buffer for report/paper into early December).
 
@@ -148,16 +148,22 @@ tiers      : Critical ≥ 0.7 · Review ≥ 0.5 · Info < 0.5      (configs/defa
 
 Every finding carries its explanation (note text → canonical drug, DDInter grade, DrugBank sentences, derived-severity evidence, the risk arithmetic) and the report carries a SHA-256 hash for the audit log. Weights and thresholds are v1 settings; calibration on synthetic planted-interaction patients is Batch 12.
 
-### 2.5 Human-in-the-loop review
+### 2.5 Human-in-the-loop review (Batch 6)
 
-Streamlit dashboard:
+```bash
+streamlit run app/streamlit_app.py        # http://localhost:8501
+# demo shortcuts: /?demo=1&mode=rules&reviewer=Your%20Name   (demo=1..3)
+```
 
-- Source note with extracted medications highlighted.
-- Medication table (editable: pharmacist can correct a drug/dose).
-- Interaction list sorted by tier, each with evidence and confidence breakdown.
-- Per item: **Confirm** / **Override** (reason code required: *not clinically relevant*, *already managed*, *extraction error*, *other + free text*).
+**Dashboard** (Streamlit, local-only, telemetry off, fonts served from `app/static`):
 
-**Audit log** — append-only SQLite table: timestamp, reviewer, case ID, item ID, action, reason code, comment, and a hash of the system output being reviewed. Nothing is updated or deleted; corrections are new rows.
+- **Review** — choose a synthetic demo patient, paste or upload a note → KPI tiles (Critical / Review / Info / active meds / pairs checked) → finding cards per tier with tier badge (icon + label, never colour alone), evidence chips (DDInter / DrugBank / *severity derived*), the plain-language explanation and the risk arithmetic → **Confirm** / **Override** (reason code required; "Other" needs a comment). Side tabs: medication table (status, admission/discharge lists, confidence), the note with extracted drugs highlighted (critical ones in red), run details (mode, model, timing, sections, report hash). Info findings are collapsed, never hidden.
+- **Audit log** — every decision as an append-only, hash-chained row (`athena/review/audit.py`): SQLite triggers reject UPDATE/DELETE, each row stores the hash of the previous row and of the report reviewed; the page verifies the chain on load and exports CSV.
+- **About** — architecture and safety principles for demos.
+
+Design system from *ui-ux-pro-max* (clinical decision support → Swiss minimal, dense dashboard): slate canvas, single teal accent, semantic tier colours with icons, Figtree headings + Atkinson Hyperlegible body, Lucide icons, WCAG-AA contrast, visible focus, reduced-motion respected.
+
+Synthetic demo notes in `data/demo/` are fictional and safe to screen-share; real n2c2/MIMIC notes must not be shown to third parties (data-use agreements).
 
 ---
 
