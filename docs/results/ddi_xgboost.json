@@ -1,0 +1,72 @@
+{
+ "task": "binary DDI link prediction, DrugBank benchmark (DeepDDI), warm-start fold0, 1:1 benchmark negatives",
+ "features": [
+  "deg_u",
+  "deg_v",
+  "deg_min",
+  "deg_max",
+  "common_neighbors",
+  "jaccard",
+  "adamic_adar",
+  "resource_allocation",
+  "pref_attachment",
+  "sorensen",
+  "hub_promoted",
+  "hub_depressed"
+ ],
+ "train_pairs": 280347,
+ "test_pairs": 69960,
+ "best_iteration": 599,
+ "xgboost": {
+  "accuracy": 0.8527,
+  "precision": 0.9023,
+  "recall": 0.8191,
+  "f1": 0.8587,
+  "roc_auc": 0.9372,
+  "pr_auc": 0.9503,
+  "confusion_matrix": [
+   [
+    28339,
+    3392
+   ],
+   [
+    6914,
+    31315
+   ]
+  ]
+ },
+ "baseline_logistic_regression": {
+  "accuracy": 0.8305,
+  "precision": 0.8525,
+  "recall": 0.8342,
+  "f1": 0.8432,
+  "roc_auc": 0.9105,
+  "pr_auc": 0.9266,
+  "confusion_matrix": [
+   [
+    26213,
+    5518
+   ],
+   [
+    6339,
+    31890
+   ]
+  ]
+ },
+ "feature_importance_gain": {
+  "resource_allocation": 173.809,
+  "adamic_adar": 92.857,
+  "jaccard": 33.793,
+  "deg_max": 26.634,
+  "hub_promoted": 26.586,
+  "sorensen": 25.322,
+  "deg_min": 25.276,
+  "pref_attachment": 18.352,
+  "common_neighbors": 18.024,
+  "hub_depressed": 17.79,
+  "deg_v": 17.607,
+  "deg_u": 15.352
+ },
+ "test_pairs_removed_overlap": 133,
+ "seconds": 20.6
+}

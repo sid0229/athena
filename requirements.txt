@@ -24,6 +24,9 @@ pydantic==2.13.5
 # Drug-name normalisation
 rapidfuzz==3.14.6
 
+# Plots (confusion matrix for the ML interaction predictor)
+matplotlib==3.11.2
+
 # App, config, tests
 streamlit==1.65.0
 pyyaml==6.0.3

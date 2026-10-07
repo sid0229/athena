@@ -62,3 +62,9 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 ## Dashboard demo findings (Batch 6) → Batch 7
 - **Classic dangerous combinations can land in Info.** sertraline + tramadol, lisinopril + spironolactone and oxycodone + lorazepam are DrugBank-only with generic templates → derived Moderate → risk < 0.5. Planned fix (Batch 7, decision pending): cited high-alert class-combination rules.
 - **Demo notes are synthetic** (`data/demo/`), written for screen-sharing; they are not evaluation data.
+
+## ML interaction predictor (XGBoost, Batch 11 preview)
+- **Warm-start only.** Test drugs also appear in training (different pairs). Cold-start (unseen drugs) is harder and not yet reported.
+- **Benchmark negatives are sampled pairs**, not confirmed non-interactions; ~17% of the provided negatives were real interactions and were removed. Scores measure separation of recorded vs sampled pairs, not clinical correctness.
+- **Graph-only features.** No chemical-structure (SMILES) features yet; the model cannot score drugs absent from the training graph.
+- **Not used for flags.** Predictions are a research component; the dashboard's interaction flags come only from the curated KB.
