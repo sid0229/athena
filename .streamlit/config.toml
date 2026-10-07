@@ -8,10 +8,10 @@ gatherUsageStats = false        # no telemetry
 
 [theme]
 base = "light"
-primaryColor = "#0E7490"
-backgroundColor = "#F5F7FA"
+primaryColor = "#086F82"
+backgroundColor = "#F5F8FA"
 secondaryBackgroundColor = "#FFFFFF"
-textColor = "#0F172A"
+textColor = "#152238"
 
 [client]
 toolbarMode = "viewer"          # hide Deploy / developer menu
