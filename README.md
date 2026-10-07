@@ -6,7 +6,7 @@
 
 <p align="center">
 Minor Project [ARP 455] · B.Tech AIML, 7th Semester · USAR, GGSIPU East Delhi Campus<br>
-Siddhant Gahlot
+Siddhant Gahlot and Rupesh Arya Bhatt
 </p>
 
 ---
