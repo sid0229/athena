@@ -174,7 +174,9 @@ header[data-testid="stHeader"]{background:transparent;height:0}
 section[data-testid="stSidebar"]{background:var(--navy-950);border-right:1px solid var(--navy-800);width:300px!important}
 section[data-testid="stSidebar"] *{color:#D5DEE8}
 [data-testid="stSidebarHeader"]{padding-bottom:var(--s2)}
-[data-testid="stLogo"]{height:38px!important;max-width:100%}
+[data-testid="stLogo"]{height:80px!important;max-width:240px!important;width:auto;max-height:none!important}
+[data-testid="stSidebarLogo"],[data-testid="stLogoLink"]{max-width:none!important;max-height:none!important}
+[data-testid="stSidebarHeader"]{height:auto!important;min-height:104px;align-items:center;padding-top:var(--s4)}
 [data-testid="stSidebarNav"]{border-bottom:1px solid var(--navy-800);padding-bottom:var(--s3);margin-bottom:var(--s2)}
 [data-testid="stSidebarNav"] a{border-radius:var(--r-input);font-size:15px}
 [data-testid="stSidebarNav"] a span{font-size:15px}
@@ -441,6 +443,9 @@ div[class*="st-key-panel-recon"]{gap:var(--s3)!important}
   border-radius:var(--r-card);padding:var(--s5);box-shadow:var(--shadow);color:var(--teal-700)}
 .rs-title{font-family:var(--font-head);font-weight:700;font-size:16px;color:var(--text-primary);margin-bottom:2px}
 div[class*="st-key-panel-recon"] textarea{font-family:var(--font-body)!important;font-size:15px!important}
+
+.about-brand{margin:0 0 var(--s4)}
+.about-brand img{height:150px;width:auto;display:block}
 
 /* ===================================================================== meters */
 .meter{display:inline-flex;align-items:center;gap:var(--s2)}

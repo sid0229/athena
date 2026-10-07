@@ -32,10 +32,11 @@ from athena.verification.checker import InteractionChecker  # noqa: E402
 from ui.theme import (TIERS, TYPE_LABELS, avatar, chip, css, esc, icon, label, meter,  # noqa: E402
                       section_title, tier_badge)
 
-st.set_page_config(page_title="Athena · Medication Safety", page_icon=":material/medication:",
+STATIC = Path(__file__).parent / "static"
+st.set_page_config(page_title="Athena · Medication Safety", page_icon=str(STATIC / "athena-mark.png"),
                    layout="wide", initial_sidebar_state="expanded")
 st.html(css())
-st.logo(str(Path(__file__).parent / "static" / "athena-logo.svg"), size="large")
+st.logo(str(STATIC / "athena-logo.svg"), icon_image=str(STATIC / "athena-mark.png"), size="large")
 
 DEMO_DIR = ROOT / "data" / "demo"
 MODES = {"hybrid": "Hybrid — local LLM + rules", "rules": "Rules only — fast, no LLM"}
@@ -729,6 +730,7 @@ def audit_page():
 
 def about_page():
     sidebar()
+    st.html('<div class="about-brand"><img src="app/static/athena-full.png" alt="Athena — Medication Safety logo"></div>')
     header("How it works", "Neuro-symbolic medication safety",
            "A local language model reads; verified databases decide; a reviewer confirms.")
     st.html(f"""<div class="about-grid">
