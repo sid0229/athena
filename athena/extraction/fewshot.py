@@ -113,3 +113,4 @@ class FewShotExtractor(OllamaExtractor):
                     self.stats["salvaged"] = self.stats.get("salvaged", 0) + 1
                     return salvaged
         return None
+
