@@ -120,3 +120,28 @@ def test_lab_sections_are_skipped_by_dictionary():
     r = MedicationExtractor("rules").extract(text)
     assert [m.drug.text for m in r.mentions] == ["heparin"]
     assert r.mentions[0].drug.start > text.index("Discharge Medications")
+
+
+def test_fewshot_extractor_init_and_pipeline():
+    from athena.extraction.fewshot import FewShotExtractor
+    from athena.extraction.pipeline import MedicationExtractor
+
+    extractor = MedicationExtractor("rules", fewshot=True)
+    assert extractor.llm is None
+    assert extractor.fewshot is True
+
+    fs = FewShotExtractor()
+    assert fs.k == 3
+    assert hasattr(fs, "retrieve_examples")
+    # Custom bank retrieval test
+    fs.bank = [("metoprolol 25 mg daily", [["metoprolol", "25 mg", "", "", "", "daily", "", ""]]),
+               ("lisinopril 10 mg po", [["lisinopril", "10 mg", "", "", "po", "", "", ""]])]
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    fs.vectorizer = TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True)
+    fs.matrix = fs.vectorizer.fit_transform([t for t, _ in fs.bank])
+    examples = fs.retrieve_examples("metoprolol 50 mg")
+    assert len(examples) > 0
+    assert examples[0][0].startswith("metoprolol")
+
+    med_ex = MedicationExtractor("hybrid", llm=fs)
+    assert med_ex.fewshot is True

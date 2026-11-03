@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from athena.config import load_config
 from athena.extraction.align import WINDOW_AFTER, AlignStats, Mention, Span, ground
 from athena.extraction.chunking import chunk_text
+from athena.extraction.fewshot import FewShotExtractor
 from athena.extraction.llm_extractor import OllamaExtractor
 from athena.extraction.rules import (AMBIGUOUS_WORDS, dictionary_spans, in_ranges, lab_sections,
                                      rule_attributes)
@@ -50,15 +51,27 @@ class ExtractionResult:
 
 
 class MedicationExtractor:
-    def __init__(self, mode: str = "hybrid", llm: OllamaExtractor | None = None,
-                 normalizer: DrugNormalizer | None = None):
+    def __init__(
+        self,
+        mode: str = "hybrid",
+        llm: OllamaExtractor | None = None,
+        normalizer: DrugNormalizer | None = None,
+        fewshot: bool = False,
+    ):
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
         self.mode = mode
         self.cfg = load_config()["extraction"]
         self.normalizer = normalizer or DrugNormalizer()
+        self.fewshot = fewshot or isinstance(llm, FewShotExtractor)
         uses_llm = mode in ("llm", "hybrid")
-        self.llm = llm if llm is not None else (OllamaExtractor() if uses_llm else None)
+
+        if llm is not None:
+            self.llm = llm
+        elif uses_llm:
+            self.llm = FewShotExtractor() if fewshot else OllamaExtractor()
+        else:
+            self.llm = None
 
     def _drug_like(self, name: str) -> bool:
         return self.normalizer.normalize(name).status in CHECKABLE
@@ -106,8 +119,9 @@ class MedicationExtractor:
         mentions.sort(key=lambda m: m.drug.start)
 
         if mode == "hybrid":
+            rule_only = {"Duration"} if self.fewshot else RULE_ONLY
             for m in mentions:
-                for t in RULE_ONLY:
+                for t in rule_only:
                     m.attributes.pop(t, None)
         if mode in ("rules", "hybrid"):
             self._rule_attributes(text, mentions, labs, RULE_FIRST if mode == "hybrid" else set())

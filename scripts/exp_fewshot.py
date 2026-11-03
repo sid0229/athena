@@ -19,75 +19,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402
-from sklearn.metrics.pairwise import linear_kernel  # noqa: E402
-
 from athena.config import ROOT, load_config  # noqa: E402
 from athena.data import n2c2  # noqa: E402
 from athena.eval.n2c2_metrics import Scores, score_note  # noqa: E402
 from athena.extraction.chunking import chunk_text  # noqa: E402
-from athena.extraction.llm_extractor import _SCHEMA, OllamaExtractor, _salvage_rows  # noqa: E402
+from athena.extraction.fewshot import (  # noqa: E402
+    COLS,
+    DEFAULT_K as K,
+    DEFAULT_LINES as LINES,
+    VERSION,
+    FewShotExtractor,
+    build_snippet_bank as snippets,
+)
+from athena.extraction.llm_extractor import OllamaExtractor  # noqa: E402
 from athena.extraction.pipeline import MedicationExtractor  # noqa: E402
-
-VERSION, K, LINES = "extract_v1_fewshot3", 3, 8
-COLS = ["Strength", "Dosage", "Form", "Route", "Frequency", "Duration"]
-
-
-def snippets():
-    """8-line windows from training notes that contain at least one gold drug, with gold rows."""
-    out = []
-    for note in n2c2.load_split("train"):
-        lines, pos = note.text.split("\n"), 0
-        offs = []
-        for ln in lines:
-            offs.append(pos)
-            pos += len(ln) + 1
-        for i in range(0, len(lines), LINES):
-            lo = offs[i]
-            hi = offs[min(i + LINES, len(lines) - 1)] if i + LINES < len(lines) else len(note.text)
-            rows = []
-            for d in note.drugs():
-                if lo <= d.start and d.end <= hi:
-                    attrs = {a.type: a.text for a in note.attributes_of(d.id) if lo <= a.start and a.end <= hi}
-                    rows.append([d.text] + [attrs.get(c, "") for c in COLS] + [""])
-            if rows:
-                out.append((note.text[lo:hi].strip(), rows))
-    return out
-
-
-class FewShotExtractor(OllamaExtractor):
-    def __init__(self):
-        super().__init__()
-        self.cache_dir = self.cache_dir.parent / f"{self.model.replace(':', '_')}_{VERSION}"
-        self.bank = snippets()
-        self.vec = TfidfVectorizer(ngram_range=(1, 2), min_df=2, sublinear_tf=True)
-        self.mat = self.vec.fit_transform([t for t, _ in self.bank])
-
-    def _cache_path(self, text):
-        return self.cache_dir / (hashlib.sha256(f"{self.model}|{VERSION}|{text}".encode()).hexdigest()[:24] + ".json")
-
-    def examples(self, text):
-        sims = linear_kernel(self.vec.transform([text]), self.mat)[0]
-        return [self.bank[i] for i in sims.argsort()[::-1][:K]]
-
-    def _call(self, text):
-        msgs = [{"role": "system", "content": self.system}]
-        for ex_text, rows in self.examples(text):
-            msgs += [{"role": "user", "content": ex_text},
-                     {"role": "assistant", "content": json.dumps({"meds": rows})}]
-        msgs.append({"role": "user", "content": text})
-        for attempt in range(2):
-            resp = self.client.chat(model=self.model, messages=msgs, format=_SCHEMA,
-                                    options=self.options if attempt == 0 else {**self.options, "seed": self.options["seed"] + 1})
-            self.stats["calls"] += 1
-            self.stats["seconds"] += (resp.total_duration or 0) / 1e9
-            try:
-                return json.loads(resp.message.content)["meds"]
-            except (json.JSONDecodeError, KeyError, TypeError):
-                rows = _salvage_rows(resp.message.content)
-                if rows:
-                    return rows
-        return None
 
 
 def score(notes, llm, mode):
