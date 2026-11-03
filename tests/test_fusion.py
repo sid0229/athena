@@ -113,3 +113,17 @@ def test_status_cue_attaches_to_nearest_preceding_drug():
     sp = {w: (t.index(w), t.index(w) + len(w)) for w in ("Simvastatin", "clarithromycin", "lisinopril")}
     status = {w: _rule_status(t, *s, [o for o in sp.values() if o != s]) for w, s in sp.items()}
     assert status == {"Simvastatin": "held", "clarithromycin": "", "lisinopril": "stopped"}
+
+
+def test_local_route_detection():
+    from athena.fusion.report import MedEntry, local_route
+
+    def entry(raw, kb, **attrs):
+        return MedEntry(id=raw, name=raw, raw=raw, norm_status="mapped", norm_stage="exact", kb_names=kb,
+                        mentions=[], attributes=attrs, in_admission=False, in_discharge=True,
+                        text_status="", status="active")
+    assert local_route(entry("lidocaine", ["lidocaine"], Form="Patch")) == "topical"
+    assert local_route(entry("fentanyl", ["fentanyl"], Form="Patch 72 hr")) is None  # transdermal = systemic
+    assert local_route(entry("timolol", ["timolol"], Route="both eyes")) == "ophthalmic"
+    assert local_route(entry("clobetasol", ["clobetasol"], Form="Cream")) == "topical"
+    assert local_route(entry("metoprolol", ["metoprolol"], Route="PO", Form="Tablet")) is None

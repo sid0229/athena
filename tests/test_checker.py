@@ -114,3 +114,20 @@ def test_speed_on_realistic_list(checker):
     assert time.perf_counter() - t0 < 0.5
     # 16 concepts (pip-tazo = 2) -> 120 pairs, minus piperacillin+tazobactam (same product)
     assert len(r.pairs) == 16 * 15 // 2 - 1
+
+
+def test_local_route_uses_route_specific_concept(checker):
+    systemic = checker.check(["lidocaine", "diphenhydramine"])
+    topical = checker.check([Medication("lidocaine", route="topical"), "diphenhydramine"])
+    assert systemic.interactions and not topical.interactions
+    # route-specific records still flag real local-route risks
+    r = checker.check([Medication("miconazole", route="topical"), "warfarin"])
+    assert [(p.a.name, p.b.name, p.severity) for p in r.interactions] == [("miconazole (topical)", "warfarin", "Major")] \
+        or [(p.b.name, p.a.name, p.severity) for p in r.interactions] == [("miconazole (topical)", "warfarin", "Major")]
+
+
+def test_route_without_specific_concept_stays_systemic(checker):
+    # DDInter has no 'fentanyl (topical)': a fentanyl patch is checked as systemic fentanyl
+    a = checker.check(["fentanyl", "midazolam"])
+    b = checker.check([Medication("fentanyl", route="topical"), "midazolam"])
+    assert [p.severity for p in a.interactions] == [p.severity for p in b.interactions] != []

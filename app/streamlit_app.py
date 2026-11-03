@@ -113,10 +113,54 @@ def _cap(name: str) -> str:
     return name[:1].upper() + name[1:] if name else name
 
 
+@st.cache_resource(show_spinner=False)
+def common_names() -> dict[str, str]:
+    """Display only: DrugBank/international name -> everyday US name from RxNorm
+    (e.g. acetylsalicylic acid -> aspirin, salbutamol -> albuterol). Matching and
+    interaction logic never use this; it only changes how names are shown."""
+    from athena.normalize.lexicon import load_lexicon, norm
+    rrf = ROOT / "data" / "raw" / "rxnorm" / "rrf" / "RXNCONSO.RRF"
+    if not rrf.exists():
+        return {}
+    con = pd.read_csv(rrf, sep="|", header=None, dtype=str, usecols=[11, 12, 14], names=["sab", "tty", "str"])
+    ins = set(con[(con["sab"] == "RXNORM") & (con["tty"] == "IN")]["str"].map(norm))
+    cands: dict[str, list[str]] = {}
+    for surface, targets in load_lexicon()["index"].items():
+        if len(targets) != 1 or surface not in ins:
+            continue
+        canon = targets[0]
+        if surface == canon or canon in ins:
+            continue
+        # skip renames that drop or add words (e.g. an antibody-drug conjugate losing its payload)
+        if canon.startswith(surface + " ") or surface.startswith(canon + " "):
+            continue
+        if "," in surface or surface.startswith(("p-", "alum")):
+            continue
+        cands.setdefault(canon, []).append(surface)
+    return {c: min(v, key=len) for c, v in cands.items()}
+
+
+def disp(name: str) -> str:
+    """'acetylsalicylic acid' -> 'Aspirin (acetylsalicylic acid)'; handles 'a + b' combinations."""
+    out = []
+    for part in name.split(" + "):
+        common = common_names().get(part.strip().lower())
+        out.append(f"{_cap(common)} ({part.strip()})" if common else _cap(part.strip()))
+    return " + ".join(out)
+
+
 def _pair_title(title: str) -> str:
-    """'Major interaction: warfarin + acetylsalicylic acid' -> 'Warfarin + Acetylsalicylic acid'."""
-    rest = title.split(": ", 1)[-1]
-    return " + ".join(_cap(p) for p in rest.split(" + "))
+    """'Major interaction: warfarin + acetylsalicylic acid' -> 'Warfarin + Aspirin (acetylsalicylic acid)'."""
+    return disp(title.split(": ", 1)[-1])
+
+
+def _finding_title(f: dict, r: dict) -> str:
+    """Title of a non-interaction finding, with drug names shown by their common name."""
+    rest = f["title"].split(": ", 1)[-1]
+    for m in r["medications"]:
+        if m["id"] in f["meds"] and rest.lower().startswith(m["name"].lower()):
+            return disp(m["name"]) + rest[len(m["name"]):]
+    return _cap(rest)
 
 
 def _note_stats(text: str) -> str:
@@ -297,7 +341,7 @@ def finding_card(f: dict, idx: int, r: dict, decisions: dict):
         if is_int and ev.get("severity"):
             derived = '<small>derived</small>' if ev.get("severity_basis") == "derived" else ""
             sev = f'<span class="f-sev sev-{ev["severity"].lower()}">{esc(ev["severity"])}{derived}</span>'
-        title = _pair_title(f["title"]) if is_int else _cap(f["title"].split(": ", 1)[-1])
+        title = _pair_title(f["title"]) if is_int else _finding_title(f, r)
         if is_int and ev.get("mechanisms"):
             summary = ev["mechanisms"][0]["text"]
         elif is_int and ev.get("ddinter_level"):
@@ -390,7 +434,7 @@ def finding_card(f: dict, idx: int, r: dict, decisions: dict):
                                + "</ul>"))
             conf_parts = (ev.get("confidence") or {})
             if conf_parts:
-                names = {m["id"]: _cap(m["name"]) for m in r["medications"]}
+                names = {m["id"]: disp(m["name"]) for m in r["medications"]}
                 totals = {m["id"]: m["confidence"] for m in r["medications"]}
                 rows = "".join(
                     f'<tr><td>{esc(names.get(mid, mid))}</td><td><b>{totals.get(mid, 0):.2f}</b></td>'
@@ -487,7 +531,7 @@ def reconciliation(r: dict, text: str):
             continue
         adm_s = m["admission_attributes"].get("Strength") or ("—" if not m["in_admission"] else "dose not stated")
         dis_s = (m["attributes"].get("Strength") or "dose not stated") if m["in_discharge"] else None
-        name = _cap(m["name"])
+        name = disp(m["name"])
         if m["in_admission"] and not m["in_discharge"]:
             f = by_id.get(f"OMIT:{m['id']}")
             explained = f is not None and f["tier"] == "info"
@@ -527,7 +571,7 @@ def medication_table(r: dict):
         yes = f'<span class="yes" aria-label="yes">{icon("check", 16, 2.6)}</span>'
         no = '<span class="no" aria-label="no">—</span>'
         rows.append(f"""<tr>
-          <td><div class="med-name">{esc(_cap(m['name']))}</div>
+          <td><div class="med-name">{esc(disp(m['name']))}</div>
               <div class="med-raw">as written: “{esc(m['raw'])}” · {esc(m['norm_status'].replace('_', ' '))}</div>
               {('<div class="med-dose">' + esc(dose) + '</div>') if dose else ''}</td>
           <td>{status}</td>
@@ -551,7 +595,7 @@ def note_view(r: dict, text: str):
         if s < pos:
             continue
         out.append(esc(text[pos:s]))
-        out.append(f'<mark class="d{" hot" if mid in hot else ""}" title="{esc(name)}">{esc(text[s:e])}</mark>')
+        out.append(f'<mark class="d{" hot" if mid in hot else ""}" title="{esc(disp(name))}">{esc(text[s:e])}</mark>')
         pos = e
     out.append(esc(text[pos:]))
     st.html('<div class="legend"><span><mark class="d">drug</mark> extracted</span>'

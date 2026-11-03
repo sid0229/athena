@@ -44,6 +44,7 @@ class Medication:
     name: str
     status: str = "active"   # active | held | stopped | unknown
     ref: str | None = None   # caller's id (e.g. extracted entity id), passed through
+    route: str | None = None  # local route (topical | ophthalmic | otic | nasal) -> route-specific concept
 
 
 @dataclass(frozen=True)
@@ -128,8 +129,15 @@ class InteractionKB:
                 "SELECT template, derived_severity, n_overlap_graded, pct_major FROM template_severity")
         }
 
+        self.by_concept_name = {c.name: c for c in self.concepts.values()}
+
     def concept_for(self, kb_name: str) -> Concept:
         return self.concepts[self.name_to_concept[kb_name]]
+
+    def route_variant(self, concept: Concept, route: str | None) -> Concept:
+        """DDInter keeps some local formulations as separate concepts, e.g. 'timolol (ophthalmic)'.
+        Use that concept when the drug is given by that route; otherwise the systemic one."""
+        return self.by_concept_name.get(f"{concept.name} ({route})", concept) if route else concept
 
     def lookup(self, c1: str, c2: str) -> list[tuple[str, str | None, str | None, str | None]]:
         """Rows (source, severity, templates_json, descriptions_json) for an unordered pair."""
@@ -161,7 +169,7 @@ class InteractionChecker:
                 report.unchecked.append((med, norm))
                 continue
             for d in norm.drugs:
-                entries.append((i, self.kb.concept_for(d)))
+                entries.append((i, self.kb.route_variant(self.kb.concept_for(d), med.route)))
 
         # Duplicate therapy: same concept from two different medications.
         by_concept: dict[str, list[int]] = {}

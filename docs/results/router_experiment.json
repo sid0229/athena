@@ -1,0 +1,106 @@
+{
+ "val": [
+  {
+   "threshold": 1.01,
+   "strict_f1": 0.7916,
+   "lenient_f1": 0.8704,
+   "drug_f1": 0.8604,
+   "chunks_to_llm": 151,
+   "chunks_total": 151,
+   "llm_share_chars": 1.0
+  },
+  {
+   "threshold": 0.8,
+   "strict_f1": 0.7916,
+   "lenient_f1": 0.8704,
+   "drug_f1": 0.8604,
+   "chunks_to_llm": 150,
+   "chunks_total": 151,
+   "llm_share_chars": 0.999
+  },
+  {
+   "threshold": 0.7,
+   "strict_f1": 0.7916,
+   "lenient_f1": 0.8704,
+   "drug_f1": 0.8604,
+   "chunks_to_llm": 149,
+   "chunks_total": 151,
+   "llm_share_chars": 0.996
+  },
+  {
+   "threshold": 0.6,
+   "strict_f1": 0.7906,
+   "lenient_f1": 0.8695,
+   "drug_f1": 0.8599,
+   "chunks_to_llm": 147,
+   "chunks_total": 151,
+   "llm_share_chars": 0.983
+  },
+  {
+   "threshold": 0.5,
+   "strict_f1": 0.7884,
+   "lenient_f1": 0.8697,
+   "drug_f1": 0.8563,
+   "chunks_to_llm": 141,
+   "chunks_total": 151,
+   "llm_share_chars": 0.954
+  },
+  {
+   "threshold": 0.4,
+   "strict_f1": 0.782,
+   "lenient_f1": 0.8654,
+   "drug_f1": 0.853,
+   "chunks_to_llm": 133,
+   "chunks_total": 151,
+   "llm_share_chars": 0.905
+  },
+  {
+   "threshold": 0.3,
+   "strict_f1": 0.7799,
+   "lenient_f1": 0.8662,
+   "drug_f1": 0.8497,
+   "chunks_to_llm": 108,
+   "chunks_total": 151,
+   "llm_share_chars": 0.744
+  },
+  {
+   "threshold": 0.0,
+   "strict_f1": 0.7745,
+   "lenient_f1": 0.8633,
+   "drug_f1": 0.838,
+   "chunks_to_llm": 0,
+   "chunks_total": 151,
+   "llm_share_chars": 0.0
+  }
+ ],
+ "test": [
+  {
+   "threshold": 1.01,
+   "strict_f1": 0.7941,
+   "lenient_f1": 0.8783,
+   "drug_f1": 0.8662,
+   "chunks_to_llm": 136,
+   "chunks_total": 136,
+   "llm_share_chars": 1.0
+  },
+  {
+   "threshold": 0.5,
+   "strict_f1": 0.7922,
+   "lenient_f1": 0.8776,
+   "drug_f1": 0.8637,
+   "chunks_to_llm": 131,
+   "chunks_total": 136,
+   "llm_share_chars": 0.98
+  },
+  {
+   "threshold": 0.0,
+   "strict_f1": 0.7768,
+   "lenient_f1": 0.8657,
+   "drug_f1": 0.8425,
+   "chunks_to_llm": 0,
+   "chunks_total": 136,
+   "llm_share_chars": 0.0
+  }
+ ],
+ "chosen_threshold": 0.5
+}

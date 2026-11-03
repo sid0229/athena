@@ -1,0 +1,71 @@
+{
+ "notes": 38,
+ "formulas": {
+  "multiplicative": {
+   "interaction_findings": 870,
+   "tiers": {
+    "critical": 32,
+    "review": 103,
+    "info": 735
+   },
+   "by_severity": {
+    "Major": {
+     "critical": 32,
+     "review": 0,
+     "info": 0
+    },
+    "Minor": {
+     "critical": 0,
+     "review": 0,
+     "info": 46
+    },
+    "Moderate": {
+     "critical": 0,
+     "review": 103,
+     "info": 242
+    },
+    "Unknown": {
+     "critical": 0,
+     "review": 0,
+     "info": 447
+    }
+   },
+   "mean_actionable_per_note": 3.6
+  },
+  "uncertainty_penalty": {
+   "interaction_findings": 870,
+   "tiers": {
+    "critical": 56,
+    "review": 168,
+    "info": 646
+   },
+   "by_severity": {
+    "Major": {
+     "critical": 32,
+     "review": 0,
+     "info": 0
+    },
+    "Minor": {
+     "critical": 3,
+     "review": 0,
+     "info": 43
+    },
+    "Moderate": {
+     "critical": 21,
+     "review": 141,
+     "info": 183
+    },
+    "Unknown": {
+     "critical": 0,
+     "review": 27,
+     "info": 420
+    }
+   },
+   "mean_actionable_per_note": 5.9
+  }
+ },
+ "tier_moves_default_to_penalty": {
+  "info -> critical": 24,
+  "info -> review": 65
+ }
+}

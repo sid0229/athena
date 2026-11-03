@@ -1,0 +1,307 @@
+{
+ "notes": 38,
+ "tiers_off": {
+  "info": 735,
+  "review": 103,
+  "critical": 32
+ },
+ "tiers_on": {
+  "info": 701,
+  "review": 102,
+  "critical": 32
+ },
+ "local_route_medications": [
+  {
+   "note": "n2c2:101110",
+   "drug": "Miconazole Powder 2%",
+   "route": "topical",
+   "attrs": {
+    "Strength": "1 Appl TP",
+    "Form": "apply to affected area",
+    "Frequency": "TID:PRN rash"
+   }
+  },
+  {
+   "note": "n2c2:103480",
+   "drug": "Miconazole Nitrate",
+   "route": "topical",
+   "attrs": {
+    "Strength": "2 %",
+    "Form": "Powder",
+    "Route": "Topical",
+    "Frequency": "QID\n(4 times a day) as needed",
+    "Dosage": "One (1)"
+   }
+  },
+  {
+   "note": "n2c2:103761",
+   "drug": "Mupirocin Calcium",
+   "route": "topical",
+   "attrs": {
+    "Strength": "2 %",
+    "Form": "Cream",
+    "Dosage": "One (1)",
+    "Route": "Topical"
+   }
+  },
+  {
+   "note": "n2c2:103928",
+   "drug": "Camphor-Menthol",
+   "route": "topical",
+   "attrs": {
+    "Strength": "0.5-0.5 %",
+    "Form": "Lotion",
+    "Route": "Topical",
+    "Frequency": "QID (4 times a day) as needed",
+    "Dosage": "One (1)"
+   }
+  },
+  {
+   "note": "n2c2:103928",
+   "drug": "Hydrocortisone",
+   "route": "topical",
+   "attrs": {
+    "Strength": "2.5 %",
+    "Form": "Cream",
+    "Route": "Appl Rectal",
+    "Frequency": "as needed for itching",
+    "Dosage": "One (1)"
+   }
+  },
+  {
+   "note": "n2c2:104446",
+   "drug": "clobetasol",
+   "route": "topical",
+   "attrs": {
+    "Strength": "0.05 %",
+    "Dosage": "One (1)",
+    "Form": "Cream",
+    "Route": "Topical"
+   }
+  },
+  {
+   "note": "n2c2:104929",
+   "drug": "lidocaine",
+   "route": "topical",
+   "attrs": {
+    "Strength": "5 %(700 mg/patch)",
+    "Form": "Patch",
+    "Route": "Topical",
+    "Frequency": "DAILY (Daily)",
+    "Dosage": "One (1)"
+   }
+  }
+ ],
+ "changed_findings": [
+  {
+   "note": "n2c2:101110",
+   "finding": "Unknown interaction: acetaminophen + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:101110",
+   "finding": "Unknown interaction: metronidazole + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:101110",
+   "finding": "Unknown interaction: mirtazapine + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:101110",
+   "finding": "Unknown interaction: pantoprazole + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:101110",
+   "finding": "Unknown interaction: salbutamol + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Moderate interaction: atorvastatin + miconazole",
+   "off": "review",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: acetaminophen + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: acetylsalicylic acid + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: famotidine + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: heparin + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: ibuprofen + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: miconazole + bupropion",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: nystatin + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103480",
+   "finding": "Unknown interaction: salbutamol + miconazole",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103928",
+   "finding": "Unknown interaction: acetaminophen + hydrocortisone",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103928",
+   "finding": "Unknown interaction: hydrocortisone + doxepin",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103928",
+   "finding": "Unknown interaction: hydrocortisone + ondansetron",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103928",
+   "finding": "Unknown interaction: hydrocortisone + quetiapine",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103928",
+   "finding": "Unknown interaction: hydrocortisone + sertraline",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103928",
+   "finding": "Unknown interaction: morphine + hydrocortisone",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:103928",
+   "finding": "Unknown interaction: trazodone + hydrocortisone",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Moderate interaction: furosemide + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Moderate interaction: warfarin + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: acetaminophen + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: clobetasol + fluticasone",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: diltiazem + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: hydroxyzine + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: metoprolol + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: oxycodone + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: salbutamol + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: simvastatin + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: valsartan + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104446",
+   "finding": "Unknown interaction: vancomycin + clobetasol",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104929",
+   "finding": "Moderate interaction: lidocaine + diphenhydramine",
+   "off": "info",
+   "on": null
+  },
+  {
+   "note": "n2c2:104929",
+   "finding": "Unknown interaction: lidocaine + ibuprofen",
+   "off": "info",
+   "on": null
+  }
+ ]
+}

@@ -219,7 +219,21 @@ def _interaction_finding(p: PairResult, entries: dict[str, MedEntry], cfg: dict)
         sev_w *= cfg["derived_severity_factor"]
     ev_w = cfg["evidence_weight"]["two_sources" if len(p.sources) > 1 else "one_source"]
     conf = min(a.confidence, b.confidence)
-    risk = round(sev_w * ev_w * conf, 3)
+    formula = cfg.get("formula", "multiplicative")
+    if formula == "uncertainty_penalty":
+        # Weighted additive variant: database evidence plus a penalty for extraction
+        # uncertainty, so a less certain extraction gets MORE scrutiny, not less.
+        up = cfg["uncertainty_penalty"]
+        t = up["confidence_tiers"]
+        conf_tier = "HIGH" if conf >= t["high"] else "MEDIUM" if conf >= t["medium"] else "LOW"
+        conf_val = up["tier_values"][conf_tier]
+        evidence = 1.0  # an INTERACTION finding always has a database record
+        risk = round(min(1.0, up["w_db"] * evidence * sev_w + up["w_penalty"] * (1.0 - conf_val)), 3)
+        risk_line = (f"Risk {risk:.2f} = {up['w_db']:.1f} × evidence 1 × severity {sev_w:.2f} + "
+                     f"{up['w_penalty']:.1f} × (1 − confidence {conf_tier} {conf_val:.1f}), capped at 1.")
+    else:
+        risk = round(sev_w * ev_w * conf, 3)
+        risk_line = f"Risk {risk:.2f} = severity {sev_w:.2f} × evidence {ev_w:.2f} × extraction confidence {conf:.2f}."
     tier = _tier(risk, cfg)
     verify = False
     if p.severity == "Major" and cfg["never_suppress_major"] and tier != "critical":
@@ -234,7 +248,7 @@ def _interaction_finding(p: PairResult, entries: dict[str, MedEntry], cfg: dict)
         m = p.mechanisms[0]
         why.append(f"Severity {p.severity} is derived: {m.pct_major:.0f}% of {m.n_overlap_graded} "
                    f"comparable DrugBank pairs are graded Major by DDInter.")
-    why.append(f"Risk {risk:.2f} = severity {sev_w:.2f} × evidence {ev_w:.2f} × extraction confidence {conf:.2f}.")
+    why.append(risk_line)
     if verify:
         why.append("Possible Major interaction with lower extraction confidence — verify the extracted drugs.")
     return Finding(
@@ -290,14 +304,36 @@ def reconciliation_findings(entries: list[MedEntry], sections: list[Section]) ->
 
 # ---------------------------------------------------------------- entry point
 
+# Local routes that DDInter models as separate concepts. Transdermal patches are systemic
+# (fentanyl, clonidine, nitroglycerin...), so "patch" counts as topical only for local analgesics.
+_LOCAL_ROUTE = [
+    ("ophthalmic", re.compile(r"\b(ophthalmic|ophth|eye|eyes|ou)\b", re.I)),
+    ("otic", re.compile(r"\b(otic|ear|ears)\b", re.I)),
+    ("nasal", re.compile(r"\b(nasal|intranasal|nostrils?|nares)\b", re.I)),
+    ("topical", re.compile(r"\b(topical|topically|tp|cream|ointment|lotion|apply|affected area|skin)\b", re.I)),
+]
+_LOCAL_PATCH_DRUGS = {"lidocaine", "diclofenac", "capsaicin", "menthol"}
+
+
+def local_route(e: "MedEntry") -> str | None:
+    """Local route of a medication from its extracted Route/Form and the drug text, if any."""
+    text = " ".join([e.raw, e.attributes.get("Route", ""), e.attributes.get("Form", "")])
+    for route, rx in _LOCAL_ROUTE:
+        if rx.search(text):
+            return route
+    if re.search(r"\bpatch", text, re.I) and set(e.kb_names) & _LOCAL_PATCH_DRUGS:
+        return "topical"
+    return None
+
+
 @lru_cache(maxsize=1)
 def _default_checker() -> InteractionChecker:
     return InteractionChecker()
 
 
 def analyze(text: str, extractor: MedicationExtractor | None = None,
-            checker: InteractionChecker | None = None) -> Report:
-    cfg = load_config()["fusion"]
+            checker: InteractionChecker | None = None, fusion_cfg: dict | None = None) -> Report:
+    cfg = fusion_cfg or load_config()["fusion"]
     extractor = extractor or MedicationExtractor("hybrid")
     checker = checker or _default_checker()
 
@@ -307,7 +343,9 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
     by_id = {e.id: e for e in entries}
 
     active = [e for e in entries if e.status == "active"]
-    check = checker.check([Medication(e.raw, "active", ref=e.id) for e in active])
+    route_aware = cfg.get("route_aware", False)
+    check = checker.check([Medication(e.raw, "active", ref=e.id, route=local_route(e) if route_aware else None)
+                           for e in active])
 
     findings = [_interaction_finding(p, by_id, cfg) for p in check.interactions]
     for d in check.duplicates:

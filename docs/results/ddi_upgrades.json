@@ -1,0 +1,191 @@
+{
+ "benchmark_density": 0.1316,
+ "realistic_ratio": "1:7",
+ "settings": {
+  "warm_start": {
+   "1:1 (benchmark negatives)": {
+    "graph": {
+     "roc_auc": 0.9366,
+     "pr_auc": 0.95,
+     "precision": 0.9028,
+     "recall": 0.8145,
+     "f1": 0.8564,
+     "prevalence": 0.5464
+    },
+    "chem": {
+     "roc_auc": 0.9505,
+     "pr_auc": 0.9568,
+     "precision": 0.8779,
+     "recall": 0.9055,
+     "f1": 0.8915,
+     "prevalence": 0.5464
+    },
+    "graph+chem": {
+     "roc_auc": 0.9779,
+     "pr_auc": 0.9817,
+     "precision": 0.9474,
+     "recall": 0.9001,
+     "f1": 0.9231,
+     "prevalence": 0.5464
+    }
+   },
+   "1:7 (benchmark density)": {
+    "graph": {
+     "roc_auc": 0.9327,
+     "pr_auc": 0.775,
+     "precision": 0.5086,
+     "recall": 0.8123,
+     "f1": 0.6255,
+     "prevalence": 0.125
+    },
+    "chem": {
+     "roc_auc": 0.9505,
+     "pr_auc": 0.7814,
+     "precision": 0.4551,
+     "recall": 0.9125,
+     "f1": 0.6073,
+     "prevalence": 0.125
+    },
+    "graph+chem": {
+     "roc_auc": 0.9769,
+     "pr_auc": 0.8947,
+     "precision": 0.6646,
+     "recall": 0.8982,
+     "f1": 0.764,
+     "prevalence": 0.125
+    }
+   },
+   "1:50 (stress test)": {
+    "graph": {
+     "roc_auc": 0.9325,
+     "pr_auc": 0.5251,
+     "precision": 0.1265,
+     "recall": 0.8095,
+     "f1": 0.2188,
+     "prevalence": 0.0196
+    },
+    "chem": {
+     "roc_auc": 0.947,
+     "pr_auc": 0.4604,
+     "precision": 0.1018,
+     "recall": 0.9045,
+     "f1": 0.1831,
+     "prevalence": 0.0196
+    },
+    "graph+chem": {
+     "roc_auc": 0.9757,
+     "pr_auc": 0.6971,
+     "precision": 0.2165,
+     "recall": 0.895,
+     "f1": 0.3487,
+     "prevalence": 0.0196
+    }
+   }
+  },
+  "cold_start": {
+   "S2 one drug unseen, 1:1": {
+    "graph": {
+     "roc_auc": 0.3876,
+     "pr_auc": 0.4677,
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "prevalence": 0.5466
+    },
+    "chem": {
+     "roc_auc": 0.64,
+     "pr_auc": 0.67,
+     "precision": 0.8964,
+     "recall": 0.0077,
+     "f1": 0.0153,
+     "prevalence": 0.5466
+    },
+    "graph+chem": {
+     "roc_auc": 0.5318,
+     "pr_auc": 0.5808,
+     "precision": 0.9323,
+     "recall": 0.0039,
+     "f1": 0.0077,
+     "prevalence": 0.5466
+    },
+    "chem (cold-aware training)": {
+     "roc_auc": 0.8023,
+     "pr_auc": 0.8357,
+     "precision": 0.8019,
+     "recall": 0.6402,
+     "f1": 0.712,
+     "prevalence": 0.5466
+    }
+   },
+   "S1 both drugs unseen, 1:1": {
+    "graph": {
+     "roc_auc": 0.5,
+     "pr_auc": 0.548,
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "prevalence": 0.548
+    },
+    "chem": {
+     "roc_auc": 0.4423,
+     "pr_auc": 0.5083,
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "prevalence": 0.548
+    },
+    "graph+chem": {
+     "roc_auc": 0.4661,
+     "pr_auc": 0.5163,
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "prevalence": 0.548
+    },
+    "chem (cold-aware training)": {
+     "roc_auc": 0.678,
+     "pr_auc": 0.7252,
+     "precision": 0.719,
+     "recall": 0.4674,
+     "f1": 0.5665,
+     "prevalence": 0.548
+    }
+   },
+   "S2 one drug unseen, 1:7": {
+    "graph": {
+     "roc_auc": 0.2362,
+     "pr_auc": 0.0774,
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "prevalence": 0.125
+    },
+    "chem": {
+     "roc_auc": 0.4837,
+     "pr_auc": 0.1094,
+     "precision": 0.0235,
+     "recall": 0.008,
+     "f1": 0.0119,
+     "prevalence": 0.125
+    },
+    "graph+chem": {
+     "roc_auc": 0.3684,
+     "pr_auc": 0.0909,
+     "precision": 0.0187,
+     "recall": 0.0023,
+     "f1": 0.0041,
+     "prevalence": 0.125
+    },
+    "chem (cold-aware training)": {
+     "roc_auc": 0.7865,
+     "pr_auc": 0.4435,
+     "precision": 0.2983,
+     "recall": 0.6387,
+     "f1": 0.4067,
+     "prevalence": 0.125
+    }
+   }
+  }
+ },
+ "seconds": 580
+}

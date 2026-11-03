@@ -1,0 +1,12 @@
+{
+ "prompt": "neutral, allows 'no interaction' / 'not sure'",
+ "sensitivity": 0.14,
+ "specificity": 0.98,
+ "precision": 0.875,
+ "said_interaction_pct": 8.0,
+ "not_sure": 0,
+ "tp": 14,
+ "fp": 2,
+ "tn": 98,
+ "fn": 86
+}

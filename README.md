@@ -28,10 +28,11 @@ It runs **entirely on a laptop** (Apple M2, 8 GB, no GPU). No patient text leave
 | What | Result |
 |---|---|
 | Medication extraction — n2c2 2018 Track 2, held-out test | **micro F1 0.794 strict / 0.878 lenient** (Drug F1 0.866) — scispaCy baseline 0.344 |
-| ML interaction predictor (XGBoost) — DrugBank benchmark test | **F1 0.859 · accuracy 0.853 · ROC-AUC 0.937** — logistic-regression baseline F1 0.843 |
+| ML interaction predictor (XGBoost, graph + chemical structure) — DrugBank benchmark test | **F1 0.925 · accuracy 0.920 · ROC-AUC 0.978** — graph-only 0.859, logistic-regression baseline 0.843 |
+| Unseen drugs (cold start, one drug new) | **ROC-AUC 0.80** with cold-aware chemical model (graph-only model: 0.39) |
 | Interaction knowledge base | 2,421 drugs · 311,187 interacting pairs (DrugBank + DDInter), with severity |
 | Speed / memory | Interaction check 7 ms per patient · ~3.8 GB peak RAM |
-| Quality | 114 automated tests |
+| Quality | 119 automated tests |
 
 ---
 
@@ -176,20 +177,29 @@ Validation F1 (.792) matches test (.794), indicating no overfitting to the tunin
 
 ### 2. ML interaction predictor — XGBoost
 
-Binary classification (interaction / no interaction), DrugBank DDI benchmark (DeepDDI), warm-start split; 280,347 training and 69,960 test pairs (benchmark negatives, 1:1 per positive).
+Binary classification (interaction / no interaction), DrugBank DDI benchmark (DeepDDI), warm-start split; 280,347 training and 69,960 test pairs (benchmark negatives, 1:1 per positive). Features: 12 interaction-graph similarity features plus chemical structure (RDKit Morgan fingerprints, similarity to each drug's known interaction partners).
 
 ```
                 precision    recall  f1-score   support
-no interaction      0.804     0.893     0.846     31731
-   interaction      0.902     0.819     0.859     38229
-      accuracy                          0.853     69960
+no interaction      0.890     0.939     0.914     31731
+   interaction      0.947     0.903     0.925     38229
+      accuracy                          0.920     69960
 
-ROC-AUC 0.937 · PR-AUC 0.950 · logistic-regression baseline: F1 0.843, ROC-AUC 0.911
+ROC-AUC 0.978 · PR-AUC 0.982 · graph-only XGBoost: F1 0.859, ROC-AUC 0.937 · logistic regression: F1 0.843
 ```
+
+| Harder settings | Graph only | Graph + chemistry |
+|---|---|---|
+| Realistic imbalance, 1 : 7 (benchmark density), PR-AUC | 0.778 | **0.899** |
+| Stress test, 1 : 50, PR-AUC | 0.527 | **0.696** |
+| Cold start, one drug unseen (S2), ROC-AUC | 0.389 | **0.803** (cold-aware chemical model) |
+| Cold start, both drugs unseen (S1), ROC-AUC | 0.500 | **0.681** (cold-aware chemical model) |
+
+Precision necessarily falls as true interactions get rarer (at 1 : 50, F1 ≈ 0.35), which is one reason predictions are never shown as verified flags.
 
 <p><img src="docs/results/ddi_xgboost_confusion.png" alt="Confusion matrix of the XGBoost interaction predictor" width="380"></p>
 
-Most informative features: resource allocation, Adamic–Adar and Jaccard similarity. Full results: `docs/results/ddi_xgboost.json`.
+Full results: `docs/results/ddi_xgboost.json`; how these upgrades were chosen: [`docs/upgrade_experiments.md`](docs/upgrade_experiments.md).
 
 ### 3. System-level
 
@@ -237,7 +247,7 @@ Most informative features: resource allocation, Adamic–Adar and Jaccard simila
 | **RxNorm** (NLM) and **Wikidata** | Drug synonyms, brands, salt forms, DrugBank IDs |
 | **FDA FAERS** (2026 Q2) | Reserved for a supporting real-world signal |
 
-Raw data is not included in this repository (licences and data-use agreements). The dashboard's demo patients (`data/demo/`) are fictional.
+The openly redistributable datasets, the built knowledge base and the trained models are included under `data/`; n2c2 notes are **not** (Data Use Agreement), nor are two files over GitHub's size limit. Sources, licences and how to obtain the rest: [`data/SOURCES.md`](data/SOURCES.md). The dashboard's demo patients (`data/demo/`) are fictional.
 
 ---
 
@@ -296,11 +306,11 @@ Key limitations (full list in [`docs/limitations.md`](docs/limitations.md)):
 - Some classic dangerous combinations that exist only in DrugBank under generic templates are under-rated (e.g. sertraline + tramadol); a cited high-alert rule layer is the next step.
 - On n2c2's highly regular medication lists, the rules alone nearly match the hybrid; the LLM's gain is in narrative text — fine-tuning is planned.
 - Extraction test results cover 35 of 202 test notes so far; the full run is scheduled.
-- Topical and systemic routes are not yet distinguished (e.g. a lidocaine patch is checked as systemic lidocaine).
-- The XGBoost predictor is evaluated in the warm-start setting only and is not surfaced as verified evidence.
+- Route awareness covers local routes that DDInter models separately (topical, ophthalmic, otic, nasal); other route and dose effects are not modelled.
+- The XGBoost predictor is weaker on unseen drugs (ROC-AUC 0.68–0.80) and is not surfaced as verified evidence.
 - Athena does not learn automatically from overrides — by design; a governed, offline improvement loop is planned.
 
-Planned work: high-alert combination rules · synthetic training data · LoRA fine-tuning of the local model · cold-start and structure-based interaction prediction · fusion calibration · full evaluation and report.
+Planned work: high-alert combination rules · synthetic training data · LoRA fine-tuning of the local model · fusion calibration · full evaluation and report.
 
 ---
 

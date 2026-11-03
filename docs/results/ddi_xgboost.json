@@ -12,12 +12,31 @@
   "pref_attachment",
   "sorensen",
   "hub_promoted",
-  "hub_depressed"
+  "hub_depressed",
+  "chemical: Morgan r=2 256-bit sum/product, tanimoto, similarity to known partners, kNN links"
  ],
  "train_pairs": 280347,
  "test_pairs": 69960,
  "best_iteration": 599,
  "xgboost": {
+  "accuracy": 0.9198,
+  "precision": 0.9473,
+  "recall": 0.9035,
+  "f1": 0.9249,
+  "roc_auc": 0.9783,
+  "pr_auc": 0.9821,
+  "confusion_matrix": [
+   [
+    29810,
+    1921
+   ],
+   [
+    3691,
+    34538
+   ]
+  ]
+ },
+ "xgboost_graph_only": {
   "accuracy": 0.8527,
   "precision": 0.9023,
   "recall": 0.8191,
@@ -53,20 +72,181 @@
    ]
   ]
  },
- "feature_importance_gain": {
-  "resource_allocation": 173.809,
-  "adamic_adar": 92.857,
-  "jaccard": 33.793,
-  "deg_max": 26.634,
-  "hub_promoted": 26.586,
-  "sorensen": 25.322,
-  "deg_min": 25.276,
-  "pref_attachment": 18.352,
-  "common_neighbors": 18.024,
-  "hub_depressed": 17.79,
-  "deg_v": 17.607,
-  "deg_u": 15.352
+ "imbalanced_test": {
+  "note": "test positives with 1:7 (benchmark density) and 1:50 corrupted negatives",
+  "1:7": {
+   "xgboost": {
+    "accuracy": 0.9325,
+    "precision": 0.6705,
+    "recall": 0.904,
+    "f1": 0.7699,
+    "roc_auc": 0.9775,
+    "pr_auc": 0.8987,
+    "confusion_matrix": [
+     [
+      26223,
+      1777
+     ],
+     [
+      384,
+      3616
+     ]
+    ]
+   },
+   "xgboost_graph_only": {
+    "accuracy": 0.8774,
+    "precision": 0.5059,
+    "recall": 0.821,
+    "f1": 0.626,
+    "roc_auc": 0.9337,
+    "pr_auc": 0.7781,
+    "confusion_matrix": [
+     [
+      24792,
+      3208
+     ],
+     [
+      716,
+      3284
+     ]
+    ]
+   }
+  },
+  "1:50": {
+   "xgboost": {
+    "accuracy": 0.9338,
+    "precision": 0.2149,
+    "recall": 0.8955,
+    "f1": 0.3466,
+    "roc_auc": 0.9754,
+    "pr_auc": 0.6961,
+    "confusion_matrix": [
+     [
+      93456,
+      6544
+     ],
+     [
+      209,
+      1791
+     ]
+    ]
+   },
+   "xgboost_graph_only": {
+    "accuracy": 0.8842,
+    "precision": 0.1248,
+    "recall": 0.8165,
+    "f1": 0.2166,
+    "roc_auc": 0.9324,
+    "pr_auc": 0.5273,
+    "confusion_matrix": [
+     [
+      88552,
+      11448
+     ],
+     [
+      367,
+      1633
+     ]
+    ]
+   }
+  }
+ },
+ "feature_importance_gain_top15": {
+  "resource_allocation": 530.087,
+  "sim_to_partners_max": 184.326,
+  "adamic_adar": 126.922,
+  "fp_and_84": 70.829,
+  "jaccard": 63.231,
+  "hub_promoted": 61.041,
+  "fp_and_1": 60.508,
+  "sorensen": 57.255,
+  "sim_u_to_partners_of_v": 45.65,
+  "fp_sum_214": 42.15,
+  "fp_and_122": 41.768,
+  "fp_sum_100": 41.024,
+  "common_neighbors": 38.072,
+  "fp_and_214": 36.22,
+  "sim_v_to_partners_of_u": 35.041
  },
  "test_pairs_removed_overlap": 133,
- "seconds": 20.6
+ "cold_start": {
+  "note": "fold0; S2 = one drug unseen in training, S1 = both unseen; 1:1 benchmark negatives",
+  "S2": {
+   "xgboost_cold_chemistry": {
+    "accuracy": 0.7191,
+    "precision": 0.8059,
+    "recall": 0.6402,
+    "f1": 0.7136,
+    "roc_auc": 0.8031,
+    "pr_auc": 0.8349,
+    "confusion_matrix": [
+     [
+      40959,
+      9353
+     ],
+     [
+      21821,
+      38834
+     ]
+    ]
+   },
+   "xgboost_graph_only": {
+    "accuracy": 0.4534,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": 0.3892,
+    "pr_auc": 0.4684,
+    "confusion_matrix": [
+     [
+      50312,
+      0
+     ],
+     [
+      60655,
+      0
+     ]
+    ]
+   }
+  },
+  "S1": {
+   "xgboost_cold_chemistry": {
+    "accuracy": 0.6048,
+    "precision": 0.7148,
+    "recall": 0.464,
+    "f1": 0.5627,
+    "roc_auc": 0.681,
+    "pr_auc": 0.7286,
+    "confusion_matrix": [
+     [
+      4713,
+      1364
+     ],
+     [
+      3950,
+      3419
+     ]
+    ]
+   },
+   "xgboost_graph_only": {
+    "accuracy": 0.452,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": 0.5,
+    "pr_auc": 0.548,
+    "confusion_matrix": [
+     [
+      6077,
+      0
+     ],
+     [
+      7369,
+      0
+     ]
+    ]
+   }
+  }
+ },
+ "seconds": 320.2
 }

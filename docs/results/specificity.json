@@ -1,0 +1,88 @@
+{
+ "A_drug_detection": {
+  "notes": 35,
+  "unit": "token",
+  "entity": "Drug",
+  "results": {
+   "scispaCy only": {
+    "sensitivity": 0.5646,
+    "specificity": 0.9993,
+    "precision": 0.9588,
+    "f1": 0.7107,
+    "fp_rate": 0.00073,
+    "tp": 1093,
+    "fp": 47,
+    "tn": 64316,
+    "fn": 843
+   },
+   "LLM only": {
+    "sensitivity": 0.6942,
+    "specificity": 0.9979,
+    "precision": 0.9081,
+    "f1": 0.7869,
+    "fp_rate": 0.00211,
+    "tp": 1344,
+    "fp": 136,
+    "tn": 64227,
+    "fn": 592
+   },
+   "Athena hybrid": {
+    "sensitivity": 0.8626,
+    "specificity": 0.997,
+    "precision": 0.895,
+    "f1": 0.8785,
+    "fp_rate": 0.00305,
+    "tp": 1670,
+    "fp": 196,
+    "tn": 64167,
+    "fn": 266
+   }
+  }
+ },
+ "B_interaction_judgement": {
+  "pairs": 200,
+  "positives": 100,
+  "model": "llama3.2:3b",
+  "reference": "DrugBank benchmark labels (recorded interaction vs benchmark negative)",
+  "results": {
+   "LLM only": {
+    "sensitivity": 0.99,
+    "specificity": 0.01,
+    "precision": 0.5,
+    "f1": 0.6644,
+    "fp_rate": 0.99,
+    "tp": 99,
+    "fp": 99,
+    "tn": 1,
+    "fn": 1,
+    "said_yes_pct": 99.0,
+    "balanced_accuracy": 0.5
+   },
+   "XGBoost (graph ML)": {
+    "sensitivity": 0.89,
+    "specificity": 0.97,
+    "precision": 0.9674,
+    "f1": 0.9271,
+    "fp_rate": 0.03,
+    "tp": 89,
+    "fp": 3,
+    "tn": 97,
+    "fn": 11,
+    "said_yes_pct": 46.0
+   }
+  },
+  "llm_cautious_prompt": {
+   "prompt": "neutral, allows 'no interaction' / 'not sure'",
+   "sensitivity": 0.14,
+   "specificity": 0.98,
+   "precision": 0.875,
+   "said_interaction_pct": 8.0,
+   "not_sure": 0,
+   "tp": 14,
+   "fp": 2,
+   "tn": 98,
+   "fn": 86,
+   "balanced_accuracy": 0.56
+  }
+ }
+}

@@ -9,6 +9,7 @@ pyarrow==25.0.1
 # Classical ML (Branch B similarity model, Phase 2)
 scikit-learn==1.9.1
 xgboost==3.2.0
+rdkit==2026.9.1          # chemical-structure features (Morgan fingerprints) for the DDI predictor
 lightgbm==4.7.0
 
 # Clinical NLP (Branch A fallback / cross-check)

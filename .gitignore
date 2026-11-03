@@ -1,10 +1,16 @@
-# --- Patient / licensed data: NEVER commit ---
-data/raw/
-data/processed/
-*.db
+# --- Patient / DUA-restricted data: NEVER commit ---
+# n2c2 2018 notes are covered by the n2c2 Data Use Agreement (no redistribution),
+# and the LLM cache holds outputs derived from that note text.
+data/raw/n2c2_2018_track2/
+data/processed/llm_cache/
+# Runtime review log
+data/processed/audit.db
+audit/
 *.sqlite
 *.sqlite3
-audit/
+# Too large for GitHub (> 100 MB) or regenerable: unzip / download, see data/SOURCES.md
+data/raw/rxnorm/rrf/
+data/raw/faers/
 
 # Models and fine-tuning artifacts
 models/

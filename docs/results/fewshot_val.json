@@ -1,0 +1,50 @@
+{
+ "notes": 38,
+ "k": 3,
+ "fewshot_hybrid": {
+  "strict_f1": 0.8007,
+  "lenient_f1": 0.8835,
+  "Drug": 0.8622,
+  "Strength": 0.8606,
+  "Dosage": 0.7193,
+  "Form": 0.7332,
+  "Route": 0.8337,
+  "Frequency": 0.6778,
+  "Duration": 0.4538
+ },
+ "fewshot_llm_only": {
+  "strict_f1": 0.6793,
+  "lenient_f1": 0.7424,
+  "Drug": 0.7543,
+  "Strength": 0.7117,
+  "Dosage": 0.5307,
+  "Form": 0.7442,
+  "Route": 0.6547,
+  "Frequency": 0.5168,
+  "Duration": 0.0202
+ },
+ "fewshot_llm_seconds": 2270,
+ "baseline_hybrid": {
+  "strict_f1": 0.7916,
+  "lenient_f1": 0.8704,
+  "Drug": 0.8604,
+  "Strength": 0.8542,
+  "Dosage": 0.7026,
+  "Form": 0.7087,
+  "Route": 0.8382,
+  "Frequency": 0.6507,
+  "Duration": 0.5469
+ },
+ "baseline_llm_only": {
+  "strict_f1": 0.6221,
+  "lenient_f1": 0.6929,
+  "Drug": 0.7519,
+  "Strength": 0.7017,
+  "Dosage": 0.2107,
+  "Form": 0.5518,
+  "Route": 0.6385,
+  "Frequency": 0.5152,
+  "Duration": 0.032
+ },
+ "wall_seconds": 5144
+}
