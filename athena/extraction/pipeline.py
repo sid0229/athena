@@ -119,9 +119,8 @@ class MedicationExtractor:
         mentions.sort(key=lambda m: m.drug.start)
 
         if mode == "hybrid":
-            rule_only = {"Duration"} if self.fewshot else RULE_ONLY
             for m in mentions:
-                for t in rule_only:
+                for t in RULE_ONLY:
                     m.attributes.pop(t, None)
         if mode in ("rules", "hybrid"):
             self._rule_attributes(text, mentions, labs, RULE_FIRST if mode == "hybrid" else set())
