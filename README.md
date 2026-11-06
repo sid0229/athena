@@ -266,14 +266,16 @@ python scripts/build_kb.py
 
 # run
 brew services start ollama
-streamlit run app/streamlit_app.py               # dashboard → http://localhost:8501
+(cd web && npm install && npm run build)         # one-time: build the web dashboard (needs Node 20+)
+python app/server.py                             # dashboard → http://localhost:8000
+streamlit run app/streamlit_app.py               # previous dashboard → http://localhost:8501
 python scripts/run_pipeline.py data/demo/01_af_pneumonia.txt --mode rules   # report in the terminal
 python scripts/check_meds.py "coumadin 5 mg" "ASA 81" "Lasix 40"            # interaction check only
 
 # reproduce results
 python scripts/eval_extraction.py test --limit 40   # n2c2 extraction F1 (uses cached LLM output)
 python scripts/train_ddi_xgboost.py                 # XGBoost predictor: report + confusion matrix
-pytest                                              # 114 tests
+pytest                                              # 119 tests
 ```
 
 ---
