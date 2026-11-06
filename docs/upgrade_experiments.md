@@ -13,7 +13,7 @@ Scripts and raw numbers are in `scripts/exp_*.py` and `docs/results/`.
 | Cold-start (unseen drug) evaluation and model | **Adopted** | One drug unseen: ROC-AUC 0.389 (graph) → 0.803 (cold-aware chemical model); both unseen 0.500 → 0.681 |
 | Route awareness for topical / ophthalmic / otic / nasal drugs | **Adopted** | 35 irrelevant interaction findings removed on 38 notes; route-specific risks kept |
 | Dynamic router (rules for lists, LLM for narrative) | Rejected | Saves ≤ 5% of LLM work before F1 drops; skipping the LLM entirely loses 0.017 F1 |
-| Dynamic few-shot prompting (retrieved training examples) | Promising, pending test confirmation | Validation: hybrid strict F1 0.792 → 0.801, LLM-only 0.622 → 0.679, at similar speed |
+| Dynamic few-shot prompting (retrieved training examples) | Evaluated, not adopted (opt-in only) | Test: hybrid strict F1 0.794 → 0.804, but Drug F1 0.866 → 0.858 and LLM-only 0.659 → 0.632 |
 | Semantic / vector search for drug-name normalisation | Rejected | Fixes typos but proposes dangerous wrong drugs at the same similarity (e.g. Sarna → tranylcypromine) |
 | Dose-dependent downgrade rules | Not implemented | Downgrades are the unsafe direction; no labelled data to validate thresholds |
 | ONC high-priority list as the only Critical anchor | Not implemented | See below |
@@ -96,11 +96,23 @@ advance (no tuning), so the validation result is not tuned on.
 | Hybrid, Duration F1 | **0.547** | 0.454 |
 | LLM time per note | ~1 min | ~1 min (2,270 s for 38 notes, under memory pressure) |
 
-The LLM itself improves a lot (+0.057 strict F1), mostly on Dosage and Form, where the examples
-show n2c2's conventions. In the hybrid the gain is smaller (+0.009), because rules already cover
-those slots; Duration falls, as changed drug spans shift the rule windows. Adopting it changes
-the prompt version and so every cached LLM output; it should first be confirmed once on the
-35-note test subset (~45 min).
+On validation the LLM itself improves a lot (+0.057 strict F1), mostly on Dosage and Form; in the
+hybrid the gain is smaller (+0.009) because rules already cover those slots.
+
+Confirmed once on the 35-note test subset (`docs/results/fewshot_test.json`):
+
+| Test, 35 notes | Baseline prompt | Few-shot prompt |
+|---|---|---|
+| Hybrid, strict / lenient micro F1 | 0.794 / 0.878 | **0.804 / 0.880** |
+| Hybrid, Drug F1 | **0.866** | 0.858 |
+| Hybrid, Frequency F1 | 0.666 | **0.736** |
+| Hybrid, Duration F1 | **0.485** | 0.421 |
+| LLM only, strict F1 / Drug F1 | **0.659 / 0.768** | 0.632 / 0.691 |
+
+The hybrid gain is consistent (+0.010) but comes almost entirely from Frequency, while Drug
+detection — the input to every interaction check — gets slightly worse, and the LLM-only gain seen
+on validation reverses on test. Not adopted as the default; it remains available as
+`MedicationExtractor(..., fewshot=True)` (implemented in `athena/extraction/fewshot.py`).
 
 ## 5. Vector search for normalisation
 
