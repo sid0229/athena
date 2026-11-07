@@ -67,7 +67,7 @@ class FewShotExtractor(OllamaExtractor):
         bank: list[tuple[str, list[list[str]]]] | None = None,
     ):
         super().__init__(model=model, use_cache=use_cache)
-        self.k = k
+        self.k, self.lines_per_snippet = k, lines_per_snippet
         self.cache_dir = self.cache_dir.parent / f"{self.model.replace(':', '_')}_{VERSION}"
         self.bank = build_snippet_bank(lines_per_snippet=lines_per_snippet) if bank is None else bank
         if not self.bank:
@@ -78,6 +78,10 @@ class FewShotExtractor(OllamaExtractor):
         self.vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=min_df, sublinear_tf=True)
         self.matrix = self.vectorizer.fit_transform([text for text, _ in self.bank])
 
+    def _cache_signature(self) -> dict:
+        # outputs also depend on the number and size of the retrieved examples
+        return {**super()._cache_signature(), "k": self.k, "lines_per_snippet": self.lines_per_snippet}
+
     def _cache_path(self, text: str) -> Path:
         token = hashlib.sha256(f"{self.model}|{VERSION}|{text}".encode()).hexdigest()[:24]
         return self.cache_dir / f"{token}.json"
@@ -86,10 +90,6 @@ class FewShotExtractor(OllamaExtractor):
         sims = linear_kernel(self.vectorizer.transform([text]), self.matrix)[0]
         top_indices = sims.argsort()[::-1][: self.k]
         return [self.bank[i] for i in top_indices]
-
-    def examples(self, text: str) -> list[tuple[str, list[list[str]]]]:
-        """Alias for retrieve_examples."""
-        return self.retrieve_examples(text)
 
     def _call(self, text: str) -> list[list[str]] | None:
         messages = [{"role": "system", "content": self.system}]
@@ -100,7 +100,7 @@ class FewShotExtractor(OllamaExtractor):
             ])
         messages.append({"role": "user", "content": text})
 
-        for attempt in range(2):
+        for attempt in range(2 if self.options["temperature"] > 0 else 1):
             seed = self.options["seed"] if attempt == 0 else self.options["seed"] + 1
             options = {**self.options, "seed": seed}
             response = self.client.chat(

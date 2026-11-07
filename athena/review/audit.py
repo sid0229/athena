@@ -7,6 +7,10 @@ Every confirm / override is a new row; nothing is ever updated or deleted
 
 so any later edit to the file breaks `verify()`. Each row also stores the
 SHA-256 of the system report the reviewer was looking at.
+
+The chain alone cannot see rows removed from the *end* (or a fully rewritten file), so the
+row count and head hash are also written to a sidecar file (`<db>.head`) after every append and
+checked by `verify()`; timestamps must never go backwards. (Code review, Nov 2026.)
 """
 
 from __future__ import annotations
@@ -14,6 +18,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -85,11 +90,26 @@ class AuditLog:
     def __init__(self, path: Path | str | None = None):
         self.path = Path(path) if path else data_path("audit_db")
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self._con() as con:
+        self.anchor = self.path.with_name(self.path.name + ".head")
+        with closing(self._con()) as con, con:
             con.executescript(SCHEMA)
+        if not self.anchor.exists():  # first use, or a log created before anchoring existed
+            self._write_anchor()
 
     def _con(self) -> sqlite3.Connection:
         return sqlite3.connect(self.path)
+
+    def _state(self) -> tuple[int, str]:
+        with closing(self._con()) as con:
+            n, = con.execute("SELECT COUNT(*) FROM audit").fetchone()
+            head = con.execute("SELECT row_hash FROM audit ORDER BY id DESC LIMIT 1").fetchone()
+        return n, head[0] if head else GENESIS
+
+    def _write_anchor(self) -> None:
+        n, head = self._state()
+        tmp = self.anchor.with_name(self.anchor.name + ".tmp")
+        tmp.write_text(json.dumps({"rows": n, "head": head}))
+        tmp.replace(self.anchor)
 
     def record(self, *, reviewer: str, case_id: str, report_hash: str, finding_id: str,
                finding_type: str, tier: str, title: str, action: str,
@@ -110,7 +130,10 @@ class AuditLog:
             "action": action, "reason_code": reason_code if action == "override" else None,
             "comment": (comment or "").strip() or None,
         }
-        with self._con() as con:
+        ok, bad = self.verify()
+        if not ok:
+            raise ValueError(f"audit log failed verification at row {bad}; not appending to a broken chain")
+        with closing(self._con()) as con, con:
             con.execute("BEGIN IMMEDIATE")
             prev = con.execute("SELECT row_hash FROM audit ORDER BY id DESC LIMIT 1").fetchone()
             prev_hash = prev[0] if prev else GENESIS
@@ -120,11 +143,12 @@ class AuditLog:
                 f"VALUES ({', '.join('?' * (len(FIELDS) + 2))})",
                 [fields[k] for k in FIELDS] + [prev_hash, row_hash])
             rid = cur.lastrowid
+        self._write_anchor()
         return AuditEntry(rid, **fields, prev_hash=prev_hash, row_hash=row_hash)
 
     def entries(self, case_id: str | None = None) -> list[AuditEntry]:
         q = "SELECT * FROM audit" + (" WHERE case_id = ?" if case_id else "") + " ORDER BY id"
-        with self._con() as con:
+        with closing(self._con()) as con:
             return [AuditEntry(*r) for r in con.execute(q, (case_id,) if case_id else ())]
 
     def latest_decisions(self, case_id: str, report_hash: str) -> dict[str, AuditEntry]:
@@ -136,11 +160,18 @@ class AuditLog:
         return out
 
     def verify(self) -> tuple[bool, int | None]:
-        """(True, None) if the hash chain is intact, else (False, first bad row id)."""
-        prev = GENESIS
-        for e in self.entries():
+        """(True, None) if intact, else (False, first bad row id).
+
+        Checks the hash chain, that timestamps never go backwards, and that the row count and
+        head hash match the sidecar anchor (catches rows deleted from the end)."""
+        prev, last_ts, entries = GENESIS, "", self.entries()
+        for e in entries:
             fields = {k: getattr(e, k) for k in FIELDS}
-            if e.prev_hash != prev or e.row_hash != _row_hash(prev, fields):
+            if e.prev_hash != prev or e.row_hash != _row_hash(prev, fields) or e.ts < last_ts:
                 return False, e.id
-            prev = e.row_hash
+            prev, last_ts = e.row_hash, e.ts
+        if self.anchor.exists():
+            a = json.loads(self.anchor.read_text())
+            if a.get("rows") != len(entries) or a.get("head") != prev:
+                return False, (entries[-1].id + 1) if entries else 1
         return True, None

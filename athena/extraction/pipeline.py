@@ -88,7 +88,16 @@ class MedicationExtractor:
         stats = None
         if mode in ("llm", "hybrid"):
             chunks = chunk_text(text, self.cfg["chunk_chars"], self.cfg["chunk_overlap_chars"])
-            rows = [(c, self.llm.extract_chunk(c.text)) for c in chunks]
+            rows = []
+            for k, c in enumerate(chunks, 1):
+                try:
+                    rows.append((c, self.llm.extract_chunk(c.text)))
+                except RuntimeError:
+                    raise  # stale cache / cache-only scoring: never hide these
+                except Exception as e:  # timeout etc.: rules still cover this part of the note
+                    warnings.append(f"Local LLM failed on part {k} of {len(chunks)} ({type(e).__name__}); "
+                                    "rules used for that part.")
+                    rows.append((c, []))
             mentions, stats = ground(text, rows, self.cfg["fuzzy_ground_threshold"], self._drug_like)
 
         labs = lab_sections(text) if mode != "llm" else []

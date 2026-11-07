@@ -59,3 +59,22 @@ def test_latest_decision_per_finding_and_report(log):
     rec(log, report_hash="x" * 64)
     latest = log.latest_decisions("case-1", "h" * 64)
     assert latest["INT:a|b"].action == "override"
+
+
+def test_truncation_from_the_end_is_detected(tmp_path):
+    import sqlite3
+    log = AuditLog(tmp_path / "a.db")
+    for i in range(3):
+        log.record(reviewer="r", case_id="c", report_hash="h", finding_id=f"f{i}", finding_type="INTERACTION",
+                   tier="critical", title="t", action="confirm")
+    assert log.verify() == (True, None)
+    con = sqlite3.connect(tmp_path / "a.db")
+    con.execute("DROP TRIGGER audit_no_delete")
+    con.execute("DELETE FROM audit WHERE id = 3")  # tamper: remove the newest row
+    con.commit(); con.close()
+    ok, bad = log.verify()
+    assert not ok and bad == 3
+    import pytest
+    with pytest.raises(ValueError, match="verification"):
+        log.record(reviewer="r", case_id="c", report_hash="h", finding_id="f9", finding_type="INTERACTION",
+                   tier="critical", title="t", action="confirm")

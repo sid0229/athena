@@ -51,6 +51,8 @@ def with_negatives(df: pd.DataFrame, positives: set[frozenset]) -> pd.DataFrame:
     pos = pd.DataFrame({"u": df["d1"], "v": df["d2"], "label": 1})
     neg_rows = []
     for d1, d2, neg in zip(df["d1"], df["d2"], df["Neg samples"]):
+        if "$" not in str(neg):  # one row in warm fold2 has no negative sample
+            continue
         drug, side = str(neg).split("$")
         u, v = (d1, drug) if side == "t" else (drug, d2)
         if u != v and frozenset((u, v)) not in positives:
@@ -159,3 +161,34 @@ class ChemFeatures:
 CHEM_FEATURES = ([f"fp_sum_{i}" for i in range(NBITS)] + [f"fp_and_{i}" for i in range(NBITS)]
                  + ["tanimoto", "sim_u_to_partners_of_v", "sim_v_to_partners_of_u", "sim_to_partners_max",
                     "knn_links"])
+
+
+class InteractionPredictor:
+    """Research signal for pairs the knowledge base does not cover (shown as unverified, never a flag).
+
+    Uses the saved fold-0 models: the warm graph + chemistry model when both drugs have recorded
+    interactions in the training graph, else the cold-aware chemistry model with the unseen drug(s)
+    hidden. Returns None when a drug has no DrugBank ID / structure.
+    """
+
+    def __init__(self):
+        import xgboost as xgb
+
+        train, _ = load_split("warm_start", "fold0")
+        self.g = build_graph(train)
+        self.fps = load_fingerprints()
+        self.chem = ChemFeatures(self.fps, self.g)
+        self.warm, self.cold = xgb.XGBClassifier(), xgb.XGBClassifier()
+        self.warm.load_model(str(data_path("processed") / "ddi_xgboost.json"))
+        self.cold.load_model(str(data_path("processed") / "ddi_xgboost_cold.json"))
+
+    def predict(self, a: str, b: str) -> dict | None:
+        if a == b or a not in self.fps or b not in self.fps:
+            return None
+        pair = pd.DataFrame({"u": [a], "v": [b]})
+        unseen = tuple(d for d in (a, b) if not self.g.get(d))
+        if not unseen:
+            x = np.hstack([featurize(self.g, pair), self.chem.featurize(pair)])
+            return {"probability": round(float(self.warm.predict_proba(x)[0, 1]), 3), "model": "warm (graph + chemistry)"}
+        x = self.chem.featurize(pair, cold=True, hides=[unseen])
+        return {"probability": round(float(self.cold.predict_proba(x)[0, 1]), 3), "model": "cold-start (chemistry)"}

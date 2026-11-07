@@ -13,8 +13,8 @@
   --line-strong: #d4d8de;
   --ink: #0f172a;
   --ink-2: #334155;
-  --muted: #64748b;
-  --faint: #94a3b8;
+  --muted: #5b6577;
+  --faint: #6b7385;
   --accent: #0f6b5f;
   --accent-ink: #ffffff;
   --accent-soft: #ecf6f3;
@@ -22,13 +22,13 @@
   --critical: #dc2626;
   --critical-soft: #fef2f2;
   --critical-line: #fecaca;
-  --review: #ea580c;
+  --review: #c2410c;   /* AA on white for small text (was #ea580c, 3.6:1) */
   --review-soft: #fff7ed;
   --review-line: #fed7aa;
   --info: #2563eb;
   --info-soft: #eff6ff;
   --info-line: #bfdbfe;
-  --ok: #16a34a;
+  --ok: #15803d;       /* AA on white (was #16a34a, 3.3:1) */
   --ok-soft: #f0fdf4;
   --ok-line: #bbf7d0;
   --hold: #a16207;
@@ -45,8 +45,8 @@
   --line-strong: #2a2a2a;
   --ink: #ededed;
   --ink-2: #c7c7c7;
-  --muted: #8a8a8a;
-  --faint: #5c5c5c;
+  --muted: #a1a1a1;
+  --faint: #7d7d7d;
   --accent: #2bb3a0;
   --accent-ink: #001a16;
   --accent-soft: #0b1f1c;
@@ -72,6 +72,13 @@
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  /* Type scale (the only sizes used in the UI) */
+  --text-xs: 13px;   --text-xs--line-height: 1.5;
+  --text-sm: 15px;   --text-sm--line-height: 1.6;
+  --text-base: 16px; --text-base--line-height: 1.6;
+  --text-lg: 18px;   --text-lg--line-height: 1.45;
+  --text-xl: 21px;   --text-xl--line-height: 1.35;
+  --text-2xl: 26px;  --text-2xl--line-height: 1.25;
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -108,13 +115,17 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 ::selection { background: var(--accent-soft); color: var(--ink); }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-.eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.meta { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.skip-link { position: absolute; left: 12px; top: -48px; z-index: 50; padding: 8px 14px; border-radius: 8px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.skip-link:focus { top: 12px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .07em; font-weight: 500; text-transform: uppercase; color: var(--muted); }
+.meta { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
 .scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
 .scroll-thin::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 8px; }
 mark.drug { background: var(--accent-soft); color: var(--accent-text); border-radius: 3px; padding: 0 2px; }

@@ -39,6 +39,7 @@ export interface Finding {
     confidence?: Record<string, Record<string, number>>
     admission?: string
     discharge?: string
+    rule?: { id: string; name: string; effect: string; source: string } | null
   }
   needs_verification: boolean
 }
@@ -72,6 +73,7 @@ export interface Analysis {
   case_id: string
   display_names: Record<string, string>
   decisions: Record<string, Decision>
+  ml_signals?: { a: string; b: string; a_name: string; b_name: string; probability: number; model: string }[]
 }
 
 export interface Meta {

@@ -27,12 +27,13 @@ It runs **entirely on a laptop** (Apple M2, 8 GB, no GPU). No patient text leave
 
 | What | Result |
 |---|---|
-| Medication extraction — n2c2 2018 Track 2, held-out test | **micro F1 0.794 strict / 0.878 lenient** (Drug F1 0.866) — scispaCy baseline 0.344 |
-| ML interaction predictor (XGBoost, graph + chemical structure) — DrugBank benchmark test | **F1 0.925 · accuracy 0.920 · ROC-AUC 0.978** — graph-only 0.859, logistic-regression baseline 0.843 |
-| Unseen drugs (cold start, one drug new) | **ROC-AUC 0.80** with cold-aware chemical model (graph-only model: 0.39) |
-| Interaction knowledge base | 2,421 drugs · 311,187 interacting pairs (DrugBank + DDInter), with severity |
+| Medication extraction — n2c2 2018 Track 2, held-out test | **micro F1 0.814 strict (95% CI 0.79–0.83) / 0.879 lenient** (Drug F1 0.865) — scispaCy baseline 0.344 |
+| Interaction alerts vs alerts from the gold medication lists | **27 / 27 Major pairs found and actionable** · pair precision 0.999 · recall 0.938 |
+| ML interaction predictor (XGBoost, graph + chemical structure) — DrugBank benchmark | **ROC-AUC 0.981 ± 0.000 (3 folds)** · PR-AUC 0.985 — graph-only 0.932, drug-popularity baseline 0.80 |
+| Unseen drugs (cold start) | **ROC-AUC 0.81 ± 0.01** (one drug new) · 0.71 ± 0.02 (both new) with the cold-aware chemical model |
+| Interaction knowledge base | 2,413 drugs · 310,608 interacting pairs (DrugBank + DDInter), with severity, plus 11 cited high-alert rules |
 | Speed / memory | Interaction check 7 ms per patient · ~3.8 GB peak RAM |
-| Quality | 119 automated tests |
+| Quality | 133 automated tests |
 
 ---
 
@@ -116,7 +117,7 @@ Maps what clinicians write (`"ASA 81"`, `"Lasix"`, `"metoprolol tartrate"`, `"Pe
 
 ### Branch B — Interaction verification
 
-**Knowledge base (symbolic).** DrugBank and DDInter merged into one SQLite database: 2,421 drug concepts, 311,187 interacting pairs. DDInter supplies severity grades (Major / Moderate / Minor); for DrugBank-only pairs, severity is **derived from data** per mechanism template (e.g. QTc-prolongation pairs are graded Major by DDInter 93% of the time) and labelled *derived*. Every active pair gets exactly one result: **interaction**, **no known interaction**, or **not covered** — "not covered" is never reported as "safe". Duplicate therapy (e.g. Percocet + Tylenol) is also detected.
+**Knowledge base (symbolic).** DrugBank and DDInter merged into one SQLite database: 2,413 drug concepts, 310,608 interacting pairs. DDInter supplies severity grades (Major / Moderate / Minor); for DrugBank-only pairs, severity is **derived from data** per mechanism template (e.g. QTc-prolongation pairs are graded Major by DDInter 93% of the time) and labelled *derived*. Every active pair gets exactly one result: **interaction**, **no known interaction**, or **not covered** — "not covered" is never reported as "safe". Duplicate therapy (e.g. Percocet + Tylenol) is also detected. A small table of cited **high-alert rules** (`athena/verification/high_alert.py`: MAOI + serotonergic drug, nitrate + PDE5 inhibitor, opioid + benzodiazepine, lithium + diuretic/ACE inhibitor/NSAID, …) always grades those combinations Major and shows the rule and its source.
 
 **ML interaction predictor (research component).** Following Shtar et al. (2019), an **XGBoost** classifier predicts whether a drug pair interacts from graph-similarity features (common neighbours, Jaccard, Adamic–Adar, resource allocation, degrees) computed on the training interaction graph only. It is evaluated on the standard DrugBank benchmark split and is **not** used to raise flags in the dashboard — predictions are never presented as verified.
 
@@ -167,35 +168,36 @@ Held-out test set (first 35 of 202 test notes, scored once after all tuning on a
 
 | Mode | Strict P / R / F1 | Lenient P / R / F1 | Drug F1 | Relation F1 |
 |---|---|---|---|---|
-| scispaCy (baseline) | .938 / .211 / .344 | .987 / .222 / .362 | .707 | — |
-| LLM only | .827 / .547 / .659 | .922 / .610 / .734 | .768 | .542 |
-| Rules only | .840 / .723 / .777 | .936 / .805 / .866 | .842 | .658 |
-| **Athena hybrid** | **.834 / .758 / .794** | **.923 / .838 / .878** | **.866** | **.697** |
+| scispaCy (baseline) | .930 / .211 / .344 | .983 / .223 / .363 | .705 | — |
+| LLM only | .835 / .552 / .665 | .922 / .610 / .734 | .768 | .552 |
+| Rules only | .862 / .744 / .799 | .938 / .809 / .869 | .838 | .694 |
+| **Athena hybrid** | **.853 / .778 / .814** | **.921 / .841 / .879** | **.865** | **.728** |
 
-Per type (hybrid, strict F1): Drug .866 · Route .875 · Strength .847 · Dosage .694 · Form .686 · Frequency .666 · Duration .485.
-Validation F1 (.792) matches test (.794), indicating no overfitting to the tuning set. Full tables: `docs/results/extraction_test_35notes.json`, `docs/results/extraction_val_38notes.json`.
+Per type (hybrid, strict F1): Drug .865 · Route .884 · Strength .848 · Form .775 · Frequency .712 · Dosage .694 · Duration .485.
+95% CIs (bootstrap over notes): hybrid 0.791–0.834, rules 0.783–0.816. Hybrid − rules = +0.015 (paired 95% CI −0.005 to +0.034): on 35 notes the LLM's overall gain is not yet significant; its clearest benefit is drug names (Drug F1 .865 vs .838). Validation (.809) matches test (.814). These numbers include the rule fixes from the [code review](docs/code_review.md) (previously .794). Full tables: `docs/results/extraction_test_35notes.json`, `docs/results/extraction_val_38notes.json`.
 
 ### 2. ML interaction predictor — XGBoost
 
-Binary classification (interaction / no interaction), DrugBank DDI benchmark (DeepDDI), warm-start split; 280,347 training and 69,960 test pairs (benchmark negatives, 1:1 per positive). Features: 12 interaction-graph similarity features plus chemical structure (RDKit Morgan fingerprints, similarity to each drug's known interaction partners).
+Binary classification (interaction / no interaction), DrugBank DDI benchmark (DeepDDI), warm-start folds 0–2; fold 0: 280,347 training and 69,960 test pairs (benchmark negatives; after dropping negatives that are real interactions the test set is 55% positive). Features: 12 interaction-graph similarity features plus chemical structure (RDKit Morgan fingerprints, similarity to each drug's known interaction partners). Early stopping and the decision threshold use validation data only.
 
 ```
-                precision    recall  f1-score   support
-no interaction      0.890     0.939     0.914     31731
-   interaction      0.947     0.903     0.925     38229
-      accuracy                          0.920     69960
+                precision    recall  f1-score   support          (fold 0, threshold 0.5)
+no interaction      0.854     0.968     0.907     31731
+   interaction      0.970     0.863     0.913     38229
+      accuracy                          0.910     69960
 
-ROC-AUC 0.978 · PR-AUC 0.982 · graph-only XGBoost: F1 0.859, ROC-AUC 0.937 · logistic regression: F1 0.843
+ROC-AUC 0.981 (95% CI 0.980–0.982) · PR-AUC 0.985 · 3 folds: 0.981 ± 0.000
+graph-only XGBoost 0.932 · logistic regression 0.911 · drug-popularity baseline (degree product) 0.80
 ```
 
 | Harder settings | Graph only | Graph + chemistry |
 |---|---|---|
-| Realistic imbalance, 1 : 7 (benchmark density), PR-AUC | 0.778 | **0.899** |
-| Stress test, 1 : 50, PR-AUC | 0.527 | **0.696** |
-| Cold start, one drug unseen (S2), ROC-AUC | 0.389 | **0.803** (cold-aware chemical model) |
-| Cold start, both drugs unseen (S1), ROC-AUC | 0.500 | **0.681** (cold-aware chemical model) |
+| Realistic imbalance, 1 : 7 (benchmark density), PR-AUC | 0.779 | **0.914** |
+| Stress test, 1 : 50, PR-AUC | 0.532 | **0.734** |
+| Cold start, one drug unseen (S2), ROC-AUC, 3 folds | 0.38 | **0.81 ± 0.01** (cold-aware chemical model) |
+| Cold start, both drugs unseen (S1), ROC-AUC, 3 folds | 0.50 | **0.71 ± 0.02** (cold-aware chemical model) |
 
-Precision necessarily falls as true interactions get rarer (at 1 : 50, F1 ≈ 0.35), which is one reason predictions are never shown as verified flags.
+Precision necessarily falls as true interactions get rarer (at 1 : 50, F1 0.49 at the validation-chosen threshold), which is one reason predictions are never shown as verified flags. The graph-only model scoring below chance on unseen drugs reflects how the benchmark's negatives are built (it learns that well-connected drugs interact), not a learned signal.
 
 <p><img src="docs/results/ddi_xgboost_confusion.png" alt="Confusion matrix of the XGBoost interaction predictor" width="380"></p>
 
@@ -274,8 +276,11 @@ python scripts/check_meds.py "coumadin 5 mg" "ASA 81" "Lasix 40"            # in
 
 # reproduce results
 python scripts/eval_extraction.py test --limit 40   # n2c2 extraction F1 (uses cached LLM output)
-python scripts/train_ddi_xgboost.py                 # XGBoost predictor: report + confusion matrix
-pytest                                              # 119 tests
+python scripts/train_ddi_xgboost.py                 # XGBoost predictor: 3 folds, CIs, baselines (~25 min)
+python scripts/eval_alerts.py                       # alerts vs alerts from the gold medication lists
+python scripts/eval_specificity.py --part b --llm   # LLM vs predictor on 200 frozen pairs (needs Ollama)
+python scripts/make_figures.py                      # redraw the result figures
+pytest                                              # 133 tests
 ```
 
 ---
@@ -305,14 +310,15 @@ data/demo/              synthetic demo patients
 
 Key limitations (full list in [`docs/limitations.md`](docs/limitations.md)):
 
-- Some classic dangerous combinations that exist only in DrugBank under generic templates are under-rated (e.g. sertraline + tramadol); a cited high-alert rule layer is the next step.
+- Severity for DrugBank-only pairs is derived from sentence templates and is nearly always "Moderate"; 11 cited high-alert rules now cover the classic dangerous combinations, but other under-rated pairs may remain.
 - On n2c2's highly regular medication lists, the rules alone nearly match the hybrid; the LLM's gain is in narrative text — fine-tuning is planned.
-- Extraction test results cover 35 of 202 test notes so far; the full run is scheduled.
+- Extraction test results cover 35 of 202 test notes; on that sample the hybrid's gain over rules is not statistically significant. The full run is scheduled.
+- The public DDInter download has only 8 of 14 ATC classes; pairs between drugs of the missing classes rely on DrugBank alone (Athena now reports this correctly instead of "no known interaction").
 - Route awareness covers local routes that DDInter models separately (topical, ophthalmic, otic, nasal); other route and dose effects are not modelled.
 - The XGBoost predictor is weaker on unseen drugs (ROC-AUC 0.68–0.80) and is not surfaced as verified evidence.
 - Athena does not learn automatically from overrides — by design; a governed, offline improvement loop is planned.
 
-Planned work: high-alert combination rules · synthetic training data · LoRA fine-tuning of the local model · fusion calibration · full evaluation and report.
+Planned work: synthetic training data · LoRA fine-tuning of the local model · fusion calibration · full evaluation and report.
 
 ---
 

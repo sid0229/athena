@@ -1,0 +1,1602 @@
+[
+ {
+  "u": "DB00373",
+  "v": "DB01090",
+  "label": 1,
+  "name_u": "Timolol",
+  "name_v": "Pentolinium",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00613",
+  "v": "DB01588",
+  "label": 0,
+  "name_u": "Amodiaquine",
+  "name_v": "Prazepam",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00489",
+  "v": "DB06817",
+  "label": 0,
+  "name_u": "Sotalol",
+  "name_v": "Raltegravir",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00898",
+  "v": "DB00233",
+  "label": 0,
+  "name_u": "Ethanol",
+  "name_v": "Aminosalicylic acid",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01070",
+  "v": "DB00813",
+  "label": 0,
+  "name_u": "Dihydrotachysterol",
+  "name_v": "Fentanyl",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00924",
+  "v": "DB00469",
+  "label": 0,
+  "name_u": "Cyclobenzaprine",
+  "name_v": "Tenoxicam",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01267",
+  "v": "DB08864",
+  "label": 1,
+  "name_u": "Paliperidone",
+  "name_v": "Rilpivirine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00904",
+  "v": "DB00395",
+  "label": 1,
+  "name_u": "Ondansetron",
+  "name_v": "Carisoprodol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB08901",
+  "v": "DB00496",
+  "label": 1,
+  "name_u": "Ponatinib",
+  "name_v": "Darifenacin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00281",
+  "v": "DB00373",
+  "label": 1,
+  "name_u": "Lidocaine",
+  "name_v": "Timolol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01113",
+  "v": "DB11362",
+  "label": 0,
+  "name_u": "Papaverine",
+  "name_v": "Selexipag",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00924",
+  "v": "DB00520",
+  "label": 0,
+  "name_u": "Cyclobenzaprine",
+  "name_v": "Caspofungin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01326",
+  "v": "DB00860",
+  "label": 0,
+  "name_u": "Cefamandole",
+  "name_v": "Prednisolone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB08865",
+  "v": "DB08873",
+  "label": 1,
+  "name_u": "Crizotinib",
+  "name_v": "Boceprevir",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00974",
+  "v": "DB06689",
+  "label": 0,
+  "name_u": "Edetic acid",
+  "name_v": "Ethanolamine oleate",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01114",
+  "v": "DB09091",
+  "label": 0,
+  "name_u": "Chlorpheniramine",
+  "name_v": "Tixocortol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00883",
+  "v": "DB00960",
+  "label": 1,
+  "name_u": "Isosorbide dinitrate",
+  "name_v": "Pindolol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09227",
+  "v": "DB00713",
+  "label": 0,
+  "name_u": "Barnidipine",
+  "name_v": "Oxacillin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00996",
+  "v": "DB05246",
+  "label": 1,
+  "name_u": "Gabapentin",
+  "name_v": "Methsuximide",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01340",
+  "v": "DB06694",
+  "label": 1,
+  "name_u": "Cilazapril",
+  "name_v": "Xylometazoline",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00898",
+  "v": "DB06771",
+  "label": 0,
+  "name_u": "Ethanol",
+  "name_v": "Besifloxacin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00247",
+  "v": "DB00401",
+  "label": 1,
+  "name_u": "Methysergide",
+  "name_v": "Nisoldipine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00307",
+  "v": "DB02703",
+  "label": 1,
+  "name_u": "Bexarotene",
+  "name_v": "Fusidic acid",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01232",
+  "v": "DB00422",
+  "label": 0,
+  "name_u": "Saquinavir",
+  "name_v": "Methylphenidate",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00261",
+  "v": "DB00223",
+  "label": 0,
+  "name_u": "Anagrelide",
+  "name_v": "Diflorasone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00335",
+  "v": "DB06771",
+  "label": 0,
+  "name_u": "Atenolol",
+  "name_v": "Besifloxacin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00336",
+  "v": "DB01601",
+  "label": 1,
+  "name_u": "Nitrofural",
+  "name_v": "Lopinavir",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00401",
+  "v": "DB00544",
+  "label": 0,
+  "name_u": "Nisoldipine",
+  "name_v": "Fluorouracil",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09053",
+  "v": "DB00285",
+  "label": 1,
+  "name_u": "Ibrutinib",
+  "name_v": "Venlafaxine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01044",
+  "v": "DB00625",
+  "label": 0,
+  "name_u": "Gatifloxacin",
+  "name_v": "Efavirenz",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00247",
+  "v": "DB00356",
+  "label": 1,
+  "name_u": "Methysergide",
+  "name_v": "Chlorzoxazone",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00521",
+  "v": "DB04575",
+  "label": 0,
+  "name_u": "Carteolol",
+  "name_v": "Quinestrol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01244",
+  "v": "DB00384",
+  "label": 1,
+  "name_u": "Bepridil",
+  "name_v": "Triamterene",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01131",
+  "v": "DB01171",
+  "label": 1,
+  "name_u": "Proguanil",
+  "name_v": "Moclobemide",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00193",
+  "v": "DB09343",
+  "label": 0,
+  "name_u": "Tramadol",
+  "name_v": "Tipiracil",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00783",
+  "v": "DB01129",
+  "label": 1,
+  "name_u": "Estradiol",
+  "name_v": "Rabeprazole",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB02546",
+  "v": "DB00284",
+  "label": 1,
+  "name_u": "Vorinostat",
+  "name_v": "Acarbose",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00744",
+  "v": "DB02300",
+  "label": 0,
+  "name_u": "Zileuton",
+  "name_v": "Calcipotriol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00881",
+  "v": "DB04861",
+  "label": 1,
+  "name_u": "Quinapril",
+  "name_v": "Nebivolol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00305",
+  "v": "DB00289",
+  "label": 0,
+  "name_u": "Mitomycin",
+  "name_v": "Atomoxetine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00859",
+  "v": "DB12598",
+  "label": 0,
+  "name_u": "Penicillamine",
+  "name_v": "Nafamostat",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00615",
+  "v": "DB09054",
+  "label": 1,
+  "name_u": "Rifabutin",
+  "name_v": "Idelalisib",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB04896",
+  "v": "DB00968",
+  "label": 1,
+  "name_u": "Milnacipran",
+  "name_v": "Methyldopa",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00823",
+  "v": "DB00960",
+  "label": 0,
+  "name_u": "Ethynodiol diacetate",
+  "name_v": "Pindolol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00898",
+  "v": "DB00657",
+  "label": 0,
+  "name_u": "Ethanol",
+  "name_v": "Mecamylamine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00723",
+  "v": "DB00816",
+  "label": 1,
+  "name_u": "Methoxamine",
+  "name_v": "Orciprenaline",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00792",
+  "v": "DB09073",
+  "label": 0,
+  "name_u": "Tripelennamine",
+  "name_v": "Palbociclib",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00753",
+  "v": "DB12598",
+  "label": 0,
+  "name_u": "Isoflurane",
+  "name_v": "Nafamostat",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00639",
+  "v": "DB01244",
+  "label": 1,
+  "name_u": "Butoconazole",
+  "name_v": "Bepridil",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00791",
+  "v": "DB00224",
+  "label": 0,
+  "name_u": "Uracil mustard",
+  "name_v": "Indinavir",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00247",
+  "v": "DB00202",
+  "label": 0,
+  "name_u": "Methysergide",
+  "name_v": "Succinylcholine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01174",
+  "v": "DB01166",
+  "label": 1,
+  "name_u": "Phenobarbital",
+  "name_v": "Cilostazol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00933",
+  "v": "DB09209",
+  "label": 0,
+  "name_u": "Mesoridazine",
+  "name_v": "Pholcodine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00344",
+  "v": "DB01077",
+  "label": 0,
+  "name_u": "Protriptyline",
+  "name_v": "Etidronic acid",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00404",
+  "v": "DB00653",
+  "label": 1,
+  "name_u": "Alprazolam",
+  "name_v": "Magnesium sulfate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01255",
+  "v": "DB09286",
+  "label": 1,
+  "name_u": "Lisdexamfetamine",
+  "name_v": "Pipamperone",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09543",
+  "v": "DB00747",
+  "label": 0,
+  "name_u": "Methyl salicylate",
+  "name_v": "Scopolamine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01260",
+  "v": "DB01627",
+  "label": 0,
+  "name_u": "Desonide",
+  "name_v": "Lincomycin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00261",
+  "v": "DB09120",
+  "label": 1,
+  "name_u": "Anagrelide",
+  "name_v": "Zucapsaicin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01135",
+  "v": "DB00684",
+  "label": 1,
+  "name_u": "Doxacurium",
+  "name_v": "Tobramycin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00714",
+  "v": "DB01032",
+  "label": 0,
+  "name_u": "Apomorphine",
+  "name_v": "Probenecid",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00474",
+  "v": "DB01021",
+  "label": 1,
+  "name_u": "Methohexital",
+  "name_v": "Trichlormethiazide",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09216",
+  "v": "DB08933",
+  "label": 0,
+  "name_u": "Tolfenamic acid",
+  "name_v": "Luliconazole",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09031",
+  "v": "DB01340",
+  "label": 0,
+  "name_u": "Miltefosine",
+  "name_v": "Cilazapril",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00637",
+  "v": "DB00185",
+  "label": 0,
+  "name_u": "Astemizole",
+  "name_v": "Cevimeline",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00652",
+  "v": "DB01161",
+  "label": 1,
+  "name_u": "Pentazocine",
+  "name_v": "Chloroprocaine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01073",
+  "v": "DB00483",
+  "label": 0,
+  "name_u": "Fludarabine",
+  "name_v": "Gallamine triethiodide",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00312",
+  "v": "DB09330",
+  "label": 1,
+  "name_u": "Pentobarbital",
+  "name_v": "Osimertinib",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00956",
+  "v": "DB01624",
+  "label": 1,
+  "name_u": "Hydrocodone",
+  "name_v": "Zuclopenthixol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01207",
+  "v": "DB00750",
+  "label": 0,
+  "name_u": "Ridogrel",
+  "name_v": "Prilocaine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01173",
+  "v": "DB00596",
+  "label": 0,
+  "name_u": "Orphenadrine",
+  "name_v": "Ulobetasol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01238",
+  "v": "DB09272",
+  "label": 0,
+  "name_u": "Aripiprazole",
+  "name_v": "Eluxadoline",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB11581",
+  "v": "DB12332",
+  "label": 1,
+  "name_u": "Venetoclax",
+  "name_v": "Rucaparib",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01587",
+  "v": "DB01068",
+  "label": 1,
+  "name_u": "Ketazolam",
+  "name_v": "Clonazepam",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00805",
+  "v": "DB00317",
+  "label": 0,
+  "name_u": "Minaprine",
+  "name_v": "Gefitinib",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01192",
+  "v": "DB04841",
+  "label": 1,
+  "name_u": "Oxymorphone",
+  "name_v": "Flunarizine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB06292",
+  "v": "DB00193",
+  "label": 0,
+  "name_u": "Dapagliflozin",
+  "name_v": "Tramadol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09342",
+  "v": "DB00434",
+  "label": 1,
+  "name_u": "Propoxycaine",
+  "name_v": "Cyproheptadine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09034",
+  "v": "DB00257",
+  "label": 1,
+  "name_u": "Suvorexant",
+  "name_v": "Clotrimazole",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00660",
+  "v": "DB02703",
+  "label": 0,
+  "name_u": "Metaxalone",
+  "name_v": "Fusidic acid",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00564",
+  "v": "DB01081",
+  "label": 1,
+  "name_u": "Carbamazepine",
+  "name_v": "Diphenoxylate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00573",
+  "v": "DB00683",
+  "label": 0,
+  "name_u": "Fenoprofen",
+  "name_v": "Midazolam",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00251",
+  "v": "DB00724",
+  "label": 0,
+  "name_u": "Terconazole",
+  "name_v": "Imiquimod",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01081",
+  "v": "DB00896",
+  "label": 0,
+  "name_u": "Diphenoxylate",
+  "name_v": "Rimexolone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09009",
+  "v": "DB12332",
+  "label": 0,
+  "name_u": "Articaine",
+  "name_v": "Rucaparib",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09063",
+  "v": "DB00753",
+  "label": 1,
+  "name_u": "Ceritinib",
+  "name_v": "Isoflurane",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09285",
+  "v": "DB06736",
+  "label": 1,
+  "name_u": "Morniflumate",
+  "name_v": "Aceclofenac",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00541",
+  "v": "DB11610",
+  "label": 0,
+  "name_u": "Vincristine",
+  "name_v": "Oxilofrine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00477",
+  "v": "DB06196",
+  "label": 0,
+  "name_u": "Chlorpromazine",
+  "name_v": "Icatibant",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09330",
+  "v": "DB00991",
+  "label": 0,
+  "name_u": "Osimertinib",
+  "name_v": "Oxaprozin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00590",
+  "v": "DB06262",
+  "label": 1,
+  "name_u": "Doxazosin",
+  "name_v": "Droxidopa",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00584",
+  "v": "DB01210",
+  "label": 1,
+  "name_u": "Enalapril",
+  "name_v": "Levobunolol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01234",
+  "v": "DB00341",
+  "label": 0,
+  "name_u": "Dexamethasone",
+  "name_v": "Cetirizine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB04871",
+  "v": "DB00732",
+  "label": 0,
+  "name_u": "Lorcaserin",
+  "name_v": "Atracurium besylate",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00508",
+  "v": "DB06717",
+  "label": 0,
+  "name_u": "Triflupromazine",
+  "name_v": "Fosaprepitant",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00690",
+  "v": "DB01235",
+  "label": 1,
+  "name_u": "Flurazepam",
+  "name_v": "Levodopa",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01609",
+  "v": "DB00481",
+  "label": 1,
+  "name_u": "Deferasirox",
+  "name_v": "Raloxifene",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01267",
+  "v": "DB01166",
+  "label": 0,
+  "name_u": "Paliperidone",
+  "name_v": "Cilostazol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00866",
+  "v": "DB00432",
+  "label": 0,
+  "name_u": "Alprenolol",
+  "name_v": "Trifluridine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00625",
+  "v": "DB00967",
+  "label": 1,
+  "name_u": "Efavirenz",
+  "name_v": "Desloratadine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01126",
+  "v": "DB06016",
+  "label": 0,
+  "name_u": "Dutasteride",
+  "name_v": "Cariprazine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00499",
+  "v": "DB00976",
+  "label": 1,
+  "name_u": "Flutamide",
+  "name_v": "Telithromycin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01216",
+  "v": "DB05521",
+  "label": 1,
+  "name_u": "Finasteride",
+  "name_v": "Telaprevir",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00193",
+  "v": "DB00607",
+  "label": 0,
+  "name_u": "Tramadol",
+  "name_v": "Nafcillin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00490",
+  "v": "DB09167",
+  "label": 1,
+  "name_u": "Buspirone",
+  "name_v": "Dosulepin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01142",
+  "v": "DB09027",
+  "label": 1,
+  "name_u": "Doxepin",
+  "name_v": "Ledipasvir",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09279",
+  "v": "DB05294",
+  "label": 0,
+  "name_u": "Fimasartan",
+  "name_v": "Vandetanib",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00236",
+  "v": "DB05246",
+  "label": 0,
+  "name_u": "Pipobroman",
+  "name_v": "Methsuximide",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00425",
+  "v": "DB00699",
+  "label": 0,
+  "name_u": "Zolpidem",
+  "name_v": "Nicergoline",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00320",
+  "v": "DB09235",
+  "label": 0,
+  "name_u": "Dihydroergotamine",
+  "name_v": "Efonidipine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01179",
+  "v": "DB01227",
+  "label": 0,
+  "name_u": "Podofilox",
+  "name_v": "Levacetylmethadol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09031",
+  "v": "DB00514",
+  "label": 0,
+  "name_u": "Miltefosine",
+  "name_v": "Dextromethorphan",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB12161",
+  "v": "DB00201",
+  "label": 1,
+  "name_u": "Deutetrabenazine",
+  "name_v": "Caffeine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00772",
+  "v": "DB00908",
+  "label": 1,
+  "name_u": "Malathion",
+  "name_v": "Quinidine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00261",
+  "v": "DB00673",
+  "label": 0,
+  "name_u": "Anagrelide",
+  "name_v": "Aprepitant",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB08872",
+  "v": "DB06791",
+  "label": 0,
+  "name_u": "Gabapentin enacarbil",
+  "name_v": "Lanreotide",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01117",
+  "v": "DB00543",
+  "label": 0,
+  "name_u": "Atovaquone",
+  "name_v": "Amoxapine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00854",
+  "v": "DB08992",
+  "label": 0,
+  "name_u": "Levorphanol",
+  "name_v": "Eperisone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09225",
+  "v": "DB00821",
+  "label": 0,
+  "name_u": "Zotepine",
+  "name_v": "Carprofen",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00681",
+  "v": "DB00598",
+  "label": 1,
+  "name_u": "Amphotericin B",
+  "name_v": "Labetalol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01618",
+  "v": "DB04841",
+  "label": 1,
+  "name_u": "Molindone",
+  "name_v": "Flunarizine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00467",
+  "v": "DB01396",
+  "label": 1,
+  "name_u": "Enoxacin",
+  "name_v": "Digitoxin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00712",
+  "v": "DB01013",
+  "label": 1,
+  "name_u": "Flurbiprofen",
+  "name_v": "Clobetasol propionate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01393",
+  "v": "DB06636",
+  "label": 1,
+  "name_u": "Bezafibrate",
+  "name_v": "Isavuconazonium",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00614",
+  "v": "DB00337",
+  "label": 0,
+  "name_u": "Furazolidone",
+  "name_v": "Pimecrolimus",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB09342",
+  "v": "DB09330",
+  "label": 0,
+  "name_u": "Propoxycaine",
+  "name_v": "Osimertinib",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00401",
+  "v": "DB11730",
+  "label": 1,
+  "name_u": "Nisoldipine",
+  "name_v": "Ribociclib",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01245",
+  "v": "DB00468",
+  "label": 1,
+  "name_u": "Decamethonium",
+  "name_v": "Quinine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01054",
+  "v": "DB01397",
+  "label": 1,
+  "name_u": "Nitrendipine",
+  "name_v": "Magnesium salicylate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00829",
+  "v": "DB00395",
+  "label": 1,
+  "name_u": "Diazepam",
+  "name_v": "Carisoprodol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00991",
+  "v": "DB00544",
+  "label": 1,
+  "name_u": "Oxaprozin",
+  "name_v": "Fluorouracil",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00989",
+  "v": "DB01273",
+  "label": 1,
+  "name_u": "Rivastigmine",
+  "name_v": "Varenicline",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01351",
+  "v": "DB01104",
+  "label": 1,
+  "name_u": "Amobarbital",
+  "name_v": "Sertraline",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB06207",
+  "v": "DB01618",
+  "label": 0,
+  "name_u": "Silodosin",
+  "name_v": "Molindone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00233",
+  "v": "DB01129",
+  "label": 0,
+  "name_u": "Aminosalicylic acid",
+  "name_v": "Rabeprazole",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00713",
+  "v": "DB00235",
+  "label": 0,
+  "name_u": "Oxacillin",
+  "name_v": "Milrinone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01261",
+  "v": "DB09241",
+  "label": 1,
+  "name_u": "Sitagliptin",
+  "name_v": "Methylene blue",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01191",
+  "v": "DB00687",
+  "label": 0,
+  "name_u": "Dexfenfluramine",
+  "name_v": "Fludrocortisone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00153",
+  "v": "DB09204",
+  "label": 0,
+  "name_u": "Ergocalciferol",
+  "name_v": "Arotinolol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00612",
+  "v": "DB04846",
+  "label": 1,
+  "name_u": "Bisoprolol",
+  "name_v": "Celiprolol",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00880",
+  "v": "DB00424",
+  "label": 1,
+  "name_u": "Chlorothiazide",
+  "name_v": "Hyoscyamine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00440",
+  "v": "DB04575",
+  "label": 0,
+  "name_u": "Trimethoprim",
+  "name_v": "Quinestrol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00402",
+  "v": "DB01551",
+  "label": 1,
+  "name_u": "Eszopiclone",
+  "name_v": "Dihydrocodeine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00839",
+  "v": "DB00331",
+  "label": 1,
+  "name_u": "Tolazamide",
+  "name_v": "Metformin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00946",
+  "v": "DB01606",
+  "label": 1,
+  "name_u": "Phenprocoumon",
+  "name_v": "Tazobactam",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00809",
+  "v": "DB00782",
+  "label": 1,
+  "name_u": "Tropicamide",
+  "name_v": "Propantheline",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00402",
+  "v": "DB08938",
+  "label": 0,
+  "name_u": "Eszopiclone",
+  "name_v": "Magaldrate",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00338",
+  "v": "DB01685",
+  "label": 1,
+  "name_u": "Omeprazole",
+  "name_v": "Topiroxostat",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01253",
+  "v": "DB01072",
+  "label": 1,
+  "name_u": "Ergometrine",
+  "name_v": "Atazanavir",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01154",
+  "v": "DB00774",
+  "label": 1,
+  "name_u": "Thiamylal",
+  "name_v": "Hydroflumethiazide",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00675",
+  "v": "DB00742",
+  "label": 0,
+  "name_u": "Tamoxifen",
+  "name_v": "Mannitol",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01609",
+  "v": "DB11135",
+  "label": 0,
+  "name_u": "Deferasirox",
+  "name_v": "Selenium",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00661",
+  "v": "DB04908",
+  "label": 1,
+  "name_u": "Verapamil",
+  "name_v": "Flibanserin",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01250",
+  "v": "DB00860",
+  "label": 1,
+  "name_u": "Olsalazine",
+  "name_v": "Prednisolone",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB08883",
+  "v": "DB01167",
+  "label": 1,
+  "name_u": "Perampanel",
+  "name_v": "Itraconazole",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00227",
+  "v": "DB08816",
+  "label": 1,
+  "name_u": "Lovastatin",
+  "name_v": "Ticagrelor",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01355",
+  "v": "DB01264",
+  "label": 1,
+  "name_u": "Hexobarbital",
+  "name_v": "Darunavir",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01418",
+  "v": "DB08820",
+  "label": 1,
+  "name_u": "Acenocoumarol",
+  "name_v": "Ivacaftor",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB11126",
+  "v": "DB00472",
+  "label": 0,
+  "name_u": "Calcium gluconate",
+  "name_v": "Fluoxetine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB11156",
+  "v": "DB01423",
+  "label": 0,
+  "name_u": "Pyrantel",
+  "name_v": "Stepronin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00573",
+  "v": "DB08970",
+  "label": 1,
+  "name_u": "Fenoprofen",
+  "name_v": "Fluprednidene",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00696",
+  "v": "DB00642",
+  "label": 0,
+  "name_u": "Ergotamine",
+  "name_v": "Pemetrexed",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00475",
+  "v": "DB00341",
+  "label": 1,
+  "name_u": "Chlordiazepoxide",
+  "name_v": "Cetirizine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00835",
+  "v": "DB06710",
+  "label": 0,
+  "name_u": "Brompheniramine",
+  "name_v": "Methyltestosterone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00967",
+  "v": "DB01068",
+  "label": 1,
+  "name_u": "Desloratadine",
+  "name_v": "Clonazepam",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB08828",
+  "v": "DB01132",
+  "label": 0,
+  "name_u": "Vismodegib",
+  "name_v": "Pioglitazone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01142",
+  "v": "DB00205",
+  "label": 1,
+  "name_u": "Doxepin",
+  "name_v": "Pyrimethamine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01247",
+  "v": "DB00622",
+  "label": 1,
+  "name_u": "Isocarboxazid",
+  "name_v": "Nicardipine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09183",
+  "v": "DB00476",
+  "label": 1,
+  "name_u": "Dasabuvir",
+  "name_v": "Duloxetine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00981",
+  "v": "DB01106",
+  "label": 0,
+  "name_u": "Physostigmine",
+  "name_v": "Levocabastine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB08895",
+  "v": "DB00944",
+  "label": 0,
+  "name_u": "Tofacitinib",
+  "name_v": "Demecarium",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB06684",
+  "v": "DB00734",
+  "label": 1,
+  "name_u": "Vilazodone",
+  "name_v": "Risperidone",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB04868",
+  "v": "DB00303",
+  "label": 0,
+  "name_u": "Nilotinib",
+  "name_v": "Ertapenem",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00321",
+  "v": "DB00828",
+  "label": 0,
+  "name_u": "Amitriptyline",
+  "name_v": "Fosfomycin",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00928",
+  "v": "DB01598",
+  "label": 0,
+  "name_u": "Azacitidine",
+  "name_v": "Imipenem",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00682",
+  "v": "DB01250",
+  "label": 1,
+  "name_u": "Warfarin",
+  "name_v": "Olsalazine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00641",
+  "v": "DB00721",
+  "label": 0,
+  "name_u": "Simvastatin",
+  "name_v": "Procaine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00189",
+  "v": "DB00440",
+  "label": 0,
+  "name_u": "Ethchlorvynol",
+  "name_v": "Trimethoprim",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB06268",
+  "v": "DB02701",
+  "label": 0,
+  "name_u": "Sitaxentan",
+  "name_v": "Nicotinamide",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00394",
+  "v": "DB01620",
+  "label": 0,
+  "name_u": "Beclomethasone dipropionate",
+  "name_v": "Pheniramine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00422",
+  "v": "DB00752",
+  "label": 1,
+  "name_u": "Methylphenidate",
+  "name_v": "Tranylcypromine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01421",
+  "v": "DB01397",
+  "label": 1,
+  "name_u": "Paromomycin",
+  "name_v": "Magnesium salicylate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB09009",
+  "v": "DB09286",
+  "label": 1,
+  "name_u": "Articaine",
+  "name_v": "Pipamperone",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB08987",
+  "v": "DB09072",
+  "label": 1,
+  "name_u": "Etidocaine",
+  "name_v": "Sodium oxybate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00611",
+  "v": "DB01017",
+  "label": 1,
+  "name_u": "Butorphanol",
+  "name_v": "Minocycline",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00631",
+  "v": "DB08933",
+  "label": 0,
+  "name_u": "Clofarabine",
+  "name_v": "Luliconazole",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00734",
+  "v": "DB00130",
+  "label": 0,
+  "name_u": "Risperidone",
+  "name_v": "L-Glutamine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB01234",
+  "v": "DB08804",
+  "label": 1,
+  "name_u": "Dexamethasone",
+  "name_v": "Nandrolone decanoate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01198",
+  "v": "DB01182",
+  "label": 0,
+  "name_u": "Zopiclone",
+  "name_v": "Propafenone",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB11581",
+  "v": "DB00361",
+  "label": 0,
+  "name_u": "Venetoclax",
+  "name_v": "Vinorelbine",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00490",
+  "v": "DB00268",
+  "label": 1,
+  "name_u": "Buspirone",
+  "name_v": "Ropinirole",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01189",
+  "v": "DB11575",
+  "label": 0,
+  "name_u": "Desflurane",
+  "name_v": "Grazoprevir",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB00991",
+  "v": "DB00180",
+  "label": 1,
+  "name_u": "Oxaprozin",
+  "name_v": "Flunisolide",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00605",
+  "v": "DB00959",
+  "label": 1,
+  "name_u": "Sulindac",
+  "name_v": "Methylprednisolone",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01060",
+  "v": "DB00273",
+  "label": 1,
+  "name_u": "Amoxicillin",
+  "name_v": "Topiramate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB08881",
+  "v": "DB00869",
+  "label": 1,
+  "name_u": "Vemurafenib",
+  "name_v": "Dorzolamide",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB00244",
+  "v": "DB01244",
+  "label": 0,
+  "name_u": "Mesalazine",
+  "name_v": "Bepridil",
+  "kb_interaction": false
+ },
+ {
+  "u": "DB06738",
+  "v": "DB01018",
+  "label": 1,
+  "name_u": "Ketobemidone",
+  "name_v": "Guanfacine",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB12364",
+  "v": "DB01399",
+  "label": 1,
+  "name_u": "Betrixaban",
+  "name_v": "Salsalate",
+  "kb_interaction": true
+ },
+ {
+  "u": "DB01168",
+  "v": "DB09296",
+  "label": 0,
+  "name_u": "Procarbazine",
+  "name_v": "Ombitasvir",
+  "kb_interaction": false
+ }
+]

@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from fastapi import FastAPI, HTTPException  # noqa: E402
+from fastapi.middleware.trustedhost import TrustedHostMiddleware  # noqa: E402
 from fastapi.responses import FileResponse, Response  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
@@ -39,6 +40,8 @@ MODES = {"hybrid": "Hybrid — local LLM + rules", "rules": "Rules only", "llm":
 PRIOR_LIST_HEADER = "Medications on Admission:"
 
 app = FastAPI(title="Athena", docs_url=None, redoc_url=None)
+# Only answer requests addressed to this machine (blocks DNS-rebinding pages in the browser).
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
 
 
 # ---------------------------------------------------------------- shared resources (unchanged backend)
@@ -54,24 +57,57 @@ def extractor(mode: str) -> MedicationExtractor:
 
 
 @lru_cache(maxsize=1)
+def predictor():
+    """XGBoost research model, loaded on first use (only for pairs no database covers)."""
+    from athena.verification.ddi_predictor import InteractionPredictor
+    return InteractionPredictor()
+
+
+def ml_signals(r: dict) -> list[dict]:
+    """Unverified ML probabilities for NOT_COVERED pairs. Display only: not in the report, the risk
+    tiers or the audit log."""
+    f = next((x for x in r["findings"] if x["type"] == "NOT_COVERED"), None)
+    out = []
+    for p in (f or {}).get("evidence", {}).get("pairs", []):
+        try:
+            pred = predictor().predict(p["a"], p["b"])
+        except Exception:  # model files missing: no signal, never an error for the reviewer
+            return []
+        if pred:
+            out.append({**p, **pred})
+    return sorted(out, key=lambda x: -x["probability"])
+
+
+@lru_cache(maxsize=1)
 def audit() -> AuditLog:
     return AuditLog(os.environ.get("ATHENA_AUDIT_DB") or None)
 
 
-_cache: OrderedDict[tuple[str, str], dict] = OrderedDict()
-_lock = Lock()  # one analysis at a time: the 8 GB laptop runs a single local model
+_cache: OrderedDict[tuple[str, str], dict] = OrderedDict()   # (note sha, mode) -> report
+_reports: OrderedDict[str, dict] = OrderedDict()              # report_hash -> {report, text, case_id}
+_lock = Lock()        # one analysis at a time: the 8 GB laptop runs a single local model
+_cache_lock = Lock()  # cache dicts are touched from FastAPI's worker threads
 
 
 def run_analysis(text: str, mode: str) -> dict:
     key = (hashlib.sha256(text.encode()).hexdigest(), mode)
-    if key in _cache:
-        _cache.move_to_end(key)
-        return _cache[key]
+    with _cache_lock:
+        if key in _cache:
+            _cache.move_to_end(key)
+            r = _cache[key]
+            _reports.setdefault(r["meta"]["report_hash"], {"report": r, "text": text, "case_id": case_id_for(text)})
+            return r
     with _lock:
         r = analyze(text, extractor(mode), checker()).to_dict()
-    _cache[key] = r
-    if len(_cache) > 32:
-        _cache.popitem(last=False)
+    with _cache_lock:
+        # A run that fell back to rules (LLM offline) is not cached under the requested mode.
+        if r["meta"]["extraction_mode"] == mode:
+            _cache[key] = r
+            if len(_cache) > 32:
+                _cache.popitem(last=False)
+        _reports[r["meta"]["report_hash"]] = {"report": r, "text": text, "case_id": case_id_for(text)}
+        if len(_reports) > 256:
+            _reports.popitem(last=False)
     return r
 
 
@@ -144,8 +180,7 @@ class AnalyzeIn(BaseModel):
 
 
 class DecisionIn(BaseModel):
-    text: str
-    mode: str = "hybrid"
+    report_hash: str          # the exact report the reviewer was looking at
     finding_id: str
     reviewer: str
     action: str
@@ -177,17 +212,20 @@ def api_analyze(body: AnalyzeIn):
     r = run_analysis(text, body.mode)
     cid = case_id_for(text)
     decisions = audit().latest_decisions(cid, r["meta"]["report_hash"])
-    return {"report": r, "text": text, "case_id": cid, "display_names": display_names(r),
+    return {"report": r, "text": text, "case_id": cid, "display_names": display_names(r), "ml_signals": ml_signals(r),
             "decisions": {k: _entry(v) for k, v in decisions.items()}}
 
 
 @app.post("/api/decision")
 def api_decision(body: DecisionIn):
-    r = run_analysis(body.text, body.mode)
+    with _cache_lock:
+        saved = _reports.get(body.report_hash)
+    if saved is None:  # never recompute: a new run could differ from what the reviewer saw
+        raise HTTPException(409, "This report is no longer loaded on the server — analyze the note again.")
+    r, cid = saved["report"], saved["case_id"]
     f = next((x for x in r["findings"] if x["id"] == body.finding_id), None)
     if f is None:
         raise HTTPException(404, "finding not in this report")
-    cid = case_id_for(body.text)
     try:
         audit().record(reviewer=body.reviewer, case_id=cid, report_hash=r["meta"]["report_hash"],
                        finding_id=f["id"], finding_type=f["type"], tier=f["tier"], title=f["title"],
@@ -211,11 +249,16 @@ def api_audit_csv():
     w = csv.writer(buf)
     w.writerow(["time_utc", "reviewer", "case", "tier", "finding", "action", "reason", "comment", "report", "row_hash"])
     for e in reversed(audit().entries()):
-        w.writerow([e.ts, e.reviewer, e.case_id, e.tier, e.title, e.action,
+        w.writerow([_csv_safe(x) for x in (e.ts, e.reviewer, e.case_id, e.tier, e.title, e.action,
                     OVERRIDE_REASONS.get(e.reason_code, "") if e.reason_code else "", e.comment or "",
-                    e.report_hash[:12], e.row_hash])
+                    e.report_hash[:12], e.row_hash)])
     return Response(buf.getvalue(), media_type="text/csv",
                     headers={"Content-Disposition": "attachment; filename=athena_audit.csv"})
+
+
+def _csv_safe(v: str) -> str:
+    """Spreadsheet apps execute cells starting with = + - @ (formula injection): prefix a quote."""
+    return "'" + v if v and v[0] in "=+-@\t\r" else v
 
 
 @app.get("/api/status")
@@ -228,9 +271,13 @@ def api_status():
 if DIST.exists():
     app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
 
+    _DIST = DIST.resolve()
+
     @app.get("/{path:path}")
     def spa(path: str):
-        f = DIST / path
+        f = (DIST / path).resolve()
+        if not f.is_relative_to(_DIST):  # "/../../configs/..." must never leave web/dist
+            raise HTTPException(404)
         return FileResponse(f if path and f.is_file() else DIST / "index.html")
 
 

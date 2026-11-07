@@ -50,3 +50,26 @@ def ddinter_drugs() -> pd.DataFrame:
         df[["id_b", "drug_b"]].set_axis(["ddinter_id", "name"], axis=1),
     ])
     return drugs.drop_duplicates().sort_values("ddinter_id", ignore_index=True)
+
+
+def downloaded_atc_files() -> set[str]:
+    """ATC first-level classes whose DDInter file is present (the public download has 8 of 14)."""
+    return {f.stem.rsplit("_", 1)[-1] for f in data_path("ddinter").glob("ddinter_downloads_code_*.csv")}
+
+
+@lru_cache(maxsize=None)
+def ddinter_home_classes() -> dict[str, set[str]]:
+    """drug name -> downloaded ATC files in which the drug's own class is listed.
+
+    A pair is listed in the file of each drug's class, so a drug's class file is the one that
+    contains every pair of that drug: the intersection of atc_codes over its pairs. An empty set
+    means the drug's class file was not downloaded — DDInter then only covers its pairs with
+    drugs whose class file is present.
+    """
+    df = load_ddinter()
+    home: dict[str, set[str]] = {}
+    for col in ("drug_a", "drug_b"):
+        for name, codes in zip(df[col], df["atc_codes"]):
+            s = set(codes)
+            home[name] = home[name] & s if name in home else s
+    return home

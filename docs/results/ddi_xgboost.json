@@ -1,5 +1,5 @@
 {
- "task": "binary DDI link prediction, DrugBank benchmark (DeepDDI), warm-start fold0, 1:1 benchmark negatives",
+ "task": "binary DDI link prediction, DrugBank benchmark (DeepDDI); benchmark negatives (one drug replaced), negatives that are recorded interactions dropped",
  "features": [
   "deg_u",
   "deg_v",
@@ -17,236 +17,999 @@
  ],
  "train_pairs": 280347,
  "test_pairs": 69960,
- "best_iteration": 599,
+ "test_pairs_removed_overlap": 133,
+ "best_iteration": 1998,
  "xgboost": {
-  "accuracy": 0.9198,
-  "precision": 0.9473,
-  "recall": 0.9035,
-  "f1": 0.9249,
-  "roc_auc": 0.9783,
-  "pr_auc": 0.9821,
+  "threshold": 0.5,
+  "prevalence": 0.5464,
+  "accuracy": 0.9103,
+  "precision": 0.9697,
+  "recall": 0.8628,
+  "f1": 0.9132,
+  "roc_auc": 0.9812,
+  "pr_auc": 0.9846,
   "confusion_matrix": [
    [
-    29810,
-    1921
+    30702,
+    1029
    ],
    [
-    3691,
-    34538
+    5244,
+    32985
+   ]
+  ]
+ },
+ "xgboost_val_threshold": {
+  "threshold": 0.517,
+  "prevalence": 0.5464,
+  "accuracy": 0.9088,
+  "precision": 0.971,
+  "recall": 0.8587,
+  "f1": 0.9114,
+  "roc_auc": 0.9812,
+  "pr_auc": 0.9846,
+  "confusion_matrix": [
+   [
+    30750,
+    981
+   ],
+   [
+    5401,
+    32828
    ]
   ]
  },
  "xgboost_graph_only": {
-  "accuracy": 0.8527,
-  "precision": 0.9023,
-  "recall": 0.8191,
-  "f1": 0.8587,
-  "roc_auc": 0.9372,
-  "pr_auc": 0.9503,
+  "threshold": 0.5,
+  "prevalence": 0.5464,
+  "accuracy": 0.8423,
+  "precision": 0.9116,
+  "recall": 0.7878,
+  "f1": 0.8452,
+  "roc_auc": 0.9332,
+  "pr_auc": 0.9478,
   "confusion_matrix": [
    [
-    28339,
-    3392
+    28809,
+    2922
    ],
    [
-    6914,
-    31315
+    8111,
+    30118
    ]
   ]
  },
  "baseline_logistic_regression": {
+  "threshold": 0.5,
+  "prevalence": 0.5464,
   "accuracy": 0.8305,
-  "precision": 0.8525,
-  "recall": 0.8342,
+  "precision": 0.8528,
+  "recall": 0.8337,
   "f1": 0.8432,
-  "roc_auc": 0.9105,
-  "pr_auc": 0.9266,
+  "roc_auc": 0.9106,
+  "pr_auc": 0.9265,
   "confusion_matrix": [
    [
-    26213,
-    5518
+    26229,
+    5502
    ],
    [
-    6339,
-    31890
+    6356,
+    31873
    ]
   ]
  },
+ "baseline_popularity_auc": 0.801,
+ "baseline_popularity_pr_auc": 0.8162,
+ "ci95": {
+  "roc_auc": [
+   0.9805,
+   0.982
+  ],
+  "pr_auc": [
+   0.9839,
+   0.9853
+  ],
+  "graph_only_roc_auc": [
+   0.9315,
+   0.9349
+  ]
+ },
  "imbalanced_test": {
-  "note": "test positives with 1:7 (benchmark density) and 1:50 corrupted negatives",
+  "note": "test positives with 1:7 (benchmark density) and 1:50 corrupted negatives, no duplicates; F1 at the validation-chosen threshold",
   "1:7": {
    "xgboost": {
-    "accuracy": 0.9325,
-    "precision": 0.6705,
-    "recall": 0.904,
-    "f1": 0.7699,
-    "roc_auc": 0.9775,
-    "pr_auc": 0.8987,
+    "threshold": 0.517,
+    "prevalence": 0.125,
+    "accuracy": 0.9548,
+    "precision": 0.7932,
+    "recall": 0.864,
+    "f1": 0.8271,
+    "roc_auc": 0.981,
+    "pr_auc": 0.914,
     "confusion_matrix": [
      [
-      26223,
-      1777
+      27099,
+      901
      ],
      [
-      384,
-      3616
+      544,
+      3456
      ]
     ]
    },
    "xgboost_graph_only": {
-    "accuracy": 0.8774,
-    "precision": 0.5059,
-    "recall": 0.821,
-    "f1": 0.626,
-    "roc_auc": 0.9337,
-    "pr_auc": 0.7781,
+    "threshold": 0.5,
+    "prevalence": 0.125,
+    "accuracy": 0.8906,
+    "precision": 0.5429,
+    "recall": 0.7895,
+    "f1": 0.6434,
+    "roc_auc": 0.9318,
+    "pr_auc": 0.7788,
     "confusion_matrix": [
      [
-      24792,
-      3208
+      25341,
+      2659
      ],
      [
-      716,
-      3284
+      842,
+      3158
      ]
     ]
    }
   },
   "1:50": {
    "xgboost": {
-    "accuracy": 0.9338,
-    "precision": 0.2149,
-    "recall": 0.8955,
-    "f1": 0.3466,
-    "roc_auc": 0.9754,
-    "pr_auc": 0.6961,
+    "threshold": 0.517,
+    "prevalence": 0.0196,
+    "accuracy": 0.9648,
+    "precision": 0.3407,
+    "recall": 0.852,
+    "f1": 0.4868,
+    "roc_auc": 0.9796,
+    "pr_auc": 0.7343,
     "confusion_matrix": [
      [
-      93456,
-      6544
+      96703,
+      3297
      ],
      [
-      209,
-      1791
+      296,
+      1704
      ]
     ]
    },
    "xgboost_graph_only": {
-    "accuracy": 0.8842,
-    "precision": 0.1248,
-    "recall": 0.8165,
-    "f1": 0.2166,
-    "roc_auc": 0.9324,
-    "pr_auc": 0.5273,
+    "threshold": 0.5,
+    "prevalence": 0.0196,
+    "accuracy": 0.9025,
+    "precision": 0.1411,
+    "recall": 0.7805,
+    "f1": 0.239,
+    "roc_auc": 0.9299,
+    "pr_auc": 0.5318,
     "confusion_matrix": [
      [
-      88552,
-      11448
+      90497,
+      9503
      ],
      [
-      367,
-      1633
+      439,
+      1561
      ]
     ]
    }
   }
  },
  "feature_importance_gain_top15": {
-  "resource_allocation": 530.087,
-  "sim_to_partners_max": 184.326,
-  "adamic_adar": 126.922,
-  "fp_and_84": 70.829,
-  "jaccard": 63.231,
-  "hub_promoted": 61.041,
-  "fp_and_1": 60.508,
-  "sorensen": 57.255,
-  "sim_u_to_partners_of_v": 45.65,
-  "fp_sum_214": 42.15,
-  "fp_and_122": 41.768,
-  "fp_sum_100": 41.024,
-  "common_neighbors": 38.072,
-  "fp_and_214": 36.22,
-  "sim_v_to_partners_of_u": 35.041
+  "resource_allocation": 215.704,
+  "sim_to_partners_max": 73.567,
+  "fp_and_84": 49.634,
+  "adamic_adar": 37.74,
+  "fp_and_252": 27.255,
+  "jaccard": 24.897,
+  "hub_promoted": 22.797,
+  "sorensen": 22.752,
+  "fp_sum_100": 22.071,
+  "fp_and_1": 21.018,
+  "fp_and_250": 19.454,
+  "fp_sum_156": 18.717,
+  "sim_u_to_partners_of_v": 16.275,
+  "fp_and_191": 16.035,
+  "fp_sum_214": 15.426
  },
- "test_pairs_removed_overlap": 133,
- "cold_start": {
-  "note": "fold0; S2 = one drug unseen in training, S1 = both unseen; 1:1 benchmark negatives",
-  "S2": {
-   "xgboost_cold_chemistry": {
-    "accuracy": 0.7191,
-    "precision": 0.8059,
-    "recall": 0.6402,
-    "f1": 0.7136,
-    "roc_auc": 0.8031,
-    "pr_auc": 0.8349,
+ "warm_folds": [
+  {
+   "fold": "fold0",
+   "train_pairs": 280347,
+   "test_pairs": 69960,
+   "test_pairs_removed_overlap": 133,
+   "best_iteration": 1998,
+   "xgboost": {
+    "threshold": 0.5,
+    "prevalence": 0.5464,
+    "accuracy": 0.9103,
+    "precision": 0.9697,
+    "recall": 0.8628,
+    "f1": 0.9132,
+    "roc_auc": 0.9812,
+    "pr_auc": 0.9846,
     "confusion_matrix": [
      [
-      40959,
-      9353
+      30702,
+      1029
      ],
      [
-      21821,
-      38834
+      5244,
+      32985
+     ]
+    ]
+   },
+   "xgboost_val_threshold": {
+    "threshold": 0.517,
+    "prevalence": 0.5464,
+    "accuracy": 0.9088,
+    "precision": 0.971,
+    "recall": 0.8587,
+    "f1": 0.9114,
+    "roc_auc": 0.9812,
+    "pr_auc": 0.9846,
+    "confusion_matrix": [
+     [
+      30750,
+      981
+     ],
+     [
+      5401,
+      32828
      ]
     ]
    },
    "xgboost_graph_only": {
-    "accuracy": 0.4534,
-    "precision": 0.0,
-    "recall": 0.0,
-    "f1": 0.0,
-    "roc_auc": 0.3892,
-    "pr_auc": 0.4684,
+    "threshold": 0.5,
+    "prevalence": 0.5464,
+    "accuracy": 0.8423,
+    "precision": 0.9116,
+    "recall": 0.7878,
+    "f1": 0.8452,
+    "roc_auc": 0.9332,
+    "pr_auc": 0.9478,
     "confusion_matrix": [
      [
-      50312,
-      0
+      28809,
+      2922
      ],
      [
-      60655,
-      0
+      8111,
+      30118
      ]
     ]
+   },
+   "baseline_logistic_regression": {
+    "threshold": 0.5,
+    "prevalence": 0.5464,
+    "accuracy": 0.8305,
+    "precision": 0.8528,
+    "recall": 0.8337,
+    "f1": 0.8432,
+    "roc_auc": 0.9106,
+    "pr_auc": 0.9265,
+    "confusion_matrix": [
+     [
+      26229,
+      5502
+     ],
+     [
+      6356,
+      31873
+     ]
+    ]
+   },
+   "baseline_popularity_auc": 0.801,
+   "baseline_popularity_pr_auc": 0.8162,
+   "ci95": {
+    "roc_auc": [
+     0.9805,
+     0.982
+    ],
+    "pr_auc": [
+     0.9839,
+     0.9853
+    ],
+    "graph_only_roc_auc": [
+     0.9315,
+     0.9349
+    ]
+   },
+   "imbalanced_test": {
+    "note": "test positives with 1:7 (benchmark density) and 1:50 corrupted negatives, no duplicates; F1 at the validation-chosen threshold",
+    "1:7": {
+     "xgboost": {
+      "threshold": 0.517,
+      "prevalence": 0.125,
+      "accuracy": 0.9548,
+      "precision": 0.7932,
+      "recall": 0.864,
+      "f1": 0.8271,
+      "roc_auc": 0.981,
+      "pr_auc": 0.914,
+      "confusion_matrix": [
+       [
+        27099,
+        901
+       ],
+       [
+        544,
+        3456
+       ]
+      ]
+     },
+     "xgboost_graph_only": {
+      "threshold": 0.5,
+      "prevalence": 0.125,
+      "accuracy": 0.8906,
+      "precision": 0.5429,
+      "recall": 0.7895,
+      "f1": 0.6434,
+      "roc_auc": 0.9318,
+      "pr_auc": 0.7788,
+      "confusion_matrix": [
+       [
+        25341,
+        2659
+       ],
+       [
+        842,
+        3158
+       ]
+      ]
+     }
+    },
+    "1:50": {
+     "xgboost": {
+      "threshold": 0.517,
+      "prevalence": 0.0196,
+      "accuracy": 0.9648,
+      "precision": 0.3407,
+      "recall": 0.852,
+      "f1": 0.4868,
+      "roc_auc": 0.9796,
+      "pr_auc": 0.7343,
+      "confusion_matrix": [
+       [
+        96703,
+        3297
+       ],
+       [
+        296,
+        1704
+       ]
+      ]
+     },
+     "xgboost_graph_only": {
+      "threshold": 0.5,
+      "prevalence": 0.0196,
+      "accuracy": 0.9025,
+      "precision": 0.1411,
+      "recall": 0.7805,
+      "f1": 0.239,
+      "roc_auc": 0.9299,
+      "pr_auc": 0.5318,
+      "confusion_matrix": [
+       [
+        90497,
+        9503
+       ],
+       [
+        439,
+        1561
+       ]
+      ]
+     }
+    }
+   },
+   "feature_importance_gain_top15": {
+    "resource_allocation": 215.704,
+    "sim_to_partners_max": 73.567,
+    "fp_and_84": 49.634,
+    "adamic_adar": 37.74,
+    "fp_and_252": 27.255,
+    "jaccard": 24.897,
+    "hub_promoted": 22.797,
+    "sorensen": 22.752,
+    "fp_sum_100": 22.071,
+    "fp_and_1": 21.018,
+    "fp_and_250": 19.454,
+    "fp_sum_156": 18.717,
+    "sim_u_to_partners_of_v": 16.275,
+    "fp_and_191": 16.035,
+    "fp_sum_214": 15.426
    }
+  },
+  {
+   "fold": "fold1",
+   "train_pairs": 280446,
+   "test_pairs": 69867,
+   "test_pairs_removed_overlap": 124,
+   "best_iteration": 1998,
+   "xgboost": {
+    "threshold": 0.5,
+    "prevalence": 0.5473,
+    "accuracy": 0.9092,
+    "precision": 0.971,
+    "recall": 0.8598,
+    "f1": 0.912,
+    "roc_auc": 0.9804,
+    "pr_auc": 0.9842,
+    "confusion_matrix": [
+     [
+      30646,
+      983
+     ],
+     [
+      5361,
+      32877
+     ]
+    ]
+   },
+   "xgboost_val_threshold": {
+    "threshold": 0.5129,
+    "prevalence": 0.5473,
+    "accuracy": 0.9076,
+    "precision": 0.9716,
+    "recall": 0.8562,
+    "f1": 0.9103,
+    "roc_auc": 0.9804,
+    "pr_auc": 0.9842,
+    "confusion_matrix": [
+     [
+      30671,
+      958
+     ],
+     [
+      5498,
+      32740
+     ]
+    ]
+   },
+   "xgboost_graph_only": {
+    "threshold": 0.5,
+    "prevalence": 0.5473,
+    "accuracy": 0.8398,
+    "precision": 0.913,
+    "recall": 0.7817,
+    "f1": 0.8423,
+    "roc_auc": 0.9319,
+    "pr_auc": 0.9479,
+    "confusion_matrix": [
+     [
+      28780,
+      2849
+     ],
+     [
+      8347,
+      29891
+     ]
+    ]
+   },
+   "baseline_logistic_regression": {
+    "threshold": 0.5,
+    "prevalence": 0.5473,
+    "accuracy": 0.8302,
+    "precision": 0.854,
+    "recall": 0.832,
+    "f1": 0.8429,
+    "roc_auc": 0.9105,
+    "pr_auc": 0.9279,
+    "confusion_matrix": [
+     [
+      26190,
+      5439
+     ],
+     [
+      6423,
+      31815
+     ]
+    ]
+   },
+   "baseline_popularity_auc": 0.8028,
+   "baseline_popularity_pr_auc": 0.8187
+  },
+  {
+   "fold": "fold2",
+   "train_pairs": 280461,
+   "test_pairs": 68039,
+   "test_pairs_removed_overlap": 120,
+   "best_iteration": 1999,
+   "xgboost": {
+    "threshold": 0.5,
+    "prevalence": 0.5475,
+    "accuracy": 0.9075,
+    "precision": 0.9717,
+    "recall": 0.856,
+    "f1": 0.9102,
+    "roc_auc": 0.981,
+    "pr_auc": 0.9847,
+    "confusion_matrix": [
+     [
+      29859,
+      930
+     ],
+     [
+      5363,
+      31887
+     ]
+    ]
+   },
+   "xgboost_val_threshold": {
+    "threshold": 0.5506,
+    "prevalence": 0.5475,
+    "accuracy": 0.9011,
+    "precision": 0.9753,
+    "recall": 0.8407,
+    "f1": 0.903,
+    "roc_auc": 0.981,
+    "pr_auc": 0.9847,
+    "confusion_matrix": [
+     [
+      29995,
+      794
+     ],
+     [
+      5934,
+      31316
+     ]
+    ]
+   },
+   "xgboost_graph_only": {
+    "threshold": 0.5,
+    "prevalence": 0.5475,
+    "accuracy": 0.8396,
+    "precision": 0.915,
+    "recall": 0.7794,
+    "f1": 0.8418,
+    "roc_auc": 0.9319,
+    "pr_auc": 0.9476,
+    "confusion_matrix": [
+     [
+      28093,
+      2696
+     ],
+     [
+      8218,
+      29032
+     ]
+    ]
+   },
+   "baseline_logistic_regression": {
+    "threshold": 0.5,
+    "prevalence": 0.5475,
+    "accuracy": 0.8319,
+    "precision": 0.8555,
+    "recall": 0.8339,
+    "f1": 0.8446,
+    "roc_auc": 0.9119,
+    "pr_auc": 0.9281,
+    "confusion_matrix": [
+     [
+      25543,
+      5246
+     ],
+     [
+      6188,
+      31062
+     ]
+    ]
+   },
+   "baseline_popularity_auc": 0.8035,
+   "baseline_popularity_pr_auc": 0.8179
+  }
+ ],
+ "warm_summary": {
+  "xgboost_roc_auc": {
+   "mean": 0.9809,
+   "sd": 0.0004
+  },
+  "graph_only_roc_auc": {
+   "mean": 0.9323,
+   "sd": 0.0008
+  },
+  "popularity_roc_auc": {
+   "mean": 0.8024,
+   "sd": 0.0013
+  },
+  "xgboost_pr_auc": {
+   "mean": 0.9845,
+   "sd": 0.0003
+  }
+ },
+ "cold_start": {
+  "note": "S2 = one drug unseen in training, S1 = both unseen; early stopping on val.csv; 1:1 benchmark negatives",
+  "S2": {
+   "xgboost_cold_chemistry": {
+    "threshold": 0.5,
+    "prevalence": 0.5466,
+    "accuracy": 0.7226,
+    "precision": 0.7826,
+    "recall": 0.682,
+    "f1": 0.7288,
+    "roc_auc": 0.8015,
+    "pr_auc": 0.8343,
+    "confusion_matrix": [
+     [
+      38820,
+      11492
+     ],
+     [
+      19290,
+      41365
+     ]
+    ]
+   },
+   "xgboost_graph_only": {
+    "threshold": 0.5,
+    "prevalence": 0.5466,
+    "accuracy": 0.5466,
+    "precision": 0.5466,
+    "recall": 1.0,
+    "f1": 0.7068,
+    "roc_auc": 0.3806,
+    "pr_auc": 0.5048,
+    "confusion_matrix": [
+     [
+      0,
+      50312
+     ],
+     [
+      0,
+      60655
+     ]
+    ]
+   },
+   "n_pairs": 110967,
+   "ci95_roc_auc": [
+    0.7991,
+    0.8038
+   ]
   },
   "S1": {
    "xgboost_cold_chemistry": {
-    "accuracy": 0.6048,
-    "precision": 0.7148,
-    "recall": 0.464,
-    "f1": 0.5627,
-    "roc_auc": 0.681,
-    "pr_auc": 0.7286,
+    "threshold": 0.5,
+    "prevalence": 0.548,
+    "accuracy": 0.6386,
+    "precision": 0.6977,
+    "recall": 0.6008,
+    "f1": 0.6456,
+    "roc_auc": 0.6963,
+    "pr_auc": 0.741,
     "confusion_matrix": [
      [
-      4713,
-      1364
+      4159,
+      1918
      ],
      [
-      3950,
-      3419
+      2942,
+      4427
      ]
     ]
    },
    "xgboost_graph_only": {
-    "accuracy": 0.452,
-    "precision": 0.0,
-    "recall": 0.0,
-    "f1": 0.0,
+    "threshold": 0.5,
+    "prevalence": 0.548,
+    "accuracy": 0.548,
+    "precision": 0.548,
+    "recall": 1.0,
+    "f1": 0.708,
     "roc_auc": 0.5,
     "pr_auc": 0.548,
     "confusion_matrix": [
      [
-      6077,
-      0
+      0,
+      6077
      ],
      [
-      7369,
-      0
+      0,
+      7369
      ]
     ]
-   }
+   },
+   "n_pairs": 13446,
+   "ci95_roc_auc": [
+    0.6861,
+    0.7041
+   ]
   }
  },
- "seconds": 320.2
+ "cold_folds": [
+  {
+   "fold": "fold0",
+   "best_iteration": 77,
+   "S2": {
+    "xgboost_cold_chemistry": {
+     "threshold": 0.5,
+     "prevalence": 0.5466,
+     "accuracy": 0.7226,
+     "precision": 0.7826,
+     "recall": 0.682,
+     "f1": 0.7288,
+     "roc_auc": 0.8015,
+     "pr_auc": 0.8343,
+     "confusion_matrix": [
+      [
+       38820,
+       11492
+      ],
+      [
+       19290,
+       41365
+      ]
+     ]
+    },
+    "xgboost_graph_only": {
+     "threshold": 0.5,
+     "prevalence": 0.5466,
+     "accuracy": 0.5466,
+     "precision": 0.5466,
+     "recall": 1.0,
+     "f1": 0.7068,
+     "roc_auc": 0.3806,
+     "pr_auc": 0.5048,
+     "confusion_matrix": [
+      [
+       0,
+       50312
+      ],
+      [
+       0,
+       60655
+      ]
+     ]
+    },
+    "n_pairs": 110967,
+    "ci95_roc_auc": [
+     0.7991,
+     0.8038
+    ]
+   },
+   "S1": {
+    "xgboost_cold_chemistry": {
+     "threshold": 0.5,
+     "prevalence": 0.548,
+     "accuracy": 0.6386,
+     "precision": 0.6977,
+     "recall": 0.6008,
+     "f1": 0.6456,
+     "roc_auc": 0.6963,
+     "pr_auc": 0.741,
+     "confusion_matrix": [
+      [
+       4159,
+       1918
+      ],
+      [
+       2942,
+       4427
+      ]
+     ]
+    },
+    "xgboost_graph_only": {
+     "threshold": 0.5,
+     "prevalence": 0.548,
+     "accuracy": 0.548,
+     "precision": 0.548,
+     "recall": 1.0,
+     "f1": 0.708,
+     "roc_auc": 0.5,
+     "pr_auc": 0.548,
+     "confusion_matrix": [
+      [
+       0,
+       6077
+      ],
+      [
+       0,
+       7369
+      ]
+     ]
+    },
+    "n_pairs": 13446,
+    "ci95_roc_auc": [
+     0.6861,
+     0.7041
+    ]
+   }
+  },
+  {
+   "fold": "fold1",
+   "best_iteration": 56,
+   "S2": {
+    "xgboost_cold_chemistry": {
+     "threshold": 0.5,
+     "prevalence": 0.5451,
+     "accuracy": 0.7486,
+     "precision": 0.7655,
+     "recall": 0.7768,
+     "f1": 0.7711,
+     "roc_auc": 0.8293,
+     "pr_auc": 0.8548,
+     "confusion_matrix": [
+      [
+       35039,
+       13981
+      ],
+      [
+       13108,
+       45631
+      ]
+     ]
+    },
+    "xgboost_graph_only": {
+     "threshold": 0.5,
+     "prevalence": 0.5451,
+     "accuracy": 0.5451,
+     "precision": 0.5451,
+     "recall": 1.0,
+     "f1": 0.7056,
+     "roc_auc": 0.3815,
+     "pr_auc": 0.5028,
+     "confusion_matrix": [
+      [
+       0,
+       49020
+      ],
+      [
+       0,
+       58739
+      ]
+     ]
+    },
+    "n_pairs": 107759
+   },
+   "S1": {
+    "xgboost_cold_chemistry": {
+     "threshold": 0.5,
+     "prevalence": 0.5416,
+     "accuracy": 0.6781,
+     "precision": 0.7024,
+     "recall": 0.704,
+     "f1": 0.7032,
+     "roc_auc": 0.7359,
+     "pr_auc": 0.7636,
+     "confusion_matrix": [
+      [
+       3682,
+       2004
+      ],
+      [
+       1989,
+       4730
+      ]
+     ]
+    },
+    "xgboost_graph_only": {
+     "threshold": 0.5,
+     "prevalence": 0.5416,
+     "accuracy": 0.5416,
+     "precision": 0.5416,
+     "recall": 1.0,
+     "f1": 0.7027,
+     "roc_auc": 0.5,
+     "pr_auc": 0.5416,
+     "confusion_matrix": [
+      [
+       0,
+       5686
+      ],
+      [
+       0,
+       6719
+      ]
+     ]
+    },
+    "n_pairs": 12405
+   }
+  },
+  {
+   "fold": "fold2",
+   "best_iteration": 63,
+   "S2": {
+    "xgboost_cold_chemistry": {
+     "threshold": 0.5,
+     "prevalence": 0.5465,
+     "accuracy": 0.7372,
+     "precision": 0.7814,
+     "recall": 0.7208,
+     "f1": 0.7499,
+     "roc_auc": 0.812,
+     "pr_auc": 0.8438,
+     "confusion_matrix": [
+      [
+       37410,
+       12008
+      ],
+      [
+       16631,
+       42931
+      ]
+     ]
+    },
+    "xgboost_graph_only": {
+     "threshold": 0.5,
+     "prevalence": 0.5465,
+     "accuracy": 0.5465,
+     "precision": 0.5465,
+     "recall": 1.0,
+     "f1": 0.7068,
+     "roc_auc": 0.3777,
+     "pr_auc": 0.5064,
+     "confusion_matrix": [
+      [
+       0,
+       49418
+      ],
+      [
+       0,
+       59562
+      ]
+     ]
+    },
+    "n_pairs": 108980
+   },
+   "S1": {
+    "xgboost_cold_chemistry": {
+     "threshold": 0.5,
+     "prevalence": 0.5425,
+     "accuracy": 0.6491,
+     "precision": 0.6956,
+     "recall": 0.628,
+     "f1": 0.66,
+     "roc_auc": 0.7076,
+     "pr_auc": 0.7455,
+     "confusion_matrix": [
+      [
+       3942,
+       1906
+      ],
+      [
+       2580,
+       4355
+      ]
+     ]
+    },
+    "xgboost_graph_only": {
+     "threshold": 0.5,
+     "prevalence": 0.5425,
+     "accuracy": 0.5425,
+     "precision": 0.5425,
+     "recall": 1.0,
+     "f1": 0.7034,
+     "roc_auc": 0.5,
+     "pr_auc": 0.5425,
+     "confusion_matrix": [
+      [
+       0,
+       5848
+      ],
+      [
+       0,
+       6935
+      ]
+     ]
+    },
+    "n_pairs": 12783
+   }
+  }
+ ],
+ "cold_summary": {
+  "S2_roc_auc": {
+   "mean": 0.8143,
+   "sd": 0.014
+  },
+  "S1_roc_auc": {
+   "mean": 0.7133,
+   "sd": 0.0204
+  }
+ },
+ "seconds": 613.0
 }

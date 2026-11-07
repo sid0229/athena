@@ -33,7 +33,15 @@ TIER_ORDER = {"critical": 0, "review": 1, "info": 2}
 HELD_WORDS = {"held", "hold", "stopped", "discontinued", "dc'd", "d/c"}
 # Deterministic status cue in the same sentence as a mention (backs up the LLM status).
 _STATUS_CUE = re.compile(r"\b(held|holding|stopped|discontinued|d/c'?d)\b", re.I)
+_OBJECT_FILLERS = {"the", "his", "her", "their", "home", "all", "patient's", "pt's", "outpatient"}
+_NEGATED_CUE = re.compile(r"\b(not|never|no longer)\s+(be\s+)?$", re.I)
 _SENT_END = re.compile(r"[.;\n]\s")
+# Context that makes a mention *not* a current medication (used when the note has no discharge list):
+# allergy, negation, history ("allergic to aspirin", "no aspirin", "h/o amiodarone toxicity").
+_NOT_CURRENT = re.compile(
+    r"\b(allerg\w*|intoleran\w*|reaction to|rash (with|from|to)|anaphylaxis|"
+    r"no|not on|never|denies|without|avoid|h/o|history of|previously (on|took|taking)|prior)\b[^.;\n]{0,40}$", re.I)
+_ALLERGY_HEADER = re.compile(r"^[ \t]*allerg(y|ies)[^:\n]*:", re.I | re.M)
 
 
 def _rule_status(text: str, start: int, end: int, other_drugs: list[tuple[int, int]]) -> str:
@@ -49,13 +57,32 @@ def _rule_status(text: str, start: int, end: int, other_drugs: list[tuple[int, i
     hi = m.start() if m else min(end + 80, len(text))
     drugs = sorted([(s0, e0) for s0, e0 in other_drugs if lo <= s0 and e0 <= hi] + [(start, end)])
     for cue in _STATUS_CUE.finditer(text, lo, hi):
+        if _NEGATED_CUE.search(text[max(cue.start() - 20, lo):cue.start()]):
+            continue  # "was not held"
         before = [d for d in drugs if d[1] <= cue.start()]
         after = [d for d in drugs if d[0] >= cue.end()]
-        target = before[-1] if before else (after[0] if after else None)
+        # verb -> object: a drug right after the cue ("held aspirin", "held her home lisinopril")
+        between = text[cue.end():after[0][0]].lower().split() if after else None
+        if after and set(between) <= _OBJECT_FILLERS:
+            target = after[0]
+        else:
+            target = before[-1] if before else (after[0] if after else None)
         if target == (start, end):
             w = cue.group(1).lower()
             return "held" if w.startswith("hold") or w == "held" else "stopped"
     return ""
+
+
+def _not_current(text: str, start: int) -> bool:
+    """True if a mention is in an allergy list or negated / historical in its sentence."""
+    hdr = None
+    for h in _ALLERGY_HEADER.finditer(text, 0, start):
+        hdr = h
+    if hdr and "\n\n" not in text[hdr.end():start] and start - hdr.end() < 400:
+        return True
+    b = [m.end() for m in _SENT_END.finditer(text, max(start - 80, 0), start)]
+    lo = b[-1] if b else max(start - 80, 0)
+    return bool(_NOT_CURRENT.search(text[lo:start]))
 
 
 # ---------------------------------------------------------------- data model
@@ -181,7 +208,14 @@ def build_medications(ex: ExtractionResult, sections: list[Section], cfg: dict) 
                 status = "mentioned"
             status_conf = ss["discharge_list"] if in_dis else ss["inferred"]
         else:
-            status = "held" if status_words & HELD_WORDS else "active"
+            # No discharge list: a drug is active unless the note holds/stops it, or every mention
+            # is an allergy / negated / historical reference ("allergic to aspirin").
+            if status_words & HELD_WORDS:
+                status = "stopped" if status_words & {"stopped", "discontinued", "dc'd", "d/c"} else "held"
+            elif all(_not_current(ex.text, m.drug.start) for m, *_ in items):
+                status = "mentioned"
+            else:
+                status = "active"
             status_conf = ss["inferred"]
 
         sources = set().union(*(m.sources for m, *_ in items))
@@ -219,27 +253,16 @@ def _interaction_finding(p: PairResult, entries: dict[str, MedEntry], cfg: dict)
         sev_w *= cfg["derived_severity_factor"]
     ev_w = cfg["evidence_weight"]["two_sources" if len(p.sources) > 1 else "one_source"]
     conf = min(a.confidence, b.confidence)
-    formula = cfg.get("formula", "multiplicative")
-    if formula == "uncertainty_penalty":
-        # Weighted additive variant: database evidence plus a penalty for extraction
-        # uncertainty, so a less certain extraction gets MORE scrutiny, not less.
-        up = cfg["uncertainty_penalty"]
-        t = up["confidence_tiers"]
-        conf_tier = "HIGH" if conf >= t["high"] else "MEDIUM" if conf >= t["medium"] else "LOW"
-        conf_val = up["tier_values"][conf_tier]
-        evidence = 1.0  # an INTERACTION finding always has a database record
-        risk = round(min(1.0, up["w_db"] * evidence * sev_w + up["w_penalty"] * (1.0 - conf_val)), 3)
-        risk_line = (f"Risk {risk:.2f} = {up['w_db']:.1f} × evidence 1 × severity {sev_w:.2f} + "
-                     f"{up['w_penalty']:.1f} × (1 − confidence {conf_tier} {conf_val:.1f}), capped at 1.")
-    else:
-        risk = round(sev_w * ev_w * conf, 3)
-        risk_line = f"Risk {risk:.2f} = severity {sev_w:.2f} × evidence {ev_w:.2f} × extraction confidence {conf:.2f}."
+    risk = round(sev_w * ev_w * conf, 3)
+    risk_line = f"Risk {risk:.2f} = severity {sev_w:.2f} × evidence {ev_w:.2f} × extraction confidence {conf:.2f}."
     tier = _tier(risk, cfg)
     verify = False
     if p.severity == "Major" and cfg["never_suppress_major"] and tier != "critical":
         tier, verify = "review", True
 
     why = [f"{a.raw!r} → {p.a.name}; {b.raw!r} → {p.b.name} (from the note text)."]
+    if p.rule:
+        why.append(f"High-alert rule — {p.rule.name}: {p.rule.effect} (source: {p.rule.source}).")
     if p.ddinter_level:
         why.append(f"DDInter grades this pair: {p.ddinter_level}.")
     for m in p.mechanisms[:3]:
@@ -257,6 +280,8 @@ def _interaction_finding(p: PairResult, entries: dict[str, MedEntry], cfg: dict)
         evidence={"severity": p.severity, "severity_basis": p.severity_basis, "sources": list(p.sources),
                   "ddinter_level": p.ddinter_level,
                   "mechanisms": [asdict(m) for m in p.mechanisms],
+                  "rule": ({"id": p.rule.id, "name": p.rule.name, "effect": p.rule.effect, "source": p.rule.source}
+                           if p.rule else None),
                   "confidence": {a.id: a.confidence_parts, b.id: b.confidence_parts}},
         needs_verification=verify,
     )
@@ -376,7 +401,8 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
             meds=sorted({x for p in not_cov for x in (p.med_a.ref, p.med_b.ref)}),
             explanation=[f"{p.a.name} + {p.b.name}" for p in not_cov[:20]]
             + ["No source covers both drugs: absence of a record does not mean the pair is safe."],
-            evidence={},
+            evidence={"pairs": [{"a": p.a.concept_id, "b": p.b.concept_id, "a_name": p.a.name, "b_name": p.b.name}
+                                for p in not_cov]},
         ))
     findings.sort(key=lambda f: (TIER_ORDER[f.tier], -f.risk, f.title))
 

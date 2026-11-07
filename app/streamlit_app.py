@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import hashlib
 import os
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -742,7 +741,8 @@ def audit_page():
         pick = st.selectbox("Case", cases)
     view = df if pick == "All cases" else df[df["case"] == pick]
     with f2:
-        st.download_button("Export CSV", view.to_csv(index=False).encode(), "athena_audit.csv", "text/csv",
+        safe = view.map(lambda v: "'" + v if isinstance(v, str) and v[:1] in ("=", "+", "-", "@", "\t", "\r") else v)
+        st.download_button("Export CSV", safe.to_csv(index=False).encode(), "athena_audit.csv", "text/csv",
                            icon=":material/download:", width="stretch")
 
     shown = [e for e in reversed(entries) if pick == "All cases" or e.case_id == pick]

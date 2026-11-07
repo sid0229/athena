@@ -25,7 +25,7 @@ ABBREVIATIONS = {
     "pcn": "penicillin", "tpa": "alteplase", "ivig": "immune globulin",
     "coumadin": "warfarin", "lasix": "furosemide", "tylenol": "acetaminophen",
     "zosyn": "piperacillin + tazobactam", "vanc": "vancomycin", "vanco": "vancomycin",
-    "levo": "levofloxacin", "dilaudid": "hydromorphone", "ativan": "lorazepam",
+    "dilaudid": "hydromorphone", "ativan": "lorazepam",
     "protonix": "pantoprazole", "zofran": "ondansetron", "reglan": "metoclopramide",
     "colace": "docusate", "percocet": "oxycodone + acetaminophen",
     "vicodin": "hydrocodone + acetaminophen", "bactrim": "sulfamethoxazole + trimethoprim",
@@ -48,6 +48,11 @@ ABBREVIATIONS = {
     "penicillin": "benzylpenicillin", "trimethoprim/sulfa": "sulfamethoxazole + trimethoprim",
     "tmp/smx": "sulfamethoxazole + trimethoprim", "piperacillin/tazo": "piperacillin + tazobactam",
     "pip/tazo": "piperacillin + tazobactam",
+    # Code review (Nov 2026). "levo" removed: on wards it also means Levophed / levothyroxine.
+    "insulin aspart": "insulin aspart (aspart)", "novolog": "insulin aspart (aspart)",
+    "novolog mix": "insulin aspart (aspart)", "potassium": "potassium chloride", "k": "potassium chloride",
+    "magnesium": "magnesium cation", "bactrim ds": "sulfamethoxazole + trimethoprim",
+    "tylenol #3": "acetaminophen + codeine", "tylenol with codeine": "acetaminophen + codeine",
 }
 
 # Drug classes / generic references. n2c2 annotates these as Drug, but they name
@@ -65,7 +70,7 @@ DRUG_CLASSES = {
     "iv antibiotics", "home medications", "medications", "meds", "vitamins",
     "multivitamin", "multivitamins", "mvi", "calcium", "electrolytes",
     "nebs", "nebulizers", "anesthesia", "analgesics", "analgesia", "anti-hypertensives",
-    "potassium", "magnesium", "phosphorus", "repletion", "lytes", "sliding scale",
+    "phosphorus", "repletion", "lytes", "sliding scale",
 }
 
 # IV fluids, blood products, gases, contrast and supplies: real orders, but not
@@ -87,8 +92,13 @@ SALT_AND_FORM_WORDS = (
     "powder|liquid|oral|susp|suspension|ointment|cream|gel|lotion|patch|drops|enema|inhaler|hfa|"
     "spray|nasal|ophthalmic|ophth|topical|jelly|mdi|diskus|discus|respimat|flexpen|kwikpen|solostar|preserv|free|generic|rectal|er|sr|xl|xr|cr|dr|ec|odt|disintegrating|"
     "extended|release|immediate|delayed|chewable|pf|p\\.f|sl|iv|po|pr|im|sc|subq|pca|"
-    "premix|desensitization|vial|bag|flush|mini|plus|excel"
+    "premix|desensitization|vial|bag|flush|mini|plus|excel|"
+    # frequency / sig words that follow the drug name in medication lists
+    "bid|tid|qid|qd|qod|qhs|qam|qpm|daily|prn|q\\d+h|q\\d+hr|ds|ir|po/ng|ng|gt|x"
 )
+# IV vehicle after a drug ("KCl 20 mEq in sodium chloride 0.9%"): the drug is the first part.
+_VEHICLE_RE = re.compile(r"\s+in\s+(?:\d[\d.]*\s*%?\s*)?(?:sodium chloride|ns|normal saline|d5w|d5 ?1/2 ?ns|"
+                         r"dextrose|sterile water|lr|lactated ringer)\b.*$")
 _SALT_RE = re.compile(rf"\b({SALT_AND_FORM_WORDS})\b\.?")
 _DOSE_RE = re.compile(r"(?<![a-z])\d[\d.,/-]*\s*(?:%|mg|mcg|meq|ml|g|gm|units?|l)?(?![a-z])")
 _COMBO_SPLIT = re.compile(r"\s*(?:-|/|\+|\band\b|\bwith\b)\s*")
@@ -127,10 +137,15 @@ class DrugNormalizer:
         self.index: dict[str, list[str]] = lex["index"]
         self.canonical: list[str] = lex["canonical"]
         self.drugbank_id: dict[str, str] = lex["drugbank_id"]
+        self.source: dict[str, str] = lex.get("source", {})
         self.fuzzy_threshold = load_config()["normalize"]["fuzzy_match_threshold"]
+        # Restricting typo matching to curated (non-Wikidata) names was tried in the code review:
+        # it lost more correct matches (Keflex, Versed, Thorazine) than wrong ones, so it stays open.
         self._fuzzy_keys = [k for k in self.index if len(k) >= 5]
 
     def _lookup(self, s: str) -> list[str] | None:
+        if " + " in s:  # abbreviation targets such as "piperacillin + tazobactam"
+            return self._lookup_combo(s)
         return self.index.get(s)
 
     def _lookup_combo(self, s: str) -> list[str] | None:
@@ -149,6 +164,7 @@ class DrugNormalizer:
         s = norm(raw)
         if not s:
             return Normalized(raw, (), "empty", 0.0, "unmapped")
+        s = _VEHICLE_RE.sub("", s) or s  # "kcl 20 meq in ns" -> "kcl 20 meq"
 
         if s in DRUG_CLASSES:
             return Normalized(raw, (), "drug_class", 1.0, "drug_class")
@@ -160,16 +176,18 @@ class DrugNormalizer:
 
         cleaned = _clean(s)
         stripped = _strip_salts(cleaned)
+        # Abbreviations/brands before the index: "percocet 5/325" must reach the curated entry,
+        # not an ambiguous index hit for the cleaned string.
         stages = [
             ("exact", s, 1.0),
-            ("cleaned", cleaned, 0.95),
             ("abbreviation", ABBREVIATIONS.get(cleaned) or "", 0.95),
-            ("salt_stripped", stripped, 0.9),
+            ("cleaned", cleaned, 0.95),
             ("abbreviation", ABBREVIATIONS.get(stripped) or "", 0.9),
+            ("salt_stripped", stripped, 0.9),
         ]
         for stage, cand, score in stages:
             if cand and (hit := self._lookup(cand)):
-                return self._result(raw, hit, stage, score)
+                return self._result(raw, hit, stage, score, self.source.get(cand))
         for stage, cand in (("combination", cleaned), ("combination", stripped)):
             if hit := self._lookup_combo(cand):
                 return Normalized(raw, tuple(sorted(set(hit))), stage, 0.9, "mapped")
@@ -181,11 +199,17 @@ class DrugNormalizer:
             m = process.extractOne(stripped, keys, scorer=fuzz.ratio,
                                    score_cutoff=self.fuzzy_threshold)
             if m:
-                return self._result(raw, self.index[m[0]], "fuzzy", round(m[1] / 100 * 0.85, 3))
+                return self._result(raw, self.index[m[0]], "fuzzy", round(m[1] / 100 * 0.85, 3), self.source.get(m[0]))
 
         return Normalized(raw, (), "unmapped", 0.0, "unmapped")
 
     @staticmethod
-    def _result(raw: str, hit: list[str], stage: str, score: float) -> Normalized:
-        status = "mapped" if len(hit) == 1 else "ambiguous"
-        return Normalized(raw, tuple(hit), stage, score if status == "mapped" else score * 0.5, status)
+    def _result(raw: str, hit: list[str], stage: str, score: float, source: str | None = None) -> Normalized:
+        if len(hit) == 1:
+            return Normalized(raw, tuple(hit), stage, score, "mapped")
+        if source in ("rxnorm", None):
+            # RxNorm multi-ingredient entries are combination products (Entresto, Percocet,
+            # Kaletra): every ingredient is checked. Code review found all of them were combos.
+            return Normalized(raw, tuple(sorted(set(hit))), "combination_brand" if source else stage, score, "mapped")
+        # Wikidata aliases pointing at several different drugs (e.g. "floxin") stay ambiguous.
+        return Normalized(raw, tuple(hit), stage, score * 0.5, "ambiguous")

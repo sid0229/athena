@@ -47,7 +47,19 @@ SALT_MERGES = {
     ("hydrocortisone butyrate", "hydrocortisone"),
     ("methscopolamine bromide", "methscopolamine"),
     ("tedizolid phosphate", "tedizolid"),
+    # Code review (Nov 2026): one drug split across DrugBank (moiety) and DDInter (salt) names,
+    # so lookups by either name lost the other source's records.
+    ("lithium cation", "lithium carbonate"),
+    ("potassium cation", "potassium chloride"),
+    ("magnesium oxide", "magnesium cation"),
+    ("magnesium sulfate", "magnesium cation"),
+    ("icosapent", "icosapent ethyl"),
+    ("loteprednol etabonate", "loteprednol"),
+    ("prasterone enantate", "prasterone"),
+    ("insulin aspart (aspart protamine)", "insulin aspart (aspart)"),
 }
+# For these merges the display name is the parent, not the shorter name.
+PREFERRED_ROOT = {"lithium carbonate", "potassium chloride", "icosapent ethyl", "insulin aspart (aspart)"}
 
 # Parenthetical qualifiers that denote a salt or insulin type (same systemic drug).
 MERGEABLE_QUALIFIERS = {
@@ -60,6 +72,7 @@ SEVERITY_LEVELS = ("Major", "Moderate", "Minor", "Unknown")
 # Derived severity for DrugBank-only pairs (see derive_template_severity).
 MIN_OVERLAP = 10
 MAJORITY = 0.5
+SMALL_N_MAJOR = 0.75
 
 
 class _UnionFind:
@@ -75,8 +88,9 @@ class _UnionFind:
     def union(self, a, b):
         ra, rb = self.find(a), self.find(b)
         if ra != rb:
-            # keep the shorter (parent) name as root
-            if (len(ra), ra) > (len(rb), rb):
+            # keep the preferred, else the shorter (parent) name as root
+            key = lambda x: (x not in PREFERRED_ROOT, len(x), x)  # noqa: E731
+            if key(rb) < key(ra):
                 ra, rb = rb, ra
             self.parent[rb] = ra
 
@@ -96,6 +110,7 @@ def build_concepts(lex: dict) -> tuple[dict[str, str], pd.DataFrame]:
     kag = drugbank.load_kaggle_ddi()
     in_db = {norm(n) for n in set(kag["drug_a"]) | set(kag["drug_b"])}
     in_dd = {norm(n) for n in ddinter.ddinter_drugs()["name"]}
+    home = {norm(n): c for n, c in ddinter.ddinter_home_classes().items()}
     ids = lex["drugbank_id"]
 
     groups: dict[str, list[str]] = defaultdict(list)
@@ -116,6 +131,7 @@ def build_concepts(lex: dict) -> tuple[dict[str, str], pd.DataFrame]:
             "members": json.dumps(members),
             "in_drugbank": any(m in in_db for m in members),
             "in_ddinter": any(m in in_dd for m in members),
+            "ddinter_home": "".join(sorted(set().union(*(home.get(m, set()) for m in members)))),
         })
     concepts = pd.DataFrame(rows).sort_values("concept_id", ignore_index=True)
     assert concepts["concept_id"].is_unique
@@ -183,8 +199,10 @@ def derive_template_severity(inter: pd.DataFrame) -> pd.DataFrame:
     """Severity for each DrugBank template, from DDInter grades of pairs in both sources.
 
     Rule: among overlapping pairs with a known DDInter grade (Major/Moderate/Minor),
-    Major if >= 50% Major, else Minor if >= 50% Minor, else Moderate; Unknown if
-    fewer than MIN_OVERLAP such pairs.
+    Major if >= 50% Major, else Minor if >= 50% Minor, else Moderate. With fewer than
+    MIN_OVERLAP such pairs the evidence is thin: Major if at least SMALL_N_MAJOR of >= 3
+    pairs are Major, else Moderate (the prior). These used to be "Unknown", which ranks
+    below Minor and hid e.g. the vasodilatory template (sildenafil + nitrates).
     """
     db = inter[inter["source"] == "drugbank"][["a", "b", "template"]].copy()
     db["template"] = db["template"].map(json.loads)
@@ -199,7 +217,7 @@ def derive_template_severity(inter: pd.DataFrame) -> pd.DataFrame:
         n = int(known.sum())
         p = {k: (c[k] / n if n else 0.0) for k in ("Major", "Moderate", "Minor")}
         if n < MIN_OVERLAP:
-            sev = "Unknown"
+            sev = "Major" if n >= 3 and p["Major"] >= SMALL_N_MAJOR else "Moderate"
         elif p["Major"] >= MAJORITY:
             sev = "Major"
         elif p["Minor"] >= MAJORITY:
@@ -217,7 +235,8 @@ def derive_template_severity(inter: pd.DataFrame) -> pd.DataFrame:
 SCHEMA = """
 CREATE TABLE concepts (
     concept_id TEXT PRIMARY KEY, name TEXT NOT NULL, drugbank_id TEXT,
-    members TEXT NOT NULL, in_drugbank INTEGER NOT NULL, in_ddinter INTEGER NOT NULL);
+    members TEXT NOT NULL, in_drugbank INTEGER NOT NULL, in_ddinter INTEGER NOT NULL,
+    ddinter_home TEXT NOT NULL DEFAULT '');  -- ATC files of the DDInter download that list ALL of the drug's pairs
 CREATE TABLE names (name TEXT PRIMARY KEY, concept_id TEXT NOT NULL REFERENCES concepts(concept_id));
 CREATE TABLE interactions (
     a TEXT NOT NULL REFERENCES concepts(concept_id), b TEXT NOT NULL REFERENCES concepts(concept_id),
@@ -260,8 +279,10 @@ def build_kb() -> dict:
             "pairs_drugbank_only": int((pairs == frozenset({"drugbank"})).sum()),
             "pairs_ddinter_only": int((pairs == frozenset({"ddinter"})).sum()),
             "sources": "DrugBank DDI extract (Kaggle, DeepDDI benchmark); DDInter (8 ATC files)",
+            "ddinter_files": "".join(sorted(ddinter.downloaded_atc_files())),
             "severity_rule": f"template severity from DDInter overlap: Major/Minor if >= {MAJORITY:.0%}, "
-                             f"else Moderate; Unknown if < {MIN_OVERLAP} graded overlapping pairs",
+                             f"else Moderate; with < {MIN_OVERLAP} graded pairs Major if >= {SMALL_N_MAJOR:.0%} "
+                             f"of >= 3, else Moderate; high-alert rules raise listed classes to Major",
         }
         con.executemany("INSERT INTO meta VALUES (?, ?)", [(k, str(v)) for k, v in stats.items()])
     return stats

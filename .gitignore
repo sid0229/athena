@@ -5,6 +5,7 @@ data/raw/n2c2_2018_track2/
 data/processed/llm_cache/
 # Runtime review log
 data/processed/audit.db
+data/processed/audit.db.head
 audit/
 *.sqlite
 *.sqlite3
@@ -17,7 +18,6 @@ models/
 *.gguf
 *.safetensors
 adapters/
-
 # Python
 .venv/
 __pycache__/
@@ -25,15 +25,12 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .ipynb_checkpoints/
-
 # OS / editors
 .DS_Store
 .vscode/
 .idea/
-
 # Streamlit secrets
 .streamlit/secrets.toml
-
 # Web dashboard build output and dependencies
 web/node_modules/
 web/dist/

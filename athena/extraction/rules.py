@@ -126,20 +126,26 @@ ATTR_PATTERNS: dict[str, re.Pattern] = {
         rf"(?:\s*/\s*{_NUM}?\s*(?:ml|hr|kg|dose|patch|actuation))?(?![A-Za-z])", re.I),
     "Dosage": re.compile(
         r"(?<![\w])(?:one|two|three|four|half|1/2)\s*\(\d+(?:\.\d+)?\)", re.I),
+    # Long forms first: regex alternation takes the first branch that matches, so "tablets?" used to
+    # win and "Tablet, Delayed Release (E.C.)" was cut to "Tablet" (code review, Nov 2026).
     "Form": re.compile(
-        r"(?<![A-Za-z])(?:tablets?|tabs?|capsules?|caps?|solution|suspension|syrup|patch|cream|ointment|"
-        r"inhaler|spray|drops?|powder|suppository|lozenge|elixir|syringe|"
-        r"tablet,?\s*(?:delayed release|extended release|chewable|rapid dissolve)(?:\s*\([^)]*\))?)(?![A-Za-z])",
+        r"(?<![A-Za-z])(?:"
+        r"(?:tablets?|capsules?),?\s*(?:delayed|extended|sustained|rapid)\s*(?:release|dissolve)"
+        r"(?:\s*\([^)]*\))?(?:\s*\d+\s*hr)?|"
+        r"tablets?,?\s*(?:chewable|sublingual|rapid dissolve)|"
+        r"solution\s+for\s+nebulization|adhesive\s+patch,?\s*medicated|patch\s+\d+\s*hr|"
+        r"tablets?|tabs?|capsules?|caps?|solution|suspension|syrup|patch|cream|ointment|"
+        r"inhaler|spray|drops?|powder|suppository|lozenge|elixir|syringe)(?![A-Za-z])",
         re.I),
     "Route": re.compile(
-        r"(?<![A-Za-z])(?:PO|IV|IM|SC|SQ|SL|PR|subcutaneous(?:ly)?|sublingual|topical(?:ly)?|"
+        r"(?<![A-Za-z])(?:P\.O\.?|PO|IV|IM|SC|SQ|SL|PR|subcutaneous(?:ly)?|sublingual|topical(?:ly)?|oral|"
         r"inhalation|nebulization|intravenous(?:ly)?|intramuscular|by mouth|orally|transdermal|nasal|"
         r"ophthalmic|gtt|drip)(?![A-Za-z])", re.I),
     "Frequency": re.compile(
-        r"(?<![A-Za-z])(?:Q\s?\d+\s?-?\s?\d*\s?H(?:RS?)?|QD|QOD|QHS|QAM|QPM|HS|BID|TID|QID|DAILY|"
+        r"(?<![A-Za-z])(?:Q\s?\d+\s?-?\s?\d*\s?H(?:RS?)?|Q\.\s?D\.?|Q\.?\s?DAY|QD|QOD|QHS|QAM|QPM|HS|BID|TID|QID|DAILY|"
         r"once a day|twice a day|three times a day|four times a day|every \w+ \(\d+\) hours|"
-        r"every (?:morning|evening|night|day|other day)|at bedtime|nightly|weekly)(?![A-Za-z])"
-        r"(?:\s*\([^()\n]{1,40}\))?(?:\s*\.?\s*as needed)?|(?<![A-Za-z])(?:PRN|as needed)(?![A-Za-z])", re.I),
+        r"every (?:morning|evening|night|day|other day)|at bedtime|at night|nightly|weekly)(?![A-Za-z])"
+        r"(?:\s*\([^()]{1,40}\))?(?:\s*\.?\s*as needed)?|(?<![A-Za-z])(?:PRN|as needed)(?![A-Za-z])", re.I),
     "Duration": re.compile(
         r"(?<![A-Za-z])(?:for|x)\s*(?:\d+|one|two|three|four|five|six|seven|ten|fourteen)\s*"
         r"(?:\(\d+\)\s*)?(?:more\s+)?(?:days?|weeks?|months?|doses?)(?![A-Za-z])", re.I),

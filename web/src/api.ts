@@ -17,7 +17,7 @@ export const api = {
   status: () => req<{ llm_online: boolean }>('/api/status'),
   analyze: (text: string, mode: string, prior_list?: string) =>
     req<Analysis>('/api/analyze', { text, mode, prior_list }),
-  decide: (body: { text: string; mode: string; finding_id: string; reviewer: string; action: string;
+  decide: (body: { report_hash: string; finding_id: string; reviewer: string; action: string;
     reason_code?: string | null; comment?: string | null }) =>
     req<{ decisions: Record<string, Decision> }>('/api/decision', body),
   audit: () => req<{ chain_ok: boolean; broken_at: number | null; entries: Decision[] }>('/api/audit'),

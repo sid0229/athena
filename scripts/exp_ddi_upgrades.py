@@ -27,91 +27,35 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import xgboost as xgb  # noqa: E402
-from rdkit import Chem, DataStructs, RDLogger  # noqa: E402
-from rdkit.Chem import rdFingerprintGenerator  # noqa: E402
 from sklearn.metrics import average_precision_score, f1_score, precision_score, recall_score, roc_auc_score  # noqa: E402
 
 from athena.config import ROOT, data_path  # noqa: E402
 from athena.data.drugbank import load_benchmark_ddi  # noqa: E402
-from athena.verification.ddi_predictor import build_graph, featurize, with_negatives  # noqa: E402
+from athena.verification.ddi_predictor import (ChemFeatures, build_graph, featurize, load_fingerprints,  # noqa: E402
+                                               with_negatives)
 
-RDLogger.DisableLog("rdApp.*")
-SEED, NBITS, K = 42, 256, 5
+SEED = 42
 BASE = data_path("drugbank_benchmark")
 
 
 # ------------------------------------------------------------------ chemistry
 def load_fps():
-    smi = pd.read_csv(BASE / "drug_smiles.csv")
-    gen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=NBITS)
-    fps, bits = {}, {}
-    for d, s in zip(smi.drug_id, smi.smiles):
-        m = Chem.MolFromSmiles(str(s))
-        if m is None:
-            continue
-        fp = gen.GetFingerprint(m)
-        fps[d] = fp
-        bits[d] = np.array(list(fp), dtype=np.uint8)
-    return fps, bits
+    """Shared implementation (athena.verification.ddi_predictor); returns (fps, bits) for this script."""
+    fp = load_fingerprints()
+    return {d: v[0] for d, v in fp.items()}, fp
 
 
-class Chem2:
+class Chem2(ChemFeatures):
+    """The experiment's feature calls on top of the shipped ChemFeatures (the earlier private copy had
+    no kNN buffer in cold mode, so its numbers came from slightly different code — code review)."""
+
     def __init__(self, fps, bits, g):
-        self.fps, self.bits, self.g = fps, bits, g
-        self.ids = list(fps)
-        self.fplist = [fps[d] for d in self.ids]
-        self._sim, self._knn = {}, {}
-        self.known = [d for d in self.ids if g.get(d)]  # drugs with training interactions
-        self.known_fps = [fps[d] for d in self.known]
-
-    def sims(self, d):  # Tanimoto of d to every drug with SMILES
-        if d not in self._sim:
-            self._sim[d] = dict(zip(self.ids, DataStructs.BulkTanimotoSimilarity(self.fps[d], self.fplist)))
-        return self._sim[d]
-
-    def knn(self, d):  # K most similar drugs that have training interactions (excluding d)
-        if d not in self._knn:
-            s = DataStructs.BulkTanimotoSimilarity(self.fps[d], self.known_fps)
-            order = np.argsort(s)[::-1]
-            self._knn[d] = [self.known[i] for i in order if self.known[i] != d][:K]
-        return self._knn[d]
-
-    def pair(self, u, v):
-        zero = np.zeros(2 * NBITS + 5, dtype=np.float32)
-        if u not in self.fps or v not in self.fps:
-            return zero
-        bu, bv = self.bits[u], self.bits[v]
-        su = self.sims(u)
-        nu, nv = self.g.get(u, set()) - {v}, self.g.get(v, set()) - {u}
-        max_u_to_nv = max((su[w] for w in nv if w in su), default=0.0)
-        sv = self.sims(v)
-        max_v_to_nu = max((sv[w] for w in nu if w in sv), default=0.0)
-        ku, kv = self.knn(u), self.knn(v)
-        hits = sum(1 for a in ku for b in kv if a != b and {a, b} != {u, v} and b in self.g.get(a, ()))
-        return np.concatenate([bu + bv, bu * bv,
-                               [su[v], max_u_to_nv, max_v_to_nu, max(max_u_to_nv, max_v_to_nu), hits / (K * K)]]
-                              ).astype(np.float32)
-
-    def featurize(self, pairs):
-        return np.stack([self.pair(u, v) for u, v in zip(pairs["u"], pairs["v"])])
+        super().__init__(bits, g)
 
     def pair_cold(self, u, v, hide=()):
-        """Features usable when a drug has no recorded interactions. In training, the drugs in
-        `hide` are treated as unseen (their own interactions ignored), as they will be at test time."""
-        if u not in self.fps or v not in self.fps:
-            return np.zeros(2 * NBITS + 4, dtype=np.float32)
-        nb = lambda d, other: set() if d in hide else self.g.get(d, set()) - {other}  # noqa: E731
-        su, sv = self.sims(u), self.sims(v)
-        a = max((su[w] for w in nb(v, u) if w in su), default=0.0)
-        b = max((sv[w] for w in nb(u, v) if w in sv), default=0.0)
-        ku = [x for x in self.knn(u) if x not in hide][:K]
-        kv = [x for x in self.knn(v) if x not in hide][:K]
-        hits = sum(1 for x in ku for y in kv if x != y and {x, y} != {u, v} and y in self.g.get(x, ()))
-        return np.concatenate([self.bits[u] + self.bits[v], self.bits[u] * self.bits[v],
-                               [su[v], max(a, b), min(a, b), hits / (K * K)]]).astype(np.float32)
+        return self.pair(u, v, hide, cold=True)
 
 
-# ------------------------------------------------------------------ data
 def cold_negs(df):
     """Cold-start files keep the negative sample in the 'split' column."""
     return df.assign(**{"Neg samples": df["split"]})

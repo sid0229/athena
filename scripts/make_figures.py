@@ -2,7 +2,7 @@
 
     python scripts/make_figures.py
 
-ddi_specificity.png      interaction judgement: LLM alone vs Athena hybrid verification
+ddi_specificity.png      interaction judgement: LLM alone vs Athena's XGBoost predictor (research component)
 f1_extraction.png        n2c2 micro F1 (strict and lenient) by extraction mode
 f1_per_entity.png        n2c2 strict F1 per entity type: LLM only vs rules only vs hybrid
 """
@@ -24,7 +24,8 @@ from athena.config import ROOT  # noqa: E402
 R = ROOT / "docs" / "results"
 INK, MUTED = "#152238", "#50627A"
 C = {"scispaCy only": "#A9B6C4", "LLM only": "#FF5A5F", "LLM only (plain prompt)": "#FF5A5F",
-     "LLM only (cautious prompt)": "#FFA3A6", "Rules only": "#3B4F6B", "Athena hybrid": "#00A3B4"}
+     "LLM only (cautious prompt)": "#FFA3A6", "Rules only": "#3B4F6B", "Athena hybrid": "#00A3B4",
+     "XGBoost predictor (research)": "#00A3B4"}
 plt.rcParams.update({"font.family": "Times New Roman", "axes.edgecolor": "#B8C4D0", "axes.labelcolor": INK,
                      "xtick.color": INK, "ytick.color": MUTED})
 
@@ -37,37 +38,52 @@ def style(ax, title):
     ax.set_axisbelow(True)
 
 
-def grouped(ax, groups, series, data, fmt="{:.2f}", ylim=(0, 1.1)):
+def grouped(ax, groups, series, data, fmt="{:.2f}", ylim=(0, 1.1), tops=None):
+    """tops[s][g]: y position for the value label (e.g. above an error bar)."""
     x = np.arange(len(groups))
     w = 0.8 / len(series)
     for i, s in enumerate(series):
         vals = [data[s][g] for g in groups]
         bars = ax.bar(x + (i - (len(series) - 1) / 2) * w, vals, w * 0.9, label=s, color=C[s],
                       edgecolor="white", linewidth=0.6)
-        for b, v in zip(bars, vals):
-            ax.text(b.get_x() + b.get_width() / 2, v + 0.015, fmt.format(v), ha="center", va="bottom",
-                    fontsize=8.5, color=INK, fontweight="bold" if s == "Athena hybrid" else "normal")
+        for b, v, g in zip(bars, vals, groups):
+            y = (tops or {}).get(s, {}).get(g, v)
+            ax.text(b.get_x() + b.get_width() / 2, y + 0.015, fmt.format(v), ha="center", va="bottom",
+                    fontsize=8.5, color=INK, fontweight="bold" if s in ("Athena hybrid", "XGBoost predictor (research)") else "normal")
     ax.set_xticks(x, groups, fontsize=10.5)
     ax.set_ylim(*ylim)
 
 
 def ddi_specificity():
     sp = json.loads((R / "specificity.json").read_text())["B_interaction_judgement"]
-    plain, careful, hyb = sp["results"]["LLM only"], sp["llm_cautious_prompt"], sp["results"]["XGBoost (graph ML)"]
-    rows = {"LLM only (plain prompt)": plain, "LLM only (cautious prompt)": careful, "Athena hybrid": hyb}
+    res = sp["results"]
+    order = ["LLM only (plain prompt)", "LLM only (cautious prompt)", "XGBoost predictor (research)"]
+    rows = {k: res[k] for k in order if k in res}
     groups = ["Specificity", "Sensitivity", "Balanced accuracy"]
     data = {k: {"Specificity": v["specificity"], "Sensitivity": v["sensitivity"],
-                "Balanced accuracy": (v["specificity"] + v["sensitivity"]) / 2} for k, v in rows.items()}
-    fig, ax = plt.subplots(figsize=(7.6, 4.3), dpi=200)
-    grouped(ax, groups, list(rows), data)
+                "Balanced accuracy": v["balanced_accuracy"]} for k, v in rows.items()}
+    tops = {k: {"Specificity": v["specificity_ci95"][1], "Sensitivity": v["sensitivity_ci95"][1]} for k, v in rows.items()}
+    fig, ax = plt.subplots(figsize=(7.6, 4.6), dpi=200)
+    grouped(ax, groups, list(rows), data, tops=tops, ylim=(0, 1.15))
+    # 95% Wilson intervals (n = 100 per class)
+    w = 0.8 / len(rows)
+    for i, (k, v) in enumerate(rows.items()):
+        for gi, (g, key) in enumerate((("Specificity", "specificity"), ("Sensitivity", "sensitivity"))):
+            lo, hi = v[f"{key}_ci95"]
+            ax.errorbar(gi + (i - (len(rows) - 1) / 2) * w, v[key], yerr=[[v[key] - lo], [hi - v[key]]],
+                        fmt="none", ecolor=INK, elinewidth=0.8, capsize=2.5)
     ax.axhline(0.5, color="#9AA9B8", lw=0.9, ls="--")
     ax.text(2.42, 0.515, "chance", fontsize=8, color=MUTED, ha="right")
-    style(ax, "Drug–drug interaction judgement: LLM alone vs Athena hybrid")
-    ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=9.5)
-    fig.text(0.01, 0.012, f"{sp['pairs']} held-out DrugBank benchmark pairs (50% interacting). LLM = Llama 3.2 3B asked directly; "
-             "Athena hybrid = LLM restricted to extraction, interactions decided by the verification branch "
-             "(XGBoost on interaction-graph + chemical-structure features, trained only on training pairs).", fontsize=7, color=MUTED, wrap=True)
-    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    style(ax, "Should the LLM judge drug–drug interactions? LLM alone vs a verified predictor")
+    ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=9)
+    fig.text(0.01, 0.012,
+             f"{sp['pairs']} held-out DrugBank benchmark pairs, 50% interacting (frozen in {sp.get('pairs_file', 'specificity_pairs.json')}); "
+             "error bars: 95% Wilson intervals. LLM = Llama 3.2 3B asked directly.\n"
+             "XGBoost = Athena's research predictor (graph + chemistry, trained on training pairs only). Athena's live flags come "
+             "from the DrugBank/DDInter lookup, not this model.\n"
+             f"Benchmark negatives are sampled pairs: {sp.get('negatives_that_are_kb_interactions', '?')} of 100 are interactions "
+             "in Athena's KB (results without them are in specificity.json).", fontsize=6.6, color=MUTED)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
     fig.savefig(R / "ddi_specificity.png")
     plt.close(fig)
 

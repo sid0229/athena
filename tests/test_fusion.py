@@ -127,3 +127,37 @@ def test_local_route_detection():
     assert local_route(entry("timolol", ["timolol"], Route="both eyes")) == "ophthalmic"
     assert local_route(entry("clobetasol", ["clobetasol"], Form="Cream")) == "topical"
     assert local_route(entry("metoprolol", ["metoprolol"], Route="PO", Form="Tablet")) is None
+
+
+# ---- code review regressions (Nov 2026)
+
+def test_colon_lines_inside_a_list_do_not_end_it():
+    t = ("Discharge Medications:\n1. Warfarin 5 mg daily\nInsulin Lispro: sliding scale\n"
+         "2. Metoprolol 25 mg BID\n\nDischarge Disposition:\nHome")
+    (sec,) = medication_sections(t)
+    assert "Metoprolol" in t[sec.start:sec.end] and "Disposition" not in t[sec.start:sec.end]
+
+
+def test_list_ends_at_prose_and_header_variants_are_found():
+    t = "Discharge Medications:\nwarfarin 5 mg daily\n\nAvoid aspirin and ibuprofen while on warfarin.\n"
+    (sec,) = medication_sections(t)
+    assert "aspirin" not in t[sec.start:sec.end]
+    kinds = [s.kind for s in medication_sections(
+        "Medications on Admission (home):\nmetoprolol 25 mg\n\nDischarge Medication:\nwarfarin 5 mg")]
+    assert kinds == ["admission", "discharge"]
+    assert [s.kind for s in medication_sections("DISCHARGE MEDICATIONS\nwarfarin 5 mg daily\n")] == ["discharge"]
+
+
+def test_allergy_and_negated_mentions_are_not_active_without_discharge_list():
+    r = analyze("Patient is allergic to aspirin. Takes warfarin 5 mg daily.", MedicationExtractor("rules"))
+    status = {m.name: m.status for m in r.medications}
+    assert status["acetylsalicylic acid"] == "mentioned" and status["warfarin"] == "active"
+    assert not any(f.tier == "critical" for f in r.findings)
+
+
+def test_status_cue_attaches_to_its_object_and_respects_negation():
+    r = analyze("Warfarin was continued, held aspirin due to bleeding. Lisinopril was not held.",
+                MedicationExtractor("rules"))
+    status = {m.name: m.status for m in r.medications}
+    assert status["acetylsalicylic acid"] == "held"
+    assert status["warfarin"] == "active" and status["lisinopril"] == "active"

@@ -39,7 +39,8 @@ NOT_DRUGS = {
 WINDOW_BEFORE = 40
 WINDOW_AFTER = 300
 _ITEM_BOUNDARY = re.compile(r"\n\s*\d{1,2}[.)]\s")
-_FREQ_TAIL = re.compile(r"\s*\([^()\n]{1,40}\)(?:\s*\.?\s*as needed)?|\s+as needed", re.I)
+# The parenthesis may wrap a line: "BID (2 times a\nday) as needed" (489 such gold spans in train+val).
+_FREQ_TAIL = re.compile(r"\s*\([^()]{1,40}\)(?:\s*\.?\s*as needed)?|\s+as needed", re.I)
 
 
 @dataclass(frozen=True)

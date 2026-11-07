@@ -11,7 +11,6 @@ Writes docs/results/fewshot_<split>.json.
 """
 
 import argparse
-import hashlib
 import json
 import sys
 import time
@@ -23,14 +22,8 @@ from athena.config import ROOT, load_config  # noqa: E402
 from athena.data import n2c2  # noqa: E402
 from athena.eval.n2c2_metrics import Scores, score_note  # noqa: E402
 from athena.extraction.chunking import chunk_text  # noqa: E402
-from athena.extraction.fewshot import (  # noqa: E402
-    COLS,
-    DEFAULT_K as K,
-    DEFAULT_LINES as LINES,
-    VERSION,
-    FewShotExtractor,
-    build_snippet_bank as snippets,
-)
+from athena.extraction.fewshot import COLS, FewShotExtractor  # noqa: E402
+from athena.extraction.fewshot import DEFAULT_K as K  # noqa: E402
 from athena.extraction.llm_extractor import OllamaExtractor  # noqa: E402
 from athena.extraction.pipeline import MedicationExtractor  # noqa: E402
 

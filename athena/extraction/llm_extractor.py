@@ -85,11 +85,35 @@ class OllamaExtractor:
         self.use_cache = use_cache
         self.stats = {"calls": 0, "cache_hits": 0, "parse_failures": 0, "seconds": 0.0, "gen_tokens": 0}
 
+    def _cache_signature(self) -> dict:
+        """What the cached outputs depend on besides (model, prompt version, chunk text)."""
+        return {"prompt_sha256": hashlib.sha256(self.system.encode()).hexdigest(),
+                "options": {k: self.options[k] for k in ("temperature", "num_ctx", "num_predict")}}
+
+    def check_cache(self) -> None:
+        """Refuse stale cache: editing the prompt file or decoding options without bumping
+        PROMPT_VERSION would otherwise silently reuse old outputs (code review, Nov 2026)."""
+        if not self.use_cache:
+            return
+        meta = self.cache_dir / "_signature.json"
+        sig = self._cache_signature()
+        if meta.exists():
+            old = json.loads(meta.read_text())
+            if old != sig:
+                raise RuntimeError(f"LLM cache {self.cache_dir.name} was made with a different prompt or options "
+                                   f"— bump PROMPT_VERSION (or delete the cache). {old} != {sig}")
+        else:
+            meta.parent.mkdir(parents=True, exist_ok=True)
+            meta.write_text(json.dumps(sig, indent=1))
+
     def _cache_path(self, text: str) -> Path:
         h = hashlib.sha256(f"{self.model}|{PROMPT_VERSION}|{text}".encode()).hexdigest()[:24]
         return self.cache_dir / f"{h}.json"
 
     def extract_chunk(self, text: str) -> list[RawMed]:
+        if not getattr(self, "_cache_checked", False):
+            self.check_cache()
+            self._cache_checked = True
         path = self._cache_path(text)
         if self.use_cache and path.exists():
             self.stats["cache_hits"] += 1
@@ -108,7 +132,8 @@ class OllamaExtractor:
         return meds
 
     def _call(self, text: str) -> list[list[str]] | None:
-        for attempt in range(2):
+        # A retry with another seed only differs when sampling; at temperature 0 it repeats itself.
+        for attempt in range(2 if self.options["temperature"] > 0 else 1):
             resp = self.client.chat(
                 model=self.model,
                 messages=[{"role": "system", "content": self.system}, {"role": "user", "content": text}],

@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, FileText, X } from 'lucide-react'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { Analysis } from '../types'
 import { cap, disp } from '../lib'
 import { Button, Card, PageHeader, cx } from '../components/ui'
@@ -12,7 +12,7 @@ export function Medications({ a, analyzedAt }: { a: Analysis; analyzedAt: string
   const [note, setNote] = useState(false)
   const meds = a.report.medications
   return (
-    <div className="mx-auto max-w-[940px]">
+    <div className="mx-auto max-w-[1320px]">
       <PageHeader title="Medication Record" tag={<span className="rounded border border-line px-1.5 py-px">{meds.length} entries</span>}
         right={<Button icon={<FileText size={15} strokeWidth={1.75} />} onClick={() => setNote(true)}>View Source Note</Button>} />
       <Card className="overflow-hidden">
@@ -35,18 +35,19 @@ export function Medications({ a, analyzedAt }: { a: Analysis; analyzedAt: string
                   <tr onClick={() => setOpen(isOpen ? null : m.id)}
                     className={cx('cursor-pointer border-b border-line last:border-b-0 hover:bg-surface-2', isOpen && unchecked && 'bg-critical-soft')}>
                     <td className="px-4 py-3.5">
-                      <span className="text-[14.5px] text-ink">{disp(m.name, a.display_names)}</span>
+                      <span className="text-base text-ink">{disp(m.name, a.display_names)}</span>
                       {m.attributes.Strength && <span className="meta ml-2">{m.attributes.Strength}</span>}
-                      {unchecked && <span className="ml-2 inline-block size-1.5 rounded-full bg-critical align-middle" aria-label="not checked" />}
+                      {unchecked && <span className="ml-2 inline-flex items-center gap-1 align-middle text-xs text-critical">
+                        <span aria-hidden className="inline-block size-1.5 rounded-full bg-critical" />not checked</span>}
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className={cx('flex items-center gap-1.5 text-[13.5px]', STATUS[m.status])}>
+                      <span className={cx('flex items-center gap-1.5 text-sm', STATUS[m.status])}>
                         <span className="size-1.5 rounded-full bg-current" /><span className="text-ink">{cap(m.status)}</span>
                       </span>
                     </td>
                     <td className="meta px-4 py-3.5">{stage}</td>
                     <td className="px-4 py-3.5 text-right text-muted">
-                      <button aria-expanded={isOpen} aria-label="Details" className="cursor-pointer">
+                      <button aria-expanded={isOpen} aria-label={`Details for ${disp(m.name, a.display_names)}`} className="cursor-pointer">
                         {isOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                       </button>
                     </td>
@@ -62,16 +63,16 @@ export function Medications({ a, analyzedAt }: { a: Analysis; analyzedAt: string
                           <div>
                             <div className="eyebrow mb-1.5">Mapping status</div>
                             {unchecked
-                              ? <div className="flex items-center gap-1.5 text-[13.5px] text-critical"><span className="size-1.5 rounded-full bg-critical" />
+                              ? <div className="flex items-center gap-1.5 text-sm text-critical"><span className="size-1.5 rounded-full bg-critical" />
                                 {m.norm_status === 'drug_class' ? 'Drug class — interactions not checked'
                                   : m.norm_status === 'ambiguous' ? `Ambiguous (${m.kb_names.join(', ')}) — not checked`
                                     : 'Not mapped to a known drug — interactions not checked'}</div>
-                              : <div className="flex items-center gap-1.5 text-[13.5px] text-ink"><span className="size-1.5 rounded-full bg-ok" />
+                              : <div className="flex items-center gap-1.5 text-sm text-ink"><span className="size-1.5 rounded-full bg-ok" />
                                 Mapped to {m.kb_names.join(' + ')} <span className="meta">({m.norm_stage.replace('_', ' ')} match)</span></div>}
                           </div>
                           <div>
                             <div className="eyebrow mb-1.5">Confidence score</div>
-                            <div className="text-[13.5px]"><span className="font-mono font-semibold text-ink">{m.confidence.toFixed(2)}</span>
+                            <div className="text-sm"><span className="font-mono font-semibold text-ink">{m.confidence.toFixed(2)}</span>
                               <span className="meta"> / 1.00 · {Object.entries(m.confidence_parts).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(' · ')}</span></div>
                           </div>
                         </div>
@@ -98,11 +99,13 @@ export function Medications({ a, analyzedAt }: { a: Analysis; analyzedAt: string
 }
 
 function NoteDrawer({ a, onClose }: { a: Analysis; onClose: () => void }) {
+  // Native modal dialog: focus moves in, is trapped, Escape closes, focus returns to the opener.
+  const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
-    const h = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
-  }, [onClose])
+    const d = ref.current
+    d?.showModal()
+    return () => d?.close()
+  }, [])
   const hot = new Set(a.report.findings.filter(f => f.tier === 'critical').flatMap(f => f.meds))
   const spans = a.report.medications.flatMap(m => m.mentions.map(x => ({ ...x, id: m.id, name: m.name })))
     .sort((x, y) => x.start - y.start)
@@ -116,16 +119,17 @@ function NoteDrawer({ a, onClose }: { a: Analysis; onClose: () => void }) {
   })
   parts.push(a.text.slice(pos))
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-black/30" onClick={onClose}>
-      <div role="dialog" aria-label="Source note" onClick={e => e.stopPropagation()}
-        className="flex h-full w-full max-w-[680px] flex-col border-l border-line bg-surface">
+    <dialog ref={ref} aria-label="Source note" onClose={onClose}
+      onClick={e => { if (e.target === ref.current) onClose() }}
+      className="fixed inset-y-0 right-0 left-auto m-0 h-full max-h-none w-full max-w-[680px] border-l border-line bg-surface p-0 text-ink backdrop:bg-black/30">
+      <div className="flex h-full flex-col">
         <div className="flex h-[68px] items-center justify-between border-b border-line px-5">
-          <div><div className="text-[15px] font-semibold text-ink">Source note</div>
+          <div><div className="text-base font-semibold text-ink">Source note</div>
             <div className="meta mt-0.5 flex gap-3"><span><mark className="drug">drug</mark> extracted</span><span><mark className="drug hot">drug</mark> in a critical finding</span></div></div>
-          <button onClick={onClose} aria-label="Close" className="text-muted hover:text-ink cursor-pointer"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close source note" className="grid size-10 place-items-center rounded-md text-muted hover:text-ink cursor-pointer"><X size={18} /></button>
         </div>
-        <pre className="scroll-thin flex-1 overflow-auto whitespace-pre-wrap px-5 py-4 font-sans text-[13.5px] leading-[1.8] text-ink-2">{parts}</pre>
+        <pre className="scroll-thin flex-1 overflow-auto whitespace-pre-wrap px-5 py-4 font-sans text-sm leading-[1.8] text-ink-2">{parts}</pre>
       </div>
-    </div>
+    </dialog>
   )
 }

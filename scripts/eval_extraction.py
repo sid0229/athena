@@ -40,6 +40,30 @@ def table(name: str, s: Scores) -> str:
     return "\n".join(lines)
 
 
+def _f1(rows) -> float:
+    tp, fp, fn = (sum(x[i] for x in rows) for i in range(3))
+    return 2 * tp / (2 * tp + fp + fn) if tp else 0.0
+
+
+def bootstrap_f1(rows, n=1000, seed=42) -> list[float]:
+    """95% CI of micro F1, resampling notes (the unit that was sampled)."""
+    import random
+    rng = random.Random(seed)
+    vals = sorted(_f1([rows[rng.randrange(len(rows))] for _ in rows]) for _ in range(n))
+    return [round(vals[int(0.025 * n)], 4), round(vals[int(0.975 * n)], 4)]
+
+
+def paired_delta(a, b, n=1000, seed=42) -> dict:
+    """Difference in micro F1 between two systems scored on the same notes, paired bootstrap."""
+    import random
+    rng = random.Random(seed)
+    idx = range(len(a))
+    vals = sorted(_f1([a[i] for i in s]) - _f1([b[i] for i in s])
+                  for s in ([rng.randrange(len(a)) for _ in idx] for _ in range(n)))
+    return {"delta": round(_f1(a) - _f1(b), 4), "ci95": [round(vals[int(0.025 * n)], 4), round(vals[int(0.975 * n)], 4)],
+            "share_of_resamples_above_0": round(sum(v > 0 for v in vals) / n, 3)}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split", choices=["train", "val", "test"])
@@ -52,6 +76,14 @@ def main():
     cfg = load_config()
     notes = n2c2.load_split(args.split)[: args.limit]
     llm = OllamaExtractor()
+    if not args.run_llm:
+        # Cache-only scoring: never call the model and never fall back to rules silently
+        # (MedicationExtractor falls back to rules when Ollama is not running).
+        llm.available = lambda: True
+
+        def _no_call(text):
+            raise RuntimeError("LLM output not cached for a chunk — run with --run-llm")
+        llm._call = _no_call
     if args.run_llm:
         eligible = list(notes)
     else:
@@ -63,23 +95,35 @@ def main():
         ex = MedicationExtractor(mode, llm=llm)
         use = eligible  # every mode on the same notes, so scores are comparable
         scores, t0, dropped, total = Scores(), time.time(), 0, 0
+        per_note = []  # (tp, fp, fn) strict micro per note, for the bootstrap CI
         for note in use:
             r = ex.extract(note.text)
+            assert r.mode == mode, f"{note.id}: scored as {r.mode}, not {mode} ({r.warnings})"
             score_note(note, r.mentions, scores)
+            one = score_note(note, r.mentions).micro("strict")
+            per_note.append((one.tp, one.fp, one.fn))
             if r.stats:
                 dropped += len(r.stats.values_dropped)
                 total += r.stats.values_total
         print(table(f"{mode} ({len(use)} notes, {time.time() - t0:.0f}s)", scores))
         if total:
             print(f"LLM attribute values not found in text (dropped): {dropped}/{total} ({dropped / total:.1%})")
+        ci = bootstrap_f1(per_note)
+        print(f"strict micro F1 95% CI (bootstrap over notes): {ci}")
         results[mode] = {"notes": [n.id for n in use], "n_notes": len(use), **scores.as_dict(),
+                         "strict_micro_f1_ci95": ci, "per_note_strict": per_note,
                          "llm_values_dropped": dropped, "llm_values_total": total}
+    if {"hybrid", "rules"} <= results.keys():
+        d = paired_delta(results["hybrid"]["per_note_strict"], results["rules"]["per_note_strict"])
+        print(f"hybrid − rules strict F1: {d['delta']:+.4f}, 95% CI {d['ci95']} (paired bootstrap over notes)")
+        results["hybrid_minus_rules"] = d
 
     if args.save:
         out = ROOT / "docs" / "results"
         out.mkdir(parents=True, exist_ok=True)
+        from athena.extraction.llm_extractor import PROMPT_VERSION
         meta = {"split": args.split, "limit": args.limit, "model": llm.model,
-                "prompt": "extract_v1", "chunk_chars": cfg["extraction"]["chunk_chars"],
+                "prompt": PROMPT_VERSION, "chunk_chars": cfg["extraction"]["chunk_chars"],
                 "date": time.strftime("%Y-%m-%d")}
         path = out / f"extraction_{args.split}_{len(eligible)}notes.json"
         path.write_text(json.dumps({"meta": meta, "results": results}, indent=1))

@@ -32,9 +32,11 @@ def pair_rows(con, x, y):
 
 def test_meta_counts(con):
     meta = dict(con.execute("SELECT key, value FROM meta"))
-    assert int(meta["concepts"]) == 2421
-    assert int(meta["pairs"]) == 311187
-    assert int(meta["pairs_both_sources"]) == 37680
+    # ranges, not exact counts: reviewed concept merges change them slightly
+    assert 2350 <= int(meta["concepts"]) <= 2450
+    assert 305_000 <= int(meta["pairs"]) <= 315_000
+    assert int(meta["pairs_both_sources"]) > 35_000
+    assert meta["ddinter_files"] == "ABDHLPRV"
 
 
 def test_integrity(con):
@@ -89,8 +91,8 @@ def test_template_severity_rule(con):
         "SELECT template, derived_severity, n_overlap_graded, pct_major FROM template_severity")}
     assert len(rows) == 86
     for tpl, (sev, n, pct_major) in rows.items():
-        if n < 10:
-            assert sev == "Unknown", tpl
+        if n < 10:  # thin evidence: Major only if >= 75% of >= 3 graded pairs, else Moderate (never Unknown)
+            assert sev == ("Major" if n >= 3 and pct_major >= 75 else "Moderate"), tpl
         elif pct_major >= 50:
             assert sev == "Major", tpl
     qtc = "The risk or severity of QTc prolongation can be increased when {A} is combined with {B}."

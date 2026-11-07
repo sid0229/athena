@@ -17,7 +17,7 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 ### DrugBank (Kaggle extract + jcsun-00 benchmark)
 - **Subset, ~2017 snapshot.** 1,701–1,706 approved small-molecule drugs, ~191k pairs; current DrugBank is far larger.
 - **No biologics.** e.g. heparin, insulin absent. *Handling:* DDInter added; KB reports `NOT_COVERED` rather than "no interaction".
-- **No severity.** *Handling:* severity from DDInter; otherwise from a documented template→severity map, marked `derived`.
+- **No severity.** *Handling:* severity from DDInter; otherwise from a documented template→severity map, marked `derived` — which the code review found is nearly always "Moderate" (held-out Major recall 8%). Cited high-alert rules (`high_alert.py`) cover the classic dangerous classes.
 - **No name↔ID mapping between the two files** (row orders differ). *Resolved in Batch 2a:* Wikidata label/alias match + interaction-graph matching maps 1,678 / 1,701 names; mapped pairs agree with the benchmark >99.9%.
 
 ### DDInter
@@ -37,13 +37,14 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 
 ## Interaction KB (Batch 2b)
 - **Route awareness is partial.** DDInter separates e.g. `timolol (ophthalmic)` from systemic `timolol`. Since the upgrade experiments, a drug whose extracted Route/Form (or text) says topical, ophthalmic, otic or nasal is checked as DDInter's route-specific concept when one exists (210 concepts); otherwise as the systemic drug (safe direction). Transdermal patches stay systemic except local analgesics (lidocaine, diclofenac, capsaicin, menthol).
-- **Derived severity is coarse.** A DrugBank template is only a weak predictor of severity (most templates are mixed; e.g. "risk or severity of adverse effects" is 20% Major). Derived grades are labelled `derived` and shown with their evidence; DDInter grades always take precedence.
-- **24 templates have too little overlap to derive severity** (< 10 graded pairs) → `Unknown`, which is never treated as safe.
+- **Derived severity is coarse.** A DrugBank template is only a weak predictor of severity (most templates are mixed; e.g. "risk or severity of adverse effects" is 20% Major). Derived grades are labelled `derived` and shown with their evidence; DDInter grades always take precedence; high-alert rules raise listed classes to Major.
+- **Templates with thin evidence** (< 10 graded pairs) are graded Moderate, or Major if ≥ 75% of ≥ 3 pairs are Major (they used to be `Unknown`, ranked below Minor).
+- **DDInter download has 8 of 14 ATC classes** (A, B, D, H, L, P, R, V). DDInter only counts as covering a pair when one drug's class file is present; pairs between drugs of classes C, G, J, M, N, S rely on DrugBank alone.
 - **Very high raw hit rate.** ~52% of all drug pairs in a MIMIC-demo admission have some KB record (DrugBank is inclusive). Tiering, not the KB, must control alert volume.
 - **Salt merges are a reviewed allow-list** (12 pairs). Four RxNorm salt→parent links were rejected as clinically different drugs (isosorbide mononitrate, choline salicylate, trastuzumab deruxtecan, radiolabelled dotatate).
 
 ## Checker (Batch 3)
-- **Some clinically Major pairs are graded Moderate.** Example: oxycodone + lorazepam (opioid + benzodiazepine, FDA boxed warning) exists only in DrugBank under the generic "risk or severity of adverse effects" template (19.7% Major) → derived Moderate. Pinned by `test_known_limitation_opioid_benzo_not_major`. Possible fix: a small, cited rule set for boxed-warning classes (would be a declared addition).
+- **Some clinically Major pairs were graded Moderate** (e.g. oxycodone + lorazepam, FDA boxed warning). *Resolved for listed classes:* 11 cited high-alert rules (`high_alert.py`, tested in `test_high_alert_rules_raise_classic_combinations_to_major`); pairs outside those classes may still be under-rated.
 - **DDInter `Unknown` dominates the volume** (~half of interactions per MIMIC patient). These are real records with no grade; fusion must place them below graded Major/Moderate without hiding them.
 - **Medication lists in MIMIC are reconstructed** from PRESCRIPTIONS start/end dates (drugs active on the last day), not from a true discharge list.
 
@@ -57,14 +58,15 @@ Recorded as found. Each entry: what, where it matters, how Athena handles it.
 ## Fusion (Batch 5)
 - **Thresholds/weights are uncalibrated v1 values.** Review threshold raised 0.3 → 0.5 after a first look at real notes (24 Review items on one note). Calibration planned on synthetic planted-interaction patients.
 - **Route:** handled for local routes (see Interaction KB). On 35 n2c2 test + 3 demo notes this removed 35 interaction findings for topical drugs (1 Review, 34 Info) and kept route-specific risks such as topical miconazole + warfarin (Major).
-- **Section parsing is heuristic** (header regexes). Notes without a discharge list fall back to "all non-held drugs active" with a warning.
+- **Section parsing is heuristic** (header regexes). Rewritten in the code review: inline "Word:" lines no longer end a list, more header variants, prose ends a list. Notes without a discharge list treat drugs as active unless held/stopped, in an allergy list, or negated/historical.
 
 ## Dashboard demo findings (Batch 6) → Batch 7
-- **Classic dangerous combinations can land in Info.** sertraline + tramadol, lisinopril + spironolactone and oxycodone + lorazepam are DrugBank-only with generic templates → derived Moderate → risk < 0.5. Planned fix (Batch 7, decision pending): cited high-alert class-combination rules.
+- **Classic dangerous combinations could land in Info** (sertraline + tramadol, lisinopril + spironolactone, oxycodone + lorazepam). *Resolved:* high-alert rules grade them Major (Batch 7 done in the code review).
 - **Demo notes are synthetic** (`data/demo/`), written for screen-sharing; they are not evaluation data.
 
 ## ML interaction predictor (XGBoost, Batch 11 preview)
-- **Unseen drugs are harder.** Warm-start ROC-AUC 0.978; for a drug with no recorded interactions the graph features are useless (ROC-AUC 0.39), so a separate chemistry-only model trained with drugs' own interactions hidden is used (0.80 one drug unseen, 0.68 both unseen).
+- **Unseen drugs are harder.** Warm-start ROC-AUC 0.981 ± 0.000 (3 folds); for a drug with no recorded interactions the graph features are useless (ROC-AUC 0.38), so a separate chemistry-only model trained with drugs' own interactions hidden is used (0.81 ± 0.01 one drug unseen, 0.71 ± 0.02 both unseen).
+- **Popularity shortcut.** Benchmark negatives replace one drug at random, so "popular drugs interact" alone scores ROC-AUC 0.80; the model's 0.98 is reported next to that baseline.
 - **Benchmark negatives are sampled pairs**, not confirmed non-interactions; ~17% of the provided negatives were real interactions and were removed. Scores measure separation of recorded vs sampled pairs, not clinical correctness.
-- **Benchmark density is ~13%** (1 interacting pair in 7), far denser than a real formulary. At 1:50, PR-AUC is 0.70 and F1 0.35 at the default threshold.
+- **Benchmark density is ~13%** (1 interacting pair in 7), far denser than a real formulary. At 1:50, PR-AUC is 0.73 and F1 0.49 at the validation-chosen threshold.
 - **Not used for flags.** Predictions are a research component; the dashboard's interaction flags come only from the curated KB.

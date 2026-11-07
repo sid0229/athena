@@ -49,12 +49,19 @@ def test_derived_severity_when_only_drugbank(checker):
     assert p.mechanisms and p.severity == p.mechanisms[0].derived_severity
 
 
-def test_known_limitation_opioid_benzo_not_major(checker):
-    """Opioid + benzodiazepine carries an FDA boxed warning, but the KB only has the
-    generic DrugBank template -> derived Moderate. Pinned so a fix is noticed
-    (docs/limitations.md)."""
-    p = find(checker.check(["oxycodone", "lorazepam"]), "lorazepam", "oxycodone")
-    assert p.severity == "Moderate" and p.severity_basis == "derived"
+def test_high_alert_rules_raise_classic_combinations_to_major(checker):
+    """These used to land in Moderate / Unknown (derived DrugBank severity); fixed by high_alert.py."""
+    cases = [("oxycodone", "lorazepam", "opioid_benzo"), ("lithium", "hydrochlorothiazide", "lithium_renal"),
+             ("fluoxetine", "phenelzine", "maoi_serotonergic"), ("sildenafil", "nitroglycerin", "nitrate_pde5"),
+             ("sertraline", "tramadol", "tramadol_ssri"), ("spironolactone", "lisinopril", "hyperkalaemia")]
+    for x, y, rule in cases:
+        (p,) = checker.check([x, y]).interactions
+        assert p.severity == "Major" and p.rule and p.rule.id == rule, (x, y)
+
+
+def test_rules_never_lower_and_ddinter_major_keeps_its_basis(checker):
+    (p,) = checker.check(["warfarin", "aspirin"]).interactions
+    assert p.severity == "Major" and p.severity_basis == "ddinter"
 
 
 def test_order_independent(checker):
@@ -92,7 +99,27 @@ def test_no_known_requires_common_source(checker):
     r = checker.check(["acetaminophen", "furosemide"])
     p = find(r, "acetaminophen", "furosemide")
     assert p.status is PairStatus.NO_KNOWN_INTERACTION
-    assert p.checked_sources == ("ddinter", "drugbank")
+    # both drugs' ATC classes (N, C) are missing from the DDInter download: only DrugBank covers the pair
+    assert p.checked_sources == ("drugbank",)
+
+
+def test_ddinter_counts_only_when_a_class_file_is_present(checker):
+    r = checker.check(["warfarin", "omeprazole"])  # B01 + A02: both class files present
+    assert "ddinter" in find(r, "warfarin", "omeprazole").checked_sources
+
+
+def test_split_concepts_are_merged(checker):
+    # lithium was split into DrugBank 'lithium cation' and DDInter 'lithium carbonate'
+    for other in ("hydrochlorothiazide", "lisinopril", "ibuprofen"):
+        r = checker.check(["lithium", other])
+        assert r.interactions, other
+    r = checker.check(["potassium chloride", "spironolactone"])
+    assert r.interactions and r.interactions[0].severity == "Major"
+
+
+def test_route_variant_falls_back_to_systemic_when_not_covered(checker):
+    r = checker.check([Medication("timolol", route="Ophthalmic"), "verapamil"])
+    assert r.interactions  # ophthalmic timolol is absorbed systemically
 
 
 def test_not_covered_when_no_source_has_both(checker):

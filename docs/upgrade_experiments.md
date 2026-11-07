@@ -2,7 +2,8 @@
 
 A reviewer proposed a set of upgrades. Each was implemented behind a switch (or as a separate
 experiment), measured against the existing system on the same data, and **kept only if it helped**.
-Scripts and raw numbers are in `scripts/exp_*.py` and `docs/results/`.
+Scripts and raw numbers are in `scripts/exp_*.py` and `docs/results/`. Numbers below are from the experiment
+run; the final, 3-fold numbers after the [code review](code_review.md) are in the README.
 
 ## Summary
 

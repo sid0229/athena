@@ -16,9 +16,21 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from athena.config import ROOT, load_config  # noqa: E402
+from athena.data import n2c2  # noqa: E402
+from athena.extraction.chunking import chunk_text  # noqa: E402
+from athena.extraction.pipeline import MedicationExtractor  # noqa: E402
 from athena.fusion.report import analyze, local_route  # noqa: E402
 from athena.verification.checker import InteractionChecker  # noqa: E402
-from compare_risk_formulas import notes  # noqa: E402
+
+
+def notes():
+    """The cached n2c2 test notes (first 40 by id) plus the synthetic demo notes."""
+    cfg = load_config()["extraction"]
+    ex = MedicationExtractor("hybrid")
+    out = [("n2c2:" + n.id, n.text) for n in n2c2.load_split("test")[:40]
+           if all(ex.llm._cache_path(c.text).exists() for c in chunk_text(n.text, cfg["chunk_chars"], cfg["chunk_overlap_chars"]))]
+    out += [("demo:" + p.stem, p.read_text()) for p in sorted((ROOT / "data" / "demo").glob("*.txt"))]
+    return out, ex
 
 
 def main():

@@ -33,18 +33,13 @@ normalize:
   fuzzy_match_threshold: 92
 
 fusion:                             # v1 — see README §2.4; to be calibrated in Phase 2 (Batch 13)
-  formula: multiplicative           # multiplicative (default) | uncertainty_penalty (experimental)
-  uncertainty_penalty:              # risk = w_db·evidence·severity + w_penalty·(1 − confidence tier), capped at 1
-    w_db: 1.0
-    w_penalty: 0.8
-    confidence_tiers: {high: 0.85, medium: 0.6}     # extraction confidence → HIGH / MEDIUM / LOW
-    tier_values: {HIGH: 1.0, MEDIUM: 0.5, LOW: 0.1}
   severity_weight:
     Major: 1.0
     Moderate: 0.6
     Minor: 0.3
     Unknown: 0.25                   # DDInter record without a grade: shown, but Info tier
   derived_severity_factor: 0.8      # severity from DrugBank template map only
+  # High-alert rules (athena/verification/high_alert.py) grade a pair Major with severity_basis "rule".
   evidence_weight:
     two_sources: 1.0
     one_source: 0.85

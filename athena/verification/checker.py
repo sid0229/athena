@@ -22,12 +22,13 @@ from __future__ import annotations
 import itertools
 import json
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from functools import lru_cache
 
 from athena.config import data_path
 from athena.normalize.normalizer import DrugNormalizer, Normalized
+from athena.verification import high_alert
 
 SEVERITY_RANK = {"Major": 0, "Moderate": 1, "Minor": 2, "Unknown": 3}
 
@@ -53,6 +54,7 @@ class Concept:
     name: str
     in_drugbank: bool
     in_ddinter: bool
+    ddinter_home: str = ""   # downloaded DDInter ATC file(s) of the drug's own class ("" = not downloaded)
 
     @property
     def sources(self) -> frozenset[str]:
@@ -76,11 +78,12 @@ class PairResult:
     med_b: Medication
     status: PairStatus
     severity: str | None = None          # Major | Moderate | Minor | Unknown
-    severity_basis: str | None = None    # ddinter | derived
-    sources: tuple[str, ...] = ()
+    severity_basis: str | None = None    # ddinter | derived | rule
+    sources: tuple[str, ...] = ()        # drugbank / ddinter records (and "rule" for a rule-only pair)
     ddinter_level: str | None = None
     mechanisms: tuple[Mechanism, ...] = ()
     checked_sources: tuple[str, ...] = ()  # sources that cover both drugs
+    rule: high_alert.Rule | None = None    # high-alert rule that applies to this pair
 
     @property
     def key(self) -> tuple[str, str]:
@@ -119,9 +122,9 @@ class InteractionKB:
             raise FileNotFoundError(f"{path} missing — run `python scripts/build_kb.py`")
         self.con = sqlite3.connect(f"file:{path}?mode=ro", uri=True, check_same_thread=False)
         self.concepts = {
-            cid: Concept(cid, name, bool(db), bool(dd))
-            for cid, name, db, dd in self.con.execute(
-                "SELECT concept_id, name, in_drugbank, in_ddinter FROM concepts")
+            cid: Concept(cid, name, bool(db), bool(dd), home or "")
+            for cid, name, db, dd, home in self.con.execute(
+                "SELECT concept_id, name, in_drugbank, in_ddinter, ddinter_home FROM concepts")
         }
         self.name_to_concept = dict(self.con.execute("SELECT name, concept_id FROM names"))
         self.template_severity = {
@@ -137,7 +140,7 @@ class InteractionKB:
     def route_variant(self, concept: Concept, route: str | None) -> Concept:
         """DDInter keeps some local formulations as separate concepts, e.g. 'timolol (ophthalmic)'.
         Use that concept when the drug is given by that route; otherwise the systemic one."""
-        return self.by_concept_name.get(f"{concept.name} ({route})", concept) if route else concept
+        return self.by_concept_name.get(f"{concept.name} ({route.lower()})", concept) if route else concept
 
     def lookup(self, c1: str, c2: str) -> list[tuple[str, str | None, str | None, str | None]]:
         """Rows (source, severity, templates_json, descriptions_json) for an unordered pair."""
@@ -191,12 +194,44 @@ class InteractionChecker:
             if (c1.concept_id, c2.concept_id) in seen:
                 continue
             seen.add((c1.concept_id, c2.concept_id))
-            report.pairs.append(self._check_pair(c1, c2, report.medications[i][0], report.medications[j][0]))
+            ma, mb = report.medications[i][0], report.medications[j][0]
+            res = self._check_pair(c1, c2, ma, mb)
+            if res.status is PairStatus.NOT_COVERED and (ma.route or mb.route):
+                # A route-specific concept exists only in DDInter; where DDInter cannot speak for
+                # the pair, check the systemic drugs instead (over-flags rather than misses).
+                s1, s2 = self._systemic(c1), self._systemic(c2)
+                if (s1, s2) != (c1, c2) and s1.concept_id != s2.concept_id:
+                    if s1.concept_id > s2.concept_id:
+                        s1, s2, ma, mb = s2, s1, mb, ma
+                    res = self._check_pair(s1, s2, ma, mb)
+            report.pairs.append(res)
         return report
 
+    def _systemic(self, c: Concept) -> Concept:
+        base = c.name.rsplit(" (", 1)[0]
+        return self.kb.by_concept_name.get(base, c) if c.name.endswith(")") and base != c.name else c
+
     def _check_pair(self, a: Concept, b: Concept, med_a: Medication, med_b: Medication) -> PairResult:
+        res = self._lookup_pair(a, b, med_a, med_b)
+        rule = high_alert.match(a.name, b.name)
+        if rule is None:
+            return res
+        if res.status is PairStatus.INTERACTION:
+            raised = res.severity != "Major"
+            return replace(res, severity="Major", rule=rule,
+                           severity_basis="rule" if raised else res.severity_basis)
+        # No database record, but a reviewed high-alert rule applies.
+        return replace(res, status=PairStatus.INTERACTION, severity="Major", severity_basis="rule",
+                       sources=("rule",), rule=rule)
+
+    def _lookup_pair(self, a: Concept, b: Concept, med_a: Medication, med_b: Medication) -> PairResult:
         rows = self.kb.lookup(a.concept_id, b.concept_id)
-        checked = tuple(sorted(a.sources & b.sources))
+        common = a.sources & b.sources
+        if "ddinter" in common and not (a.ddinter_home or b.ddinter_home):
+            # The public DDInter download has 8 of 14 ATC files; a pair whose drugs both belong to
+            # a missing class is in none of them, so DDInter's silence says nothing about it.
+            common = common - {"ddinter"}
+        checked = tuple(sorted(common))
         if not rows:
             status = PairStatus.NO_KNOWN_INTERACTION if checked else PairStatus.NOT_COVERED
             return PairResult(a, b, med_a, med_b, status, checked_sources=checked)

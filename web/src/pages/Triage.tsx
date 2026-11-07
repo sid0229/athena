@@ -19,16 +19,16 @@ export function Triage({ a, meta, reviewer, onDecide }: {
   const unchecked = a.report.findings.filter(f => f.type === 'NOT_CHECKED' || f.type === 'NOT_COVERED')
 
   return (
-    <div className="mx-auto max-w-[940px]">
+    <div className="mx-auto max-w-[1320px]">
       <PageHeader title="Interaction Triage" tag={a.case_id}
         right={<span className="meta">Reviewed <span className="text-ink-2">{reviewed} / {actionable.length}</span> · DrugBank + DDInter</span>} />
       <div className="mb-5 flex items-center justify-between border-b border-line">
-        <div role="tablist" className="flex items-center gap-1">
-          {([['all', 'All'], ['critical', 'Critical'], ['review', 'Review'], ['info', 'Info']] as [Filter, string][]).map(([id, label], i) => (
+        <div role="group" aria-label="Filter findings" className="flex items-center gap-1">
+          {([['all', 'Needs review'], ['critical', 'Critical'], ['review', 'Review'], ['info', 'Info']] as [Filter, string][]).map(([id, label], i) => (
             <div key={id} className="flex items-center">
               {i > 0 && <span className="mx-2 text-faint">·</span>}
-              <button role="tab" aria-selected={filter === id} onClick={() => setFilter(id)}
-                className={cx('-mb-px border-b-2 pb-2.5 pt-1 text-[14px] cursor-pointer',
+              <button aria-pressed={filter === id} onClick={() => setFilter(id)}
+                className={cx('-mb-px border-b-2 pb-3 pt-2 text-base cursor-pointer',
                   filter === id ? 'border-ink font-medium text-ink' : 'border-transparent text-muted hover:text-ink')}>
                 {label} ({count(id)})
               </button>
@@ -51,10 +51,27 @@ export function Triage({ a, meta, reviewer, onDecide }: {
       {unchecked.length > 0 && (
         <div className="mt-6 flex flex-col gap-2">
           {unchecked.map(f => (
-            <div key={f.id} className="flex items-start gap-2.5 rounded-md border border-line bg-surface px-4 py-3 text-[13px] text-muted">
+            <div key={f.id} className="flex items-start gap-2.5 rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted">
               <TriangleAlert size={15} strokeWidth={1.75} className="mt-0.5 shrink-0 text-hold" />
-              <div><span className="font-medium text-ink">{f.title}:</span> {f.explanation.slice(0, -1).join('; ')}.
-                <span className="block text-faint">{f.explanation.slice(-1)[0]}</span></div>
+              <div className="min-w-0 flex-1"><span className="font-medium text-ink">{f.title}:</span> {f.explanation.slice(0, -1).join('; ')}.
+                <span className="block text-faint">{f.explanation.slice(-1)[0]}</span>
+                {f.type === 'NOT_COVERED' && !!a.ml_signals?.length && (
+                  <div className="mt-3 rounded-md border border-line bg-surface-2 px-3 py-2.5">
+                    <div className="eyebrow mb-1.5">Research model signal — not verified, not used for flags</div>
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {a.ml_signals.map(s => (
+                          <tr key={`${s.a}|${s.b}`} className="border-t border-line first:border-t-0">
+                            <td className="py-1 pr-3 text-ink-2">{disp(s.a_name, a.display_names)} + {disp(s.b_name, a.display_names)}</td>
+                            <td className="py-1 pr-3 text-right font-mono">{(s.probability * 100).toFixed(0)}%</td>
+                            <td className="meta py-1 text-right">{s.model}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <p className="mt-1.5 text-xs text-muted">Probability that DrugBank would record an interaction, from the XGBoost predictor (benchmark ROC-AUC 0.98 for known drugs, 0.71–0.81 for new ones). Check a drug reference before acting.</p>
+                  </div>
+                )}</div>
             </div>
           ))}
         </div>
@@ -85,14 +102,14 @@ function FindingCard({ f, a, meta, reviewer, onDecide }: {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
             <TierDot tier={f.tier} />
-            <h3 className="truncate text-[17px] font-semibold tracking-tight text-ink">{findingTitle(f, a)}</h3>
+            <h3 className="truncate text-lg font-semibold tracking-tight text-ink">{findingTitle(f, a)}</h3>
             {ev.severity && <Badge tone={ev.severity === 'Major' ? 'critical' : ev.severity === 'Moderate' ? 'review' : 'neutral'}>
-              {ev.severity}{ev.severity_basis === 'derived' ? ' · derived' : ''}</Badge>}
+              {ev.severity}{ev.severity_basis === 'derived' ? ' · derived' : ev.severity_basis === 'rule' ? ' · rule' : ''}</Badge>}
             {f.type === 'DUPLICATE_THERAPY' && <Badge tone="review">Duplicate therapy</Badge>}
           </div>
-          <p className={cx('mt-1 pl-5 text-[14px] text-ink-2', !open && 'truncate')}>{findingSummary(f)}</p>
+          <p className={cx('mt-1 pl-5 text-sm text-ink-2', !open && 'truncate')}>{findingSummary(f)}</p>
           {f.needs_verification && (
-            <p className="mt-1.5 flex items-center gap-1.5 pl-5 text-[12.5px] text-review">
+            <p className="mt-1.5 flex items-center gap-1.5 pl-5 text-xs text-review">
               <TriangleAlert size={13} strokeWidth={2} />Possible Major interaction — verify the extracted drugs
             </p>
           )}
@@ -111,19 +128,25 @@ function FindingCard({ f, a, meta, reviewer, onDecide }: {
         <div className="border-t border-line pb-4 pt-4">
           <div className="grid grid-cols-3 gap-4">
             <div><div className="meta">Risk score</div>
-              <div className={cx('mt-1 font-mono text-[14px] font-semibold', f.tier === 'critical' ? 'text-critical' : f.tier === 'review' ? 'text-review' : 'text-ink')}>{f.risk.toFixed(2)}</div></div>
-            <div><div className="meta">Extraction confidence</div><div className="mt-1 font-mono text-[14px] text-ink">{conf?.toFixed(2) ?? '—'}</div></div>
-            <div><div className="meta">Sources</div><div className="mt-1 text-[13px] text-ink">
-              {(ev.sources ?? []).map(s => (s === 'ddinter' ? 'DDInter' : 'DrugBank')).join(' · ') || '—'}</div></div>
+              <div className={cx('mt-1 font-mono text-sm font-semibold', f.tier === 'critical' ? 'text-critical' : f.tier === 'review' ? 'text-review' : 'text-ink')}>{f.risk.toFixed(2)}</div></div>
+            <div><div className="meta">Extraction confidence</div><div className="mt-1 font-mono text-sm text-ink">{conf?.toFixed(2) ?? '—'}</div></div>
+            <div><div className="meta">Sources</div><div className="mt-1 text-sm text-ink">
+              {(ev.sources ?? []).map(s => (s === 'ddinter' ? 'DDInter' : s === 'rule' ? 'High-alert rule' : 'DrugBank')).join(' · ') || '—'}</div></div>
           </div>
+          {ev.rule && (
+            <div className="mt-5 rounded-md border border-critical-line bg-critical-soft px-3.5 py-3 text-sm text-ink-2">
+              <span className="font-medium text-critical">High-alert rule — {ev.rule.name}.</span> {ev.rule.effect}.
+              <span className="mt-1 block text-xs text-muted">Source: {ev.rule.source}</span>
+            </div>
+          )}
           {(ev.ddinter_level || ev.mechanisms?.length) ? (
             <>
               <div className="eyebrow mt-5 mb-2">Evidence</div>
-              <div className="rounded-md border border-line bg-surface-2 px-3.5 py-3 text-[13.5px] leading-relaxed text-ink-2">
+              <div className="rounded-md border border-line bg-surface-2 px-3.5 py-3 text-sm leading-relaxed text-ink-2">
                 {ev.ddinter_level && <p>DDInter grade: <span className="font-medium text-ink">{ev.ddinter_level}</span></p>}
                 {ev.mechanisms?.map((m, i) => <p key={i} className={ev.ddinter_level || i ? 'mt-1.5' : ''}>DrugBank: {m.text}</p>)}
                 {ev.severity_basis === 'derived' && ev.mechanisms?.[0] && (
-                  <p className="mt-1.5 text-[12.5px] text-muted">Severity derived: {ev.mechanisms[0].pct_major.toFixed(0)}% of {ev.mechanisms[0].n_overlap_graded} comparable DrugBank pairs are graded Major by DDInter.</p>
+                  <p className="mt-1.5 text-xs text-muted">Severity derived: {ev.mechanisms[0].pct_major.toFixed(0)}% of {ev.mechanisms[0].n_overlap_graded} comparable DrugBank pairs are graded Major by DDInter.</p>
                 )}
               </div>
             </>
