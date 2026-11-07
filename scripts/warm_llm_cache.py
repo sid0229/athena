@@ -28,7 +28,10 @@ def main():
     t0 = time.time()
     for i, note in enumerate(notes, 1):
         for c in chunk_text(note.text, cfg["chunk_chars"], cfg["chunk_overlap_chars"]):
-            llm.extract_chunk(c.text)
+            try:
+                llm.extract_chunk(c.text)
+            except Exception as e:
+                print(f"[WARN] note {note.id} chunk failed ({e}); continuing...", file=sys.stderr, flush=True)
         el = time.time() - t0
         print(f"[{args.split}] {i}/{len(notes)} note {note.id} | {el / 60:.1f} min | "
               f"eta {el / i * (len(notes) - i) / 60:.0f} min | {llm.stats}", flush=True)
