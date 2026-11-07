@@ -33,7 +33,7 @@ def main():
             except RuntimeError:
                 raise  # stale cache signature
             except Exception as e:  # one timeout must not end a multi-hour run
-                print(f"  {note.id}: chunk failed ({type(e).__name__}: {e}); continuing", flush=True)
+                print(f"[WARN] note {note.id} chunk failed ({type(e).__name__}: {e}); continuing...", file=sys.stderr, flush=True)
         el = time.time() - t0
         print(f"[{args.split}] {i}/{len(notes)} note {note.id} | {el / 60:.1f} min | "
               f"eta {el / i * (len(notes) - i) / 60:.0f} min | {llm.stats}", flush=True)

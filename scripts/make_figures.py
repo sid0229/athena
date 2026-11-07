@@ -88,42 +88,63 @@ def ddi_specificity():
     plt.close(fig)
 
 
+def _extraction_results():
+    """The full 202-note test run if present, else the 35-note subset."""
+    for name, label in (("extraction_test_202notes.json", "all 202 n2c2 2018 test notes"),
+                        ("extraction_test_35notes.json", "first 35 of 202 n2c2 test notes")):
+        if (R / name).exists():
+            return json.loads((R / name).read_text()), label
+    raise FileNotFoundError("no extraction results in docs/results")
+
+
 def f1_modes():
-    d = json.loads((R / "extraction_test_35notes.json").read_text())["results"]
+    full, label = _extraction_results()
+    d, boot, paired = full["results"], full.get("bootstrap", {}), full.get("paired_hybrid_vs_rules", {})
     names = {"scispacy": "scispaCy only", "llm": "LLM only", "rules": "Rules only", "hybrid": "Athena hybrid"}
-    fig, ax = plt.subplots(figsize=(7.6, 4.2), dpi=200)
+    fig, ax = plt.subplots(figsize=(7.6, 4.4), dpi=200)
     x = np.arange(len(names))
-    for j, (kind, alpha, off) in enumerate((("strict", 1.0, -0.19), ("lenient", 0.45, 0.19))):
+    for kind, alpha, off in (("strict", 1.0, -0.19), ("lenient", 0.45, 0.19)):
         vals = [d[m][kind]["micro"]["f1"] for m in names]
-        bars = ax.bar(x + off, vals, 0.36, color=[C[n] for n in names.values()], alpha=alpha,
-                      edgecolor="white", label=f"{kind.title()} match")
+        bars = ax.bar(x + off, vals, 0.36, color=[C[n] for n in names.values()], alpha=alpha, edgecolor="white")
         for b, v, m in zip(bars, vals, names):
-            ax.text(b.get_x() + b.get_width() / 2, v + 0.015, f"{v:.3f}", ha="center", va="bottom", fontsize=8.5,
+            ci = boot.get(m, {}).get(f"{kind}_micro_f1_ci95")
+            top = v
+            if ci:
+                ax.errorbar(b.get_x() + b.get_width() / 2, v, yerr=[[v - ci[0]], [ci[1] - v]], fmt="none",
+                            ecolor=INK, elinewidth=0.8, capsize=2.5)
+                top = ci[1]
+            ax.text(b.get_x() + b.get_width() / 2, top + 0.015, f"{v:.3f}", ha="center", va="bottom", fontsize=8.5,
                     color=INK, fontweight="bold" if m == "hybrid" else "normal")
+    if paired.get("strict"):
+        ps = paired["strict"]
+        ax.text(0.99, 0.97, f"Hybrid − rules (strict): {ps['diff']:+.3f}, 95% CI [{ps['ci95'][0]:+.3f}, {ps['ci95'][1]:+.3f}]"
+                + (" — significant" if ps["ci95"][0] > 0 else " — not significant"),
+                transform=ax.transAxes, ha="right", va="top", fontsize=8, color=INK)
     ax.set_xticks(x, list(names.values()), fontsize=10.5)
-    ax.set_ylim(0, 1.05)
+    ax.set_ylim(0, 1.08)
     ax.set_ylabel("Micro F1 (7 entity types)")
     style(ax, "Medication extraction F1 on held-out n2c2 2018 notes")
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(color="#5A6B80", label="Strict (exact span)"),
                        Patch(color="#5A6B80", alpha=0.45, label="Lenient (overlapping span)")],
               frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, -0.09), fontsize=9.5)
-    fig.text(0.01, 0.012, "First 35 of 202 n2c2 test notes; every mode scored on the same notes. Tuning was done only on a separate validation split.",
-             fontsize=7, color=MUTED)
+    fig.text(0.01, 0.012, f"{label[0].upper() + label[1:]}; every mode on the same notes; tuning only on a separate validation "
+             "split. Error bars: 95% bootstrap CIs over notes (2,000 resamples).", fontsize=7, color=MUTED)
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     fig.savefig(R / "f1_extraction.png")
     plt.close(fig)
 
 
 def f1_entities():
-    d = json.loads((R / "extraction_test_35notes.json").read_text())["results"]
+    full, label = _extraction_results()
+    d = full["results"]
     types = ["Drug", "Strength", "Route", "Dosage", "Form", "Frequency", "Duration"]
     series = {"LLM only": "llm", "Rules only": "rules", "Athena hybrid": "hybrid"}
     data = {s: {t: d[m]["strict"][t]["f1"] for t in types} for s, m in series.items()}
     fig, ax = plt.subplots(figsize=(8.6, 4.3), dpi=200)
     grouped(ax, types, list(series), data)
     ax.set_ylabel("Strict F1")
-    style(ax, "Extraction F1 per entity type (held-out n2c2 notes)")
+    style(ax, f"Extraction F1 per entity type ({label})")
     ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.09), fontsize=9.5)
     fig.tight_layout()
     fig.savefig(R / "f1_per_entity.png")
