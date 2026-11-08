@@ -27,7 +27,7 @@ It runs **entirely on a laptop** (Apple M2, 8 GB, no GPU). No patient text leave
 
 | What | Result |
 |---|---|
-| Medication extraction — n2c2 2018 Track 2, all 202 held-out test notes | **micro F1 0.796 strict (95% CI 0.786–0.805) / 0.879 lenient** (Drug F1 0.873); beats rules-only by +0.014 (paired 95% CI +0.005 to +0.021) — scispaCy baseline 0.349 |
+| Medication extraction — n2c2 2018 Track 2, all 202 held-out test notes | **micro F1 0.817 strict (95% CI 0.806–0.827) / 0.880 lenient** (Drug F1 0.870); beats rules-only by +0.011 (paired 95% CI +0.003 to +0.018) — scispaCy baseline 0.348 |
 | Interaction alerts vs alerts from the gold medication lists | **27 / 27 Major pairs found and actionable** · pair precision 0.999 · recall 0.938 |
 | ML interaction predictor (XGBoost, graph + chemical structure) — DrugBank benchmark | **ROC-AUC 0.981 ± 0.000 (3 folds)** · PR-AUC 0.985 — graph-only 0.932, drug-popularity baseline 0.80 |
 | Unseen drugs (cold start) | **ROC-AUC 0.81 ± 0.01** (one drug new) · 0.71 ± 0.02 (both new) with the cold-aware chemical model |
@@ -168,12 +168,14 @@ The dashboard follows progressive disclosure: each finding shows *what, why, how
 
 | Mode | Strict F1 (95% CI) | Lenient F1 (95% CI) | Drug F1 |
 |---|---|---|---|
-| scispaCy (baseline) | .349 (.336–.362) | .365 (.352–.378) | .735 |
-| LLM only | .662 (.646–.677) | .734 (.718–.749) | .774 |
-| Rules only | .782 (.773–.791) | .870 (.862–.878) | .851 |
-| **Athena hybrid** | **.796 (.786–.805)** | **.879 (.871–.887)** | **.873** |
+| scispaCy (baseline) | .348 (.335–.362) | .366 (.353–.379) | .732 |
+| LLM only | .666 (.649–.682) | .734 (.718–.749) | .774 |
+| Rules only | .806 (.796–.816) | .873 (.866–.881) | .847 |
+| **Athena hybrid** | **.817 (.806–.827)** | **.880 (.872–.888)** | **.870** |
 
-**Hybrid − rules: +0.014 strict (paired 95% CI +0.005 to +0.021) and +0.009 lenient (+0.002 to +0.015)** — the LLM's contribution is small but statistically significant on the full test set. This run predates the extraction rule fixes from the [code review](docs/code_review.md); on the 35-note subset those fixes raise hybrid strict F1 from .794 to .814, so a re-run of all 202 notes with the fixes is expected to score higher.
+Per type (hybrid, strict F1): Route .892 · Drug .870 · Strength .844 · Form .815 · Dosage .718 · Frequency .670 · Duration .495.
+
+**Hybrid − rules: +0.011 strict (paired 95% CI +0.003 to +0.018)** — small but statistically significant; lenient +0.007 (CI −0.000 to +0.013) is borderline. The LLM's clearest benefit is drug names (Drug F1 .870 vs .847). These numbers include the extraction rule fixes from the [code review](docs/code_review.md); before them the full test set scored .796 (hybrid) and .782 (rules).
 
 <p><img src="docs/results/f1_extraction.png" alt="Extraction F1 by mode on all 202 test notes" width="620"></p>
 
@@ -325,7 +327,6 @@ Key limitations (full list in [`docs/limitations.md`](docs/limitations.md)):
 
 - Severity for DrugBank-only pairs is derived from sentence templates and is nearly always "Moderate"; 11 cited high-alert rules now cover the classic dangerous combinations, but other under-rated pairs may remain.
 - On n2c2's highly regular medication lists, the rules alone nearly match the hybrid; the LLM's gain is in narrative text — fine-tuning is planned.
-- The full 202-note extraction run predates the code-review rule fixes; it should be re-run with them (a few minutes with the cached LLM outputs).
 - The public DDInter download has only 8 of 14 ATC classes; pairs between drugs of the missing classes rely on DrugBank alone (Athena now reports this correctly instead of "no known interaction").
 - Route awareness covers local routes that DDInter models separately (topical, ophthalmic, otic, nasal); other route and dose effects are not modelled.
 - The XGBoost predictor is weaker on unseen drugs (ROC-AUC 0.68–0.80) and is not surfaced as verified evidence.
