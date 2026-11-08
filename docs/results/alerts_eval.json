@@ -1,21 +1,32 @@
 {
- "notes": 35,
+ "notes": 40,
  "counts": {
-  "gold": 914,
-  "sys": 858,
-  "tp": 857,
-  "gold_major": 27,
-  "major_found": 27,
-  "major_actionable": 27,
-  "sys_actionable": 139,
-  "actionable_correct": 139
+  "gold": 1230,
+  "sys": 1166,
+  "tp": 1163,
+  "gold_major": 50,
+  "major_found": 50,
+  "major_actionable": 50,
+  "sys_actionable": 251,
+  "actionable_correct": 249
  },
- "pair_precision": 0.9988,
- "pair_recall": 0.9376,
+ "pair_precision": 0.9974,
+ "pair_recall": 0.9455,
  "major_recall": 1.0,
  "major_reaching_actionable_tier": 1.0,
- "actionable_alert_precision": 1.0,
+ "actionable_alert_precision": 0.992,
  "missed_major_examples": [],
- "extra_actionable_examples": [],
+ "extra_actionable_examples": [
+  [
+   "104948",
+   "Major interaction: nafcillin + amiodarone",
+   "critical"
+  ],
+  [
+   "105383",
+   "Moderate interaction: codeine + amlodipine",
+   "review"
+  ]
+ ],
  "reference": "checker run on n2c2 gold drug mentions in the discharge list (same KB and rules)"
 }

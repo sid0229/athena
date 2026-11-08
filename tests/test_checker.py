@@ -42,8 +42,8 @@ def test_biologic_covered_by_ddinter(checker):
 
 
 def test_derived_severity_when_only_drugbank(checker):
-    p = find(checker.check(["simvastatin", "clarithromycin", "metoprolol", "amiodarone"]),
-             "metoprolol", "amiodarone")
+    p = find(checker.check(["simvastatin", "clarithromycin", "amisulpride", "chlorprothixene"]),
+             "amisulpride", "chlorprothixene")
     assert p.severity_basis == "derived"
     assert p.sources == ("drugbank",)
     assert p.mechanisms and p.severity == p.mechanisms[0].derived_severity
@@ -96,10 +96,10 @@ def test_inactive_unmapped_class_and_non_drug_handling(checker):
 
 
 def test_no_known_requires_common_source(checker):
-    r = checker.check(["acetaminophen", "furosemide"])
-    p = find(r, "acetaminophen", "furosemide")
+    r = checker.check(["anisotropine methylbromide", "chlorprothixene"])
+    p = find(r, "anisotropine methylbromide", "chlorprothixene")
     assert p.status is PairStatus.NO_KNOWN_INTERACTION
-    # both drugs' ATC classes (N, C) are missing from the DDInter download: only DrugBank covers the pair
+    # neither drug is in DDInter: only DrugBank covers the pair
     assert p.checked_sources == ("drugbank",)
 
 

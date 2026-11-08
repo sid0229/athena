@@ -278,7 +278,7 @@ def build_kb() -> dict:
             "pairs_both_sources": int((pairs.map(len) == 2).sum()),
             "pairs_drugbank_only": int((pairs == frozenset({"drugbank"})).sum()),
             "pairs_ddinter_only": int((pairs == frozenset({"ddinter"})).sum()),
-            "sources": "DrugBank DDI extract (Kaggle, DeepDDI benchmark); DDInter (8 ATC files)",
+            "sources": "DrugBank DDI extract (Kaggle, DeepDDI benchmark); DDInter (14 ATC files)",
             "ddinter_files": "".join(sorted(ddinter.downloaded_atc_files())),
             "severity_rule": f"template severity from DDInter overlap: Major/Minor if >= {MAJORITY:.0%}, "
                              f"else Moderate; with < {MIN_OVERLAP} graded pairs Major if >= {SMALL_N_MAJOR:.0%} "

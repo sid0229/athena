@@ -34,9 +34,9 @@ def test_meta_counts(con):
     meta = dict(con.execute("SELECT key, value FROM meta"))
     # ranges, not exact counts: reviewed concept merges change them slightly
     assert 2350 <= int(meta["concepts"]) <= 2450
-    assert 305_000 <= int(meta["pairs"]) <= 315_000
+    assert 350_000 <= int(meta["pairs"]) <= 360_000
     assert int(meta["pairs_both_sources"]) > 35_000
-    assert meta["ddinter_files"] == "ABDHLPRV"
+    assert meta["ddinter_files"] == "ABCDGHJLMNPRSV"
 
 
 def test_integrity(con):

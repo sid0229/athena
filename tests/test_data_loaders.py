@@ -108,11 +108,11 @@ def test_benchmark_ddi():
 
 def test_ddinter_dedup_and_levels():
     df = ddinter.load_ddinter()
-    assert len(df) == 160235
+    assert len(df) == 234981
     assert (df["id_a"] < df["id_b"]).all()
     assert not df.duplicated(["id_a", "id_b"]).any()
     assert set(df["level"].cat.categories) == set(ddinter.SEVERITY_ORDER)
-    assert len(ddinter.ddinter_drugs()) == 1939
+    assert len(ddinter.ddinter_drugs()) == 1971
 
 
 def _ddinter_pair(a: str, b: str):
