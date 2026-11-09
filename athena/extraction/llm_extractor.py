@@ -120,9 +120,9 @@ class OllamaExtractor:
             rows = json.loads(path.read_text())
         else:
             rows = self._call(text)
-            if self.use_cache and rows is not None:
+            if self.use_cache:
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(json.dumps(rows))
+                path.write_text(json.dumps(rows if rows is not None else []))
             rows = rows or []
         meds = []
         for row in rows:
