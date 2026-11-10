@@ -38,6 +38,12 @@ def gold_pairs(note, checker):
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--save", action="store_true")
+    args = ap.parse_args()
+
     cfg = load_config()["extraction"]
     llm = OllamaExtractor()
     llm.available = lambda: True  # cache only, never a silent rules fallback
@@ -45,7 +51,7 @@ def main():
     def _no_call(text):
         raise RuntimeError("uncached chunk")
     llm._call = _no_call
-    notes = [n for n in n2c2.load_split("test")[:40]
+    notes = [n for n in n2c2.load_split("test")[: args.limit]
              if all(llm._cache_path(c.text).exists() for c in chunk_text(n.text, cfg["chunk_chars"], cfg["chunk_overlap_chars"]))]
     checker = InteractionChecker()
     ex = MedicationExtractor("hybrid", llm=llm, normalizer=checker.normalizer)
@@ -73,19 +79,22 @@ def main():
                 if k not in gold:
                     extras.append((n.id, f.title, f.tier))
     pr = lambda a, b: round(a / b, 4) if b else None  # noqa: E731
+    alerts_per_note = round(tot["sys_actionable"] / len(notes), 2) if notes else 0.0
     res = {
         "notes": len(notes), "counts": tot,
         "pair_precision": pr(tot["tp"], tot["sys"]), "pair_recall": pr(tot["tp"], tot["gold"]),
         "major_recall": pr(tot["major_found"], tot["gold_major"]),
         "major_reaching_actionable_tier": pr(tot["major_actionable"], tot["gold_major"]),
         "actionable_alert_precision": pr(tot["actionable_correct"], tot["sys_actionable"]),
+        "alerts_per_note": alerts_per_note,
         "missed_major_examples": misses[:15], "extra_actionable_examples": extras[:15],
         "reference": "checker run on n2c2 gold drug mentions in the discharge list (same KB and rules)",
     }
-    for k in ("pair_precision", "pair_recall", "major_recall", "major_reaching_actionable_tier", "actionable_alert_precision"):
+    for k in ("pair_precision", "pair_recall", "major_recall", "major_reaching_actionable_tier", "actionable_alert_precision", "alerts_per_note"):
         print(f"{k:32s} {res[k]}")
     print(tot)
-    (ROOT / "docs/results/alerts_eval.json").write_text(json.dumps(res, indent=1))
+    if args.save:
+        (ROOT / "docs/results/alerts_eval.json").write_text(json.dumps(res, indent=1))
 
 
 if __name__ == "__main__":

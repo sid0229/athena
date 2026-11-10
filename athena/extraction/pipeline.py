@@ -61,7 +61,9 @@ class MedicationExtractor:
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
         self.mode = mode
-        self.cfg = load_config()["extraction"]
+        full_cfg = load_config()
+        self.cfg = full_cfg["extraction"]
+        self.ablation = full_cfg.get("ablation", {})
         self.normalizer = normalizer or DrugNormalizer()
         self.fewshot = fewshot or isinstance(llm, FewShotExtractor)
         uses_llm = mode in ("llm", "hybrid")
@@ -98,7 +100,8 @@ class MedicationExtractor:
                     warnings.append(f"Local LLM failed on part {k} of {len(chunks)} ({type(e).__name__}); "
                                     "rules used for that part.")
                     rows.append((c, []))
-            mentions, stats = ground(text, rows, self.cfg["fuzzy_ground_threshold"], self._drug_like)
+            grounding_guard = self.ablation.get("grounding_guard", True)
+            mentions, stats = ground(text, rows, self.cfg["fuzzy_ground_threshold"], self._drug_like, grounding_guard=grounding_guard)
 
         labs = lab_sections(text) if mode != "llm" else []
         occupied = [(m.drug.start, m.drug.end) for m in mentions]

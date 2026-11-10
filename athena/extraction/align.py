@@ -102,6 +102,7 @@ def ground(
     chunk_rows: list[tuple[Chunk, list[RawMed]]],
     fuzzy_threshold: float = 90,
     is_drug_like=None,
+    grounding_guard: bool = True,
 ) -> tuple[list[Mention], AlignStats]:
     """Return one Mention per drug occurrence in `text`.
 
@@ -187,15 +188,23 @@ def ground(
                     spans = [fz]
                     stats.values_fuzzy += 1
             if not spans:
-                stats.values_dropped.append((row.drug, f, v))
-                continue
-            stats.values_grounded += 1
+                if grounding_guard:
+                    stats.values_dropped.append((row.drug, f, v))
+                    continue
+                else:
+                    spans = [Span(-1, -1, v)]
+            else:
+                stats.values_grounded += 1
             out = []
-            for s, e in spans:
-                if f == "frequency" and (t := _FREQ_TAIL.match(text, e)) and t.end() <= hi:
+            for sp in spans:
+                s, e = sp.start if isinstance(sp, Span) else sp[0], sp.end if isinstance(sp, Span) else sp[1]
+                t_val = sp.text if isinstance(sp, Span) else text[s:e]
+                if f == "frequency" and s >= 0 and (t := _FREQ_TAIL.match(text, e)) and t.end() <= hi:
                     e = t.end()
-                out.append(Span(s, e, text[s:e]))
-                taken.append((s, e))
+                    t_val = text[s:e]
+                out.append(Span(s, e, t_val))
+                if s >= 0:
+                    taken.append((s, e))
             m.attributes.setdefault(ATTR_TYPES[f], []).extend(out)
 
     return [mentions[o] for o in occ], stats

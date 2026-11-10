@@ -60,3 +60,13 @@ fusion:                             # v1 — see README §2.4; to be calibrated 
   status_score:
     discharge_list: 1.0
     inferred: 0.6
+
+ablation:
+  grounding_guard: true
+  section_parser: true
+  high_alert_rules: true
+  normalizer_abbreviations: true
+  normalizer_salt_stripping: true
+  normalizer_fuzzy: true
+  route_aware: true
+  extraction_confidence: true
