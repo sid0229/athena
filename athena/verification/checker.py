@@ -26,7 +26,7 @@ from dataclasses import dataclass, field, replace
 from enum import Enum
 from functools import lru_cache
 
-from athena.config import data_path
+from athena.config import data_path, load_config
 from athena.normalize.normalizer import DrugNormalizer, Normalized
 from athena.verification import high_alert
 
@@ -152,9 +152,10 @@ class InteractionKB:
 
 
 class InteractionChecker:
-    def __init__(self, kb: InteractionKB | None = None, normalizer: DrugNormalizer | None = None):
+    def __init__(self, kb: InteractionKB | None = None, normalizer: DrugNormalizer | None = None, cfg: dict | None = None):
         self.kb = kb or InteractionKB()
         self.normalizer = normalizer or DrugNormalizer()
+        self.ablation = (cfg or load_config()).get("ablation", {})
 
     def check(self, medications: list[Medication | str]) -> CheckReport:
         meds = [m if isinstance(m, Medication) else Medication(m) for m in medications]
@@ -213,7 +214,7 @@ class InteractionChecker:
 
     def _check_pair(self, a: Concept, b: Concept, med_a: Medication, med_b: Medication) -> PairResult:
         res = self._lookup_pair(a, b, med_a, med_b)
-        rule = high_alert.match(a.name, b.name)
+        rule = high_alert.match(a.name, b.name) if self.ablation.get("high_alert_rules", True) else None
         if rule is None:
             return res
         if res.status is PairStatus.INTERACTION:
