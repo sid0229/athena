@@ -327,7 +327,7 @@ Key limitations (full list in [`docs/limitations.md`](docs/limitations.md)):
 
 - Severity for DrugBank-only pairs is derived from sentence templates and is nearly always "Moderate"; 11 cited high-alert rules now cover the classic dangerous combinations, but other under-rated pairs may remain.
 - On n2c2's highly regular medication lists, the rules alone nearly match the hybrid; the LLM's gain is in narrative text — fine-tuning is planned.
-- The public DDInter download has only 8 of 14 ATC classes; pairs between drugs of the missing classes rely on DrugBank alone (Athena now reports this correctly instead of "no known interaction").
+- All 14 ATC class files from DDInter are downloaded and integrated (classes A, B, C, D, G, H, J, L, M, N, P, R, S, V), covering 234,981 DDInter pairs alongside DrugBank.
 - Route awareness covers local routes that DDInter models separately (topical, ophthalmic, otic, nasal); other route and dose effects are not modelled.
 - The XGBoost predictor is weaker on unseen drugs (ROC-AUC 0.68–0.80) and is not surfaced as verified evidence.
 - Athena does not learn automatically from overrides — by design; a governed, offline improvement loop is planned.
