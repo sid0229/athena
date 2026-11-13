@@ -252,7 +252,8 @@ def _interaction_finding(p: PairResult, entries: dict[str, MedEntry], cfg: dict)
     if p.severity_basis == "derived":
         sev_w *= cfg["derived_severity_factor"]
     ev_w = cfg["evidence_weight"]["two_sources" if len(p.sources) > 1 else "one_source"]
-    conf = min(a.confidence, b.confidence)
+    use_conf = cfg.get("ablation", {}).get("extraction_confidence", True)
+    conf = min(a.confidence, b.confidence) if use_conf else 1.0
     risk = round(sev_w * ev_w * conf, 3)
     risk_line = f"Risk {risk:.2f} = severity {sev_w:.2f} × evidence {ev_w:.2f} × extraction confidence {conf:.2f}."
     tier = _tier(risk, cfg)
@@ -358,17 +359,21 @@ def _default_checker() -> InteractionChecker:
 
 def analyze(text: str, extractor: MedicationExtractor | None = None,
             checker: InteractionChecker | None = None, fusion_cfg: dict | None = None) -> Report:
-    cfg = fusion_cfg or load_config()["fusion"]
+    full_cfg = load_config()
+    cfg = fusion_cfg or full_cfg["fusion"]
+    ablation = full_cfg.get("ablation", {})
+    cfg.setdefault("ablation", ablation)
     extractor = extractor or MedicationExtractor("hybrid")
     checker = checker or _default_checker()
 
     ex = extractor.extract(text)
-    sections = medication_sections(text)
+    use_sections = ablation.get("section_parser", True)
+    sections = medication_sections(text) if use_sections else []
     entries = build_medications(ex, sections, cfg)
     by_id = {e.id: e for e in entries}
 
     active = [e for e in entries if e.status == "active"]
-    route_aware = cfg.get("route_aware", False)
+    route_aware = cfg.get("route_aware", False) and ablation.get("route_aware", True)
     check = checker.check([Medication(e.raw, "active", ref=e.id, route=local_route(e) if route_aware else None)
                            for e in active])
 

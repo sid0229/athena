@@ -132,13 +132,15 @@ def _strip_salts(s: str) -> str:
 
 
 class DrugNormalizer:
-    def __init__(self, lexicon: dict | None = None):
+    def __init__(self, lexicon: dict | None = None, cfg: dict | None = None):
         lex = lexicon or load_lexicon()
         self.index: dict[str, list[str]] = lex["index"]
         self.canonical: list[str] = lex["canonical"]
         self.drugbank_id: dict[str, str] = lex["drugbank_id"]
         self.source: dict[str, str] = lex.get("source", {})
-        self.fuzzy_threshold = load_config()["normalize"]["fuzzy_match_threshold"]
+        full_cfg = cfg or load_config()
+        self.fuzzy_threshold = full_cfg["normalize"]["fuzzy_match_threshold"]
+        self.ablation = full_cfg.get("ablation", {})
         # Restricting typo matching to curated (non-Wikidata) names was tried in the code review:
         # it lost more correct matches (Keflex, Versed, Thorazine) than wrong ones, so it stays open.
         self._fuzzy_keys = [k for k in self.index if len(k) >= 5]
@@ -170,29 +172,36 @@ class DrugNormalizer:
             return Normalized(raw, (), "drug_class", 1.0, "drug_class")
         if any(p.search(s) for p in _NON_DRUG):
             return Normalized(raw, (), "non_drug", 1.0, "non_drug")
-        s = ABBREVIATIONS.get(s, s)
+        use_abbrev = self.ablation.get("normalizer_abbreviations", True)
+        use_salt = self.ablation.get("normalizer_salt_stripping", True)
+        use_fuzzy = self.ablation.get("normalizer_fuzzy", True)
+
+        if use_abbrev:
+            s = ABBREVIATIONS.get(s, s)
         if any(p.search(s) for p in _NON_DRUG):
             return Normalized(raw, (), "non_drug", 1.0, "non_drug")
 
         cleaned = _clean(s)
-        stripped = _strip_salts(cleaned)
+        stripped = _strip_salts(cleaned) if use_salt else cleaned
         # Abbreviations/brands before the index: "percocet 5/325" must reach the curated entry,
         # not an ambiguous index hit for the cleaned string.
-        stages = [
-            ("exact", s, 1.0),
-            ("abbreviation", ABBREVIATIONS.get(cleaned) or "", 0.95),
-            ("cleaned", cleaned, 0.95),
-            ("abbreviation", ABBREVIATIONS.get(stripped) or "", 0.9),
-            ("salt_stripped", stripped, 0.9),
-        ]
+        stages = [("exact", s, 1.0)]
+        if use_abbrev:
+            stages.append(("abbreviation", ABBREVIATIONS.get(cleaned) or "", 0.95))
+        stages.append(("cleaned", cleaned, 0.95))
+        if use_abbrev and use_salt:
+            stages.append(("abbreviation", ABBREVIATIONS.get(stripped) or "", 0.9))
+        if use_salt:
+            stages.append(("salt_stripped", stripped, 0.9))
+
         for stage, cand, score in stages:
             if cand and (hit := self._lookup(cand)):
                 return self._result(raw, hit, stage, score, self.source.get(cand))
-        for stage, cand in (("combination", cleaned), ("combination", stripped)):
+        for stage, cand in ([("combination", cleaned)] + ([("combination", stripped)] if use_salt else [])):
             if hit := self._lookup_combo(cand):
                 return Normalized(raw, tuple(sorted(set(hit))), stage, 0.9, "mapped")
 
-        if len(stripped) >= 5:
+        if use_fuzzy and len(stripped) >= 5:
             # Typo tolerance only: same first 4 letters, similar length.
             keys = [k for k in self._fuzzy_keys
                     if k[:4] == stripped[:4] and abs(len(k) - len(stripped)) <= 3]

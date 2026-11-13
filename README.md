@@ -28,10 +28,11 @@ It runs **entirely on a laptop** (Apple M2, 8 GB, no GPU). No patient text leave
 | What | Result |
 |---|---|
 | Medication extraction — n2c2 2018 Track 2, all 202 held-out test notes | **micro F1 0.817 strict (95% CI 0.806–0.827) / 0.880 lenient** (Drug F1 0.870); beats rules-only by +0.011 (paired 95% CI +0.003 to +0.018) — scispaCy baseline 0.348 |
-| Interaction alerts vs alerts from the gold medication lists | **27 / 27 Major pairs found and actionable** · pair precision 0.999 · recall 0.938 |
+| Best local model (llama3.1:8b, 5.8 GB) | **0.830 strict / 0.889 lenient** hybrid F1; qwen2.5:3b keeps 0.811 at 2.5× the speed of the default |
+| Interaction alerts vs alerts from the gold medication lists (202 notes) | **91.6% of Major pairs found, all in an actionable tier** · actionable-alert precision 99.6% · pair recall 92.1% |
 | ML interaction predictor (XGBoost, graph + chemical structure) — DrugBank benchmark | **ROC-AUC 0.981 ± 0.000 (3 folds)** · PR-AUC 0.985 — graph-only 0.932, drug-popularity baseline 0.80 |
 | Unseen drugs (cold start) | **ROC-AUC 0.81 ± 0.01** (one drug new) · 0.71 ± 0.02 (both new) with the cold-aware chemical model |
-| Interaction knowledge base | 2,413 drugs · 310,608 interacting pairs (DrugBank + DDInter), with severity, plus 11 cited high-alert rules |
+| Interaction knowledge base | 2,438 drugs · 353,186 interacting pairs (DrugBank + all 14 DDInter ATC classes), with severity, plus 11 cited high-alert rules |
 | Speed / memory | Interaction check 7 ms per patient · ~3.8 GB peak RAM |
 | Quality | 133 automated tests |
 
@@ -117,7 +118,7 @@ Maps what clinicians write (`"ASA 81"`, `"Lasix"`, `"metoprolol tartrate"`, `"Pe
 
 ### Branch B — Interaction verification
 
-**Knowledge base (symbolic).** DrugBank and DDInter merged into one SQLite database: 2,413 drug concepts, 310,608 interacting pairs. DDInter supplies severity grades (Major / Moderate / Minor); for DrugBank-only pairs, severity is **derived from data** per mechanism template (e.g. QTc-prolongation pairs are graded Major by DDInter 93% of the time) and labelled *derived*. Every active pair gets exactly one result: **interaction**, **no known interaction**, or **not covered** — "not covered" is never reported as "safe". Duplicate therapy (e.g. Percocet + Tylenol) is also detected. A small table of cited **high-alert rules** (`athena/verification/high_alert.py`: MAOI + serotonergic drug, nitrate + PDE5 inhibitor, opioid + benzodiazepine, lithium + diuretic/ACE inhibitor/NSAID, …) always grades those combinations Major and shows the rule and its source.
+**Knowledge base (symbolic).** DrugBank and DDInter (all 14 ATC class files) merged into one SQLite database: 2,438 drug concepts, 353,186 interacting pairs. DDInter supplies severity grades (Major / Moderate / Minor); for DrugBank-only pairs, severity is **derived from data** per mechanism template (e.g. QTc-prolongation pairs are graded Major by DDInter 93% of the time) and labelled *derived*. Every active pair gets exactly one result: **interaction**, **no known interaction**, or **not covered** — "not covered" is never reported as "safe". Duplicate therapy (e.g. Percocet + Tylenol) is also detected. A small table of cited **high-alert rules** (`athena/verification/high_alert.py`: MAOI + serotonergic drug, nitrate + PDE5 inhibitor, opioid + benzodiazepine, lithium + diuretic/ACE inhibitor/NSAID, …) always grades those combinations Major and shows the rule and its source.
 
 **ML interaction predictor (research component).** Following Shtar et al. (2019), an **XGBoost** classifier predicts whether a drug pair interacts from graph-similarity features (common neighbours, Jaccard, Adamic–Adar, resource allocation, degrees) computed on the training interaction graph only. It is evaluated on the standard DrugBank benchmark split and is **not** used to raise flags in the dashboard — predictions are never presented as verified.
 
@@ -190,6 +191,37 @@ Per type (hybrid, strict F1): Route .892 · Drug .870 · Strength .844 · Form .
 
 Per type (hybrid, strict F1): Drug .865 · Route .884 · Strength .848 · Form .775 · Frequency .712 · Dosage .694 · Duration .485.
 On 35 notes the hybrid − rules gap (+0.015) is not significant (CI −0.005 to +0.035); the 202-note run above settles it. Validation (.809) matches test (.814). Full tables: `docs/results/extraction_test_202notes.json`, `docs/results/extraction_test_35notes.json`, `docs/results/extraction_val_38notes.json`.
+
+### 1b. Local model comparison
+
+Same pipeline, prompt and settings; only the local Ollama model changes (all 202 test notes, strict / lenient micro F1 with 95% bootstrap CIs; Apple M2, 8 GB).
+
+| Model | Hybrid strict F1 | Hybrid lenient F1 | LLM-only strict F1 | Sec / note | Peak RAM |
+|---|---|---|---|---|---|
+| **llama3.1:8b** | **0.830** (0.821–0.839) | **0.889** | **0.745** | 113 s | 5.8 GB |
+| qwen2.5:7b | 0.820 (0.809–0.830) | 0.887 | 0.634 | 74 s | 5.5 GB |
+| llama3.2:3b (default) | 0.817 (0.806–0.827) | 0.880 | 0.666 | 71 s | 3.8 GB |
+| qwen2.5:3b | 0.811 (0.801–0.821) | 0.877 | 0.594 | **28 s** | 3.2 GB |
+| phi3.5:3.8b | 0.795 (0.784–0.806) | 0.863 | 0.597 | 56 s | 3.6 GB |
+| gemma2:2b | 0.783 (0.769–0.795) | 0.852 | 0.590 | 43 s | 2.8 GB |
+
+The architecture holds across models: every hybrid scores 0.78–0.83, far above any LLM alone (0.59–0.75), because rules and grounding carry the structured fields. llama3.2:3b stays the default (it leaves room on an 8 GB laptop); llama3.1:8b is the most accurate, qwen2.5:3b the fastest. Details: [`docs/results/model_comparison.md`](docs/results/model_comparison.md).
+
+### 1c. Component ablation
+
+Each component switched off in turn (all 202 test notes, llama3.2:3b; alerts compared with alerts from the gold medication lists).
+
+| Switched off | Strict F1 | Major pairs found | Actionable-alert precision | Alerts / note |
+|---|---|---|---|---|
+| — (full system) | 0.817 | 91.6% | 99.6% | 9.9 |
+| Grounding guard | 0.800 | 92.0% | 99.8% | 9.9 |
+| Section parser | 0.817 | 81.4% | **35.5%** | **17.4** |
+| All normaliser stages | 0.817 | **78.8%** | 99.6% | 8.7 |
+| Route awareness | 0.817 | 89.8% | 96.3% | 10.0 |
+| Confidence in the risk score | 0.817 | 91.6% | 99.3% | **12.1** |
+| High-alert rules | 0.817 | 91.6% | 99.6% | 9.9 |
+
+The section parser keeps the alert list clean, the normaliser finds the Major pairs, the grounding guard protects extraction, and confidence weighting cuts alert volume by about a fifth. High-alert rules change no counts here: in this cohort they move pairs from Review to Critical rather than adding new ones. Details: [`docs/results/ablation.md`](docs/results/ablation.md).
 
 ### 2. ML interaction predictor — XGBoost
 
