@@ -54,8 +54,9 @@ the gain from 600 to 2,000 trees is +0.003 ROC-AUC.
 | LLM only | 0.659 | 0.665 (0.635–0.695) |
 | Hybrid − rules (paired bootstrap) | | +0.015 (−0.005 to +0.034): not significant on 35 notes |
 
-**Full test set (202 notes, run by Rupesh before these fixes):** hybrid 0.796 (95% CI 0.786–0.805) vs
-rules 0.782; hybrid − rules +0.014, paired 95% CI +0.005 to +0.021 — significant. Re-run with the fixes pending.
+**Full test set (202 notes, run by Rupesh):** before the fixes hybrid 0.796 / rules 0.782; **with the fixes
+hybrid 0.817 (95% CI 0.806–0.827) / rules 0.806**; hybrid − rules +0.011 strict (paired 95% CI +0.003 to
++0.018) — significant.
 
 Tried and **not adopted** (no measurable gain on validation): keeping LLM numeric dosages (+0.0002),
 detecting therapeutic oxygen (+0.0002), restricting typo matching to curated names (lost Keflex,
