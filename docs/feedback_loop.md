@@ -93,64 +93,72 @@ This document details the design, implementation, and empirical evaluation of At
 
 ---
 
-## 4. Empirical Evaluation & Results
+## 4. Empirical Evaluation Across All 202 Test Notes
 
 ### 4.1 Benchmark Evaluation Setup
-- Evaluated on n2c2 2018 Track 2 clinical discharge summaries.
-- Tested on standard test benchmark notes with local `llama3.2:3b` via Ollama.
+- Evaluated on all 202 n2c2 2018 Track 2 clinical discharge summaries (769 chunks).
+- Full caching and evaluation executed with local `llama3.2:3b` via Ollama.
 - Metrics evaluated:
-  - Strict and Lenient micro F1 across 7 medication slots.
+  - Strict and Lenient micro F1 across all 7 medication slots.
   - 2,000 paired bootstrap iterations over notes for 95% confidence intervals.
   - Alert-level evaluation against gold annotations (InteractionChecker & DDInter).
 
-### 4.2 Extraction Benchmark (Hybrid Mode)
+### 4.2 Extraction Benchmark (202 Test Notes, Hybrid Mode)
 
 | Entity / Metric | Baseline Hybrid | Hybrid + Dynamic Few-Shot | Difference |
 |---|---|---|---|
-| **Drug (Strict F1)** | **0.860** | 0.855 | -0.005 |
-| **Strength (Strict F1)** | 0.818 | **0.851** | **+0.033** |
-| **Route (Strict F1)** | 0.874 | **0.885** | **+0.011** |
-| **Frequency (Strict F1)** | 0.712 | **0.738** | **+0.026** |
-| **Form (Strict F1)** | 0.764 | **0.779** | **+0.015** |
-| **Dosage (Strict F1)** | **0.698** | 0.697 | -0.001 |
-| **Duration (Strict F1)** | **0.485** | 0.404 | -0.081 |
-| **Strict Micro F1** | 0.8054 [0.7772, 0.8280] | **0.8151** [0.7924, 0.8348] | **+0.0097** (95% CI [-0.0043, +0.0248]) |
-| **Lenient Micro F1** | 0.8748 [0.8584, 0.8892] | **0.8794** [0.8624, 0.8948] | **+0.0046** (95% CI [-0.0045, +0.0143]) |
-| **LLM Values Dropped (Ungrounded)** | 47.8% (1,349 / 2,822) | **14.8%** (274 / 1,856) | **-33.0% (3.2x reduction)** |
+| **Drug (Strict F1)** | **0.870** (P 0.883 / R 0.856) | 0.856 (P 0.862 / R 0.850) | -0.014 |
+| **Strength (Strict F1)** | **0.844** (P 0.837 / R 0.851) | 0.839 (P 0.834 / R 0.843) | -0.005 |
+| **Route (Strict F1)** | **0.893** (P 0.934 / R 0.855) | 0.891 (P 0.939 / R 0.847) | -0.002 |
+| **Frequency (Strict F1)** | 0.670 (P 0.656 / R 0.684) | **0.699** (P 0.705 / R 0.693) | **+0.029** |
+| **Form (Strict F1)** | 0.815 (P 0.828 / R 0.802) | **0.818** (P 0.840 / R 0.797) | **+0.003** |
+| **Dosage (Strict F1)** | **0.718** (P 0.970 / R 0.570) | 0.715 (P 0.967 / R 0.567) | -0.003 |
+| **Duration (Strict F1)** | **0.495** (P 0.745 / R 0.370) | 0.472 (P 0.740 / R 0.347) | -0.023 |
+| **Strict Micro F1** | **0.8171** [0.8064, 0.8274] | 0.8158 [0.8028, 0.8279] | **-0.0013** (95% CI [-0.0107, +0.0073]) |
+| **Lenient Micro F1** | **0.8802** [0.8721, 0.8880] | 0.8793 [0.8700, 0.8878] | **-0.0009** (95% CI [-0.0082, +0.0059]) |
+| **LLM Values Dropped (Ungrounded)** | 43.0% (7,953 / 18,481) | **17.4%** (2,160 / 12,415) | **-25.6% (2.5x grounding improvement)** |
 
-### 4.3 Alert-Level Evaluation
+### 4.3 Alert-Level Evaluation (202 Test Notes)
 
 | Metric | Baseline System | System + Dynamic Few-Shot | Delta |
 |---|---|---|---|
-| **Total Gold Pairs** | 992 | 992 | — |
-| **Total System Pairs** | 965 | 984 | +19 |
-| **True Positive Pairs** | 963 | 977 | +14 |
-| **Pair Precision** | **0.9979** | 0.9929 | -0.0050 |
-| **Pair Recall** | 0.9708 | **0.9849** | **+0.0141 (+1.4%)** |
-| **Gold Major Pairs** | 37 | 37 | — |
-| **Major Pairs Found** | 37 | 37 | 0 (100% recall) |
-| **Major Recall** | **1.0000** | **1.0000** | **0.0000 (No drop)** |
-| **Major Reaching Actionable Tier** | **1.0000** | **1.0000** | **0.0000 (No drop)** |
-| **Actionable Alert Precision** | 0.9948 | **0.9950** | **+0.0002** |
-| **Actionable Alerts / Note** | 5.46 | 5.77 | +0.31 |
+| **Total Gold Pairs** | 8,163 | 8,163 | — |
+| **Total System Pairs** | 7,611 | 7,432 | -179 |
+| **True Positive Pairs** | 7,515 | 7,346 | -169 |
+| **Pair Precision** | 0.9874 | **0.9884** | **+0.0010** |
+| **Pair Recall** | **0.9206** | 0.8999 | -0.0207 (-2.1%) |
+| **Gold Major Pairs** | 452 | 452 | — |
+| **Major Pairs Found** | **414** | 409 | -5 |
+| **Major Recall** | **0.9159** (91.6%) | 0.9049 (90.5%) | **-0.0110 (-1.1%)** |
+| **Major Reaching Actionable Tier** | **0.9159** (91.6%) | 0.9049 (90.5%) | **-0.0110 (-1.1%)** |
+| **Actionable Alert Precision** | 0.9955 | **0.9970** | **+0.0015** |
+| **Actionable Alerts / Note** | 9.88 | 9.76 | -0.12 |
 
 ---
 
-## 5. Observations & Promotion Decision
+## 5. Negative Results Analysis & Promotion Gate Decision
 
-### 5.1 Positive Findings
-1. **Dramatic Grounding Improvement**: Unmatched/hallucinated LLM attribute values dropped from 47.8% to 14.8% (a 3.2x reduction). The few-shot examples clearly anchor the LLM to verbatim spans rather than expanded clinical synonyms.
-2. **Attribute Accuracy Gains**: Substantial improvements in Strength (+0.033), Frequency (+0.026), and Route (+0.011) F1.
-3. **Alert Recall Gain**: Overall DDI pair recall increased by +1.4% (0.9708 &rarr; 0.9849), while Major recall was perfectly preserved at 100%.
+### 5.1 Analysis of the Negative Result
+1. **Drug Entity Omission in Narrative Contexts**:
+   - Drug strict F1 fell from 0.870 to 0.856 (-0.014), and Drug recall dropped from 0.856 to 0.850.
+   - When primed with structured few-shot examples, `llama3.2:3b` develops a strong inductive bias towards tabular/list-formatted discharge prescriptions. As a consequence, it occasionally skips informal or implicit drug mentions buried deep within prose (e.g., *"patient was placed on an amiodarone drip in the ICU"*).
+2. **Cascading Impact on Downstream Alert Recall**:
+   - Because interaction detection depends entirely on identifying both drugs in a pair, the slight drop in Drug recall directly translated to 5 fewer Major interaction pairs detected (414 &rarr; 409), reducing Major recall from 91.59% to 90.49% (-1.10%).
+3. **Inference Latency Trade-Off**:
+   - Incorporating 2 dynamic few-shot examples increased average chunk generation time from ~1.5s to ~2.8s on Apple M2 (an 86% latency penalty).
 
-### 5.2 Negative Result & Critical Trade-Off
-1. **Drug Entity Recall Slight Drop**: Drug entity strict F1 slightly dropped from 0.860 to 0.855 (-0.005). The few-shot prompt causes the smaller 3B model to become slightly conservative on unusual narrative drug mentions outside standard list formatting.
-2. **Inference Latency Overhead**: Few-shot context adds ~400-600 prompt tokens per chunk, increasing generation latency from ~1.5s to ~2.8s per chunk.
+### 5.2 Positive Offsetting Strengths
+- **Grounding Fidelity**: LLM attribute values discarded by grounding dropped dramatically from 43.0% down to 17.4% (a 2.5x hallucination reduction).
+- **Attribute Precision**: Frequency strict F1 increased noticeably (+0.029, from 0.670 to 0.699).
+- **Precision on Actionable Alerts**: Actionable alert precision reached 99.70% (1,965 / 1,971).
 
-### 5.3 Promotion Gate Decision
+### 5.3 Formal Promotion Decision
 - **Gate Rule**: Only enable `extraction.use_corrections` by default if overall F1 does not drop AND Major recall does not drop.
-- **Outcome**: While overall strict micro F1 increased (+0.0097) and Major recall held at 100%, Drug entity F1 experienced a small regression (-0.005) and LLM call latency increased ~1.8x.
-- **Decision**: In accordance with clinical safety principles where drug omission is higher risk than attribute variance, **Level 1 learning is kept opt-in (`extraction.use_corrections: false` by default)**. Users and clinical sites can enable it via `configs/default.yaml` or programmatically when attribute precision and grounding are prioritized.
+- **Evaluation Finding**:
+  - Strict micro F1 changed by $-0.0013$ ($95\%\text{ CI } [-0.0107, +0.0073]$).
+  - Major recall dropped by $-0.0110$ ($91.59\% \rightarrow 90.49\%$).
+- **Decision**: **FAILS promotion gate for default adoption.**
+  Level 1 learning is kept **strictly opt-in (`extraction.use_corrections: false` by default in `configs/default.yaml`)**. It remains fully accessible for sites that prioritize verbatim grounding and attribute fidelity over maximal prose-drug recall.
 
 ---
 
