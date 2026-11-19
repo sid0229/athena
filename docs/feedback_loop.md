@@ -162,11 +162,36 @@ This document details the design, implementation, and empirical evaluation of At
 
 ---
 
-## 6. Level 2: Supervised Instruction Fine-Tuning (LoRA / MLX)
+## 6. Level 2: Supervised Instruction Fine-Tuning (LoRA / MLX) (`exp/lora`)
 
-### 6.1 Exploration Overview
-- Target Model: `llama3.2:3b`.
-- Dataset: High-confidence reviewer corrections merged with the n2c2 training gold standard formatted in the Athena 8-column JSON schema.
-- Training Paradigm: QLoRA (4-bit quantization, rank $r=16$, $\alpha=32$) using Apple MLX (`mlx-lm`) optimized for unified memory on Apple Silicon.
-- Deployment Path: Convert trained LoRA adapters to GGUF format for zero-overhead local execution in Ollama.
-- Gate Requirement: Model adapter is promoted to production only if test micro F1 and Major interaction recall do not regress compared to the base baseline.
+### 6.1 Exploration & Architecture
+- **Target Model**: `llama3.2:3b-instruct` (4-bit quantized base via `mlx-community/Llama-3.2-3B-Instruct-4bit`).
+- **Data Preparation (`scripts/prepare_lora_data.py`)**:
+  - Training dataset: 5,399 clinical chunk examples combining n2c2 2018 Track 2 train gold notes and train-split snippet corrections formatted as JSONL chat messages.
+  - Validation dataset: 134 clinical chunks from n2c2 validation gold notes.
+  - Formatted strictly to the 8-column schema: `[drug, strength, dosage, form, route, frequency, duration, status]`.
+- **Training Paradigm (`scripts/train_lora.py`)**:
+  - Low-Rank Adaptation (QLoRA) utilizing Apple MLX (`mlx-lm`) on Apple Silicon unified memory.
+  - Hyperparameters: Rank $r=16$, Scaling $\alpha=32$, Dropout $0.0$, 16 LoRA attention projection layers, batch size $2$, AdamW with learning rate $1\times 10^{-4}$.
+- **Packaging & Deployment**:
+  - `mlx_lm.fuse` merges the low-rank delta weights $\Delta W$ directly into the base weights.
+  - Converted / registered with Ollama via `Modelfile` as `llama3.2:3b-athena-lora`.
+- **Model Version Tracking in Report Metadata**:
+  - Updated `athena/fusion/report.py` to record `report["meta"]["model_version"]` and `report["meta"]["llm_model"]`, ensuring that downstream decision audits cryptographically seal the exact model checkpoint that produced the extraction.
+
+### 6.2 Gate Evaluation & Comparative Analysis
+- **Promotion Gate**:
+  - Test Micro F1 must be $\ge 0.8171$ (the baseline hybrid score).
+  - Test Major Interaction Recall must be $\ge 91.59\%$ (414 / 452).
+- **Comparative Trade-Offs (Level 1 Few-Shot vs Level 2 Parametric LoRA)**:
+  1. *Sample Efficiency & Real-Time Adaptation*:
+     - **Level 1 (Dynamic Few-Shot)** adapts instantly as soon as a reviewer clicks "Save & Re-run", because the correction is immediately written to `corrections.db` and indexable by the TF-IDF retriever.
+     - **Level 2 (LoRA)** requires batch retraining, parameter merging, GGUF quantization, and service restart.
+  2. *Inference Latency*:
+     - Level 1 adds ~400–600 prompt tokens per chunk, increasing latency from ~1.5s to ~2.8s.
+     - Level 2 maintains baseline latency (~1.5s per chunk) because the parameter weights are pre-fused and prompt length is unaugmented.
+  3. *Generalization vs. Narrowing*:
+     - Like Level 1, instruction fine-tuning on heavily structured medication lists risks overfitting to standard prescription formats, causing slight recall loss on narrative / conversational mentions.
+- **Promotion Status**:
+  - In alignment with Athena's validation gates, fine-tuned adapters remain in `exp/lora` as an experimental track until extensive real-world clinical drift justifies replacing the baseline instruction checkpoint.
+
