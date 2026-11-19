@@ -63,7 +63,7 @@ export interface Report {
 
 export interface Decision {
   id: number; ts: string; reviewer: string; case_id: string; report_hash: string; finding_id: string
-  finding_type: string; tier: Tier; title: string; action: 'confirm' | 'override'
+  finding_type: string; tier: Tier; title: string; action: 'confirm' | 'override' | 'correct'
   reason_code: string | null; comment: string | null; prev_hash: string; row_hash: string
 }
 

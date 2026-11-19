@@ -12,6 +12,7 @@ paths:
   faers: data/raw/faers/ASCII
   kb_db: data/processed/interactions.db
   audit_db: data/processed/audit.db
+  corrections_db: data/corrections.db
 
 llm:
   host: http://localhost:11434      # local only — never a remote host

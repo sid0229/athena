@@ -753,7 +753,8 @@ def audit_page():
             rows.append(f'<div class="tl-day">{esc(d)} · UTC</div>')
             day = d
         verb = ("<span class='verb-confirm'>Confirmed</span>" if e.action == "confirm"
-                else "<span class='verb-override'>Overrode</span>")
+                else "<span class='verb-override'>Overrode</span>" if e.action == "override"
+                else "<span class='verb-confirm'>Corrected</span>")
         reason = ""
         if e.reason_code:
             reason = f'<div class="tl-reason">Reason: {esc(OVERRIDE_REASONS.get(e.reason_code, e.reason_code))}' \

@@ -357,19 +357,10 @@ def _default_checker() -> InteractionChecker:
     return InteractionChecker()
 
 
-def analyze(text: str, extractor: MedicationExtractor | None = None,
-            checker: InteractionChecker | None = None, fusion_cfg: dict | None = None) -> Report:
-    full_cfg = load_config()
-    cfg = fusion_cfg or full_cfg["fusion"]
-    ablation = full_cfg.get("ablation", {})
-    cfg.setdefault("ablation", ablation)
-    extractor = extractor or MedicationExtractor("hybrid")
-    checker = checker or _default_checker()
-
-    ex = extractor.extract(text)
-    use_sections = ablation.get("section_parser", True)
-    sections = medication_sections(text) if use_sections else []
-    entries = build_medications(ex, sections, cfg)
+def _build_report_from_entries(entries: list[MedEntry], sections: list[Section],
+                               checker: InteractionChecker, cfg: dict,
+                               meta_base: dict) -> Report:
+    ablation = cfg.get("ablation", {})
     by_id = {e.id: e for e in entries}
 
     active = [e for e in entries if e.status == "active"]
@@ -379,7 +370,9 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
 
     findings = [_interaction_finding(p, by_id, cfg) for p in check.interactions]
     for d in check.duplicates:
-        meds = [by_id[m.ref] for m in d.medications]
+        meds = [by_id[m.ref] for m in d.medications if m.ref in by_id]
+        if not meds:
+            continue
         conf = min(m.confidence for m in meds)
         findings.append(Finding(
             id=f"DUP:{d.concept.concept_id}", type="DUPLICATE_THERAPY", tier="review",
@@ -389,7 +382,7 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
         ))
     findings += reconciliation_findings(entries, sections)
 
-    unchecked = [by_id[m.ref] for m, _ in check.unchecked]
+    unchecked = [by_id[m.ref] for m, _ in check.unchecked if m.ref in by_id]
     if unchecked:
         findings.append(Finding(
             id="NOT_CHECKED", type="NOT_CHECKED", tier="info", risk=0.0,
@@ -403,7 +396,7 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
         findings.append(Finding(
             id="NOT_COVERED", type="NOT_COVERED", tier="info", risk=0.0,
             title=f"{len(not_cov)} drug pair(s) not covered by any interaction source",
-            meds=sorted({x for p in not_cov for x in (p.med_a.ref, p.med_b.ref)}),
+            meds=sorted({x for p in not_cov for x in (p.med_a.ref, p.med_b.ref) if x in by_id}),
             explanation=[f"{p.a.name} + {p.b.name}" for p in not_cov[:20]]
             + ["No source covers both drugs: absence of a record does not mean the pair is safe."],
             evidence={"pairs": [{"a": p.a.concept_id, "b": p.b.concept_id, "a_name": p.a.name, "b_name": p.b.name}
@@ -412,7 +405,7 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
     findings.sort(key=lambda f: (TIER_ORDER[f.tier], -f.risk, f.title))
 
     meta = {
-        "extraction_mode": ex.mode, "extraction_seconds": round(ex.seconds, 2), "warnings": ex.warnings,
+        **meta_base,
         "sections": [asdict(s) for s in sections],
         "counts": {
             "medications": len(entries), "active": len(active),
@@ -422,10 +415,114 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
             "not_covered": len(not_cov),
             "tiers": {t: sum(f.tier == t for f in findings) for t in TIER_ORDER},
         },
-        "llm_model": getattr(extractor.llm, "model", None),
     }
     report = Report(entries, findings, meta)
     payload = json.dumps({"medications": [asdict(m) for m in entries],
                           "findings": [asdict(f) for f in findings]}, sort_keys=True)
     meta["report_hash"] = hashlib.sha256(payload.encode()).hexdigest()
     return report
+
+
+def analyze(text: str, extractor: MedicationExtractor | None = None,
+            checker: InteractionChecker | None = None, fusion_cfg: dict | None = None) -> Report:
+    full_cfg = load_config()
+    cfg = fusion_cfg or full_cfg["fusion"]
+    ablation = full_cfg.get("ablation", {})
+    cfg.setdefault("ablation", ablation)
+    extractor = extractor or MedicationExtractor("hybrid")
+    checker = checker or _default_checker()
+
+    ex = extractor.extract(text)
+    use_sections = ablation.get("section_parser", True)
+    sections = medication_sections(text) if use_sections else []
+    entries = build_medications(ex, sections, cfg)
+
+    meta_base = {
+        "extraction_mode": ex.mode,
+        "extraction_seconds": round(ex.seconds, 2),
+        "warnings": ex.warnings,
+        "llm_model": getattr(extractor.llm, "model", None),
+    }
+    return _build_report_from_entries(entries, sections, checker, cfg, meta_base)
+
+
+def analyze_medications(medications: list[dict | MedEntry], text: str = "",
+                        checker: InteractionChecker | None = None,
+                        fusion_cfg: dict | None = None,
+                        sections: list[Section] | None = None,
+                        extraction_mode: str = "corrected") -> Report:
+    full_cfg = load_config()
+    cfg = fusion_cfg or full_cfg["fusion"]
+    ablation = full_cfg.get("ablation", {})
+    cfg.setdefault("ablation", ablation)
+    checker = checker or _default_checker()
+
+    if sections is None:
+        use_sections = ablation.get("section_parser", True)
+        sections = medication_sections(text) if (text and use_sections) else []
+
+    entries: list[MedEntry] = []
+    seen_ids: set[str] = set()
+    for m in medications:
+        if isinstance(m, MedEntry):
+            entries.append(m)
+            seen_ids.add(m.id)
+            continue
+
+        raw = str(m.get("raw") or m.get("name") or "").strip()
+        if not raw:
+            continue
+        attrs = dict(m.get("attributes") or {})
+        for attr_name in ("Strength", "Route", "Frequency", "Dosage", "Form", "Duration"):
+            lower_k = attr_name.lower()
+            if lower_k in m and m[lower_k]:
+                attrs[attr_name] = str(m[lower_k])
+        norm = checker.normalizer.normalize(raw)
+        if norm.status == "non_drug":
+            continue
+        norm_score = norm.score if norm.status == "mapped" else (0.5 if norm.status == "ambiguous" else 0.0)
+        status = str(m.get("status") or "active").lower()
+        conf_parts = m.get("confidence_parts") or {"detection": 1.0, "normalization": norm_score, "status": 1.0}
+        conf = float(m.get("confidence", 1.0))
+        mentions = [
+            MentionRef(**x) if isinstance(x, dict) else x
+            for x in m.get("mentions", [])
+        ]
+        in_adm = bool(m.get("in_admission", False))
+        in_dis = bool(m.get("in_discharge", True if status == "active" else False))
+        base_id = m.get("id") or ("D:" + "+".join(sorted(norm.drugs)) if norm.drugs else f"T:{raw.lower()}")
+        mid = base_id
+        suffix = 1
+        while mid in seen_ids:
+            mid = f"{base_id}_{suffix}"
+            suffix += 1
+        seen_ids.add(mid)
+
+        entry = MedEntry(
+            id=mid,
+            name=" + ".join(norm.drugs) if norm.drugs else raw,
+            raw=raw,
+            norm_status=norm.status,
+            norm_stage=norm.stage,
+            kb_names=list(norm.drugs),
+            mentions=mentions,
+            attributes=attrs,
+            admission_attributes=dict(m.get("admission_attributes") or {}),
+            in_admission=in_adm,
+            in_discharge=in_dis,
+            text_status=str(m.get("text_status") or ""),
+            status=status,
+            confidence=conf,
+            confidence_parts=conf_parts,
+        )
+        entries.append(entry)
+
+    entries.sort(key=lambda e: ({"active": 0, "held": 1, "stopped": 2, "mentioned": 3}.get(e.status, 4), e.name.lower()))
+    meta_base = {
+        "extraction_mode": extraction_mode,
+        "extraction_seconds": 0.0,
+        "warnings": [],
+        "llm_model": None,
+        "corrected": True,
+    }
+    return _build_report_from_entries(entries, sections, checker, cfg, meta_base)

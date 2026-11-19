@@ -25,7 +25,7 @@ from pathlib import Path
 
 from athena.config import data_path
 
-ACTIONS = ("confirm", "override")
+ACTIONS = ("confirm", "override", "correct")
 OVERRIDE_REASONS = {
     "not_clinically_relevant": "Not clinically relevant for this patient",
     "already_managed": "Already managed / monitored",
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS audit (
     finding_type TEXT NOT NULL,
     tier TEXT NOT NULL,
     title TEXT NOT NULL,
-    action TEXT NOT NULL CHECK (action IN ('confirm', 'override')),
+    action TEXT NOT NULL CHECK (action IN ('confirm', 'override', 'correct')),
     reason_code TEXT,
     comment TEXT,
     prev_hash TEXT NOT NULL,
@@ -93,8 +93,30 @@ class AuditLog:
         self.anchor = self.path.with_name(self.path.name + ".head")
         with closing(self._con()) as con, con:
             con.executescript(SCHEMA)
+            row = con.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='audit'").fetchone()
+            if row and "'correct'" not in row[0]:
+                self._migrate_check_constraint(con)
         if not self.anchor.exists():  # first use, or a log created before anchoring existed
             self._write_anchor()
+
+    def _migrate_check_constraint(self, con: sqlite3.Connection) -> None:
+        con.execute("PRAGMA foreign_keys=OFF")
+        con.execute("CREATE TABLE audit_new ("
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, reviewer TEXT NOT NULL, "
+                    "case_id TEXT NOT NULL, report_hash TEXT NOT NULL, finding_id TEXT NOT NULL, "
+                    "finding_type TEXT NOT NULL, tier TEXT NOT NULL, title TEXT NOT NULL, "
+                    "action TEXT NOT NULL CHECK (action IN ('confirm', 'override', 'correct')), "
+                    "reason_code TEXT, comment TEXT, prev_hash TEXT NOT NULL, row_hash TEXT NOT NULL UNIQUE)")
+        con.execute("INSERT INTO audit_new SELECT * FROM audit")
+        con.execute("DROP TRIGGER IF EXISTS audit_no_update")
+        con.execute("DROP TRIGGER IF EXISTS audit_no_delete")
+        con.execute("DROP TABLE audit")
+        con.execute("ALTER TABLE audit_new RENAME TO audit")
+        con.execute("CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit "
+                    "BEGIN SELECT RAISE(ABORT, 'audit log is append-only'); END;")
+        con.execute("CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit "
+                    "BEGIN SELECT RAISE(ABORT, 'audit log is append-only'); END;")
+        con.execute("CREATE INDEX IF NOT EXISTS audit_case ON audit(case_id, finding_id);")
 
     def _con(self) -> sqlite3.Connection:
         return sqlite3.connect(self.path)
