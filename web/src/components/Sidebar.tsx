@@ -1,17 +1,18 @@
-import { ArrowLeftRight, ChevronDown, FileText, Moon, PanelLeftClose, PanelLeftOpen, Pill, Settings, ShieldCheck, Sun, User } from 'lucide-react'
+import { ArrowLeftRight, ChartColumn, ChevronDown, FileText, Moon, PanelLeftClose, PanelLeftOpen, Pill, Settings, ShieldCheck, Sun, User } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Reviewer } from '../types'
 import { initials } from '../lib'
 import { Button, ICON, cx } from './ui'
 
-export type Page = 'input' | 'triage' | 'diff' | 'meds' | 'audit'
+export type Page = 'input' | 'triage' | 'diff' | 'meds' | 'analytics' | 'audit'
 export const SIDEBAR_W = { open: 248, closed: 68 }
 
 const NAV: { id: Page; label: string; icon: typeof FileText }[] = [
-  { id: 'input', label: 'Input Note', icon: FileText },
-  { id: 'triage', label: 'Triage', icon: ShieldCheck },
+  { id: 'input', label: 'Med Input', icon: FileText },
+  { id: 'triage', label: 'Med Review', icon: ShieldCheck },
   { id: 'diff', label: 'Med Diff', icon: ArrowLeftRight },
   { id: 'meds', label: 'Medications', icon: Pill },
+  { id: 'analytics', label: 'Analytics', icon: ChartColumn },
   { id: 'audit', label: 'Audit & System', icon: Settings },
 ]
 export const ROLES = ['Clinical pharmacist', 'Clinical reviewer', 'Physician', 'Student reviewer']
@@ -57,7 +58,7 @@ export function Sidebar({ page, setPage, badges, version, reviewer, setReviewer,
       <nav className="flex flex-col gap-1 py-3" aria-label="Main">
         {NAV.map(({ id, label, icon: Icon }) => {
           const active = page === id
-          const disabled = id !== 'input' && id !== 'audit' && !hasReport
+          const disabled = id !== 'input' && id !== 'audit' && id !== 'analytics' && !hasReport
           const n = badges[id]
           return (
             <button key={id} onClick={() => setPage(id)} disabled={disabled}
@@ -72,8 +73,8 @@ export function Sidebar({ page, setPage, badges, version, reviewer, setReviewer,
               <Icon {...ICON} size={18} aria-hidden />
               {!collapsed && <span className="flex-1 text-left">{label}</span>}
               {!!n && (collapsed
-                ? <span aria-hidden className="absolute right-0.5 top-0.5 min-w-4 rounded-full bg-accent px-1 text-center font-mono text-[10px] leading-4 text-accent-ink">{n}</span>
-                : <span className="min-w-6 rounded border border-line-strong px-1.5 text-center font-mono text-xs text-muted">{n}</span>)}
+                ? <span aria-hidden className="absolute right-0.5 top-0.5 min-w-4 rounded-full bg-accent px-1 text-center tabular-nums text-[10px] font-semibold leading-4 text-accent-ink">{n}</span>
+                : <span className="min-w-6 rounded border border-line-strong px-1.5 text-center tabular-nums text-xs text-muted">{n}</span>)}
               <Tip show={collapsed}>{label}{n ? ` · ${n} pending` : ''}{disabled ? ' · analyze a note first' : ''}</Tip>
             </button>
           )

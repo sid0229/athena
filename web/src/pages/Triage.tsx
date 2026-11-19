@@ -20,7 +20,7 @@ export function Triage({ a, meta, reviewer, onDecide }: {
 
   return (
     <div className="mx-auto max-w-[1320px]">
-      <PageHeader title="Interaction Triage" tag={a.case_id}
+      <PageHeader title="Med Review" tag={<span className="font-mono">{a.case_id}</span>}
         right={<span className="meta">Reviewed <span className="text-ink-2">{reviewed} / {actionable.length}</span> · DrugBank + DDInter</span>} />
       <div className="mb-5 flex items-center justify-between border-b border-line">
         <div role="group" aria-label="Filter findings" className="flex items-center gap-1">
@@ -63,7 +63,7 @@ export function Triage({ a, meta, reviewer, onDecide }: {
                         {a.ml_signals.map(s => (
                           <tr key={`${s.a}|${s.b}`} className="border-t border-line first:border-t-0">
                             <td className="py-1 pr-3 text-ink-2">{disp(s.a_name, a.display_names)} + {disp(s.b_name, a.display_names)}</td>
-                            <td className="py-1 pr-3 text-right font-mono">{(s.probability * 100).toFixed(0)}%</td>
+                            <td className="py-1 pr-3 text-right tabular-nums">{(s.probability * 100).toFixed(0)}%</td>
                             <td className="meta py-1 text-right">{s.model}</td>
                           </tr>
                         ))}
@@ -128,8 +128,8 @@ function FindingCard({ f, a, meta, reviewer, onDecide }: {
         <div className="border-t border-line pb-4 pt-4">
           <div className="grid grid-cols-3 gap-4">
             <div><div className="meta">Risk score</div>
-              <div className={cx('mt-1 font-mono text-sm font-semibold', f.tier === 'critical' ? 'text-critical' : f.tier === 'review' ? 'text-review' : 'text-ink')}>{f.risk.toFixed(2)}</div></div>
-            <div><div className="meta">Extraction confidence</div><div className="mt-1 font-mono text-sm text-ink">{conf?.toFixed(2) ?? '—'}</div></div>
+              <div className={cx('mt-1 tabular-nums text-sm font-semibold', f.tier === 'critical' ? 'text-critical' : f.tier === 'review' ? 'text-review' : 'text-ink')}>{f.risk.toFixed(2)}</div></div>
+            <div><div className="meta">Extraction confidence</div><div className="mt-1 tabular-nums text-sm text-ink">{conf?.toFixed(2) ?? '—'}</div></div>
             <div><div className="meta">Sources</div><div className="mt-1 text-sm text-ink">
               {(ev.sources ?? []).map(s => (s === 'ddinter' ? 'DDInter' : s === 'rule' ? 'High-alert rule' : 'DrugBank')).join(' · ') || '—'}</div></div>
           </div>

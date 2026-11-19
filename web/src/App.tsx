@@ -1,8 +1,11 @@
+import { Printer } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from './api'
 import { SIDEBAR_W, Sidebar, type Page } from './components/Sidebar'
+import { CaseSummary } from './components/CaseSummary'
 import { Spinner } from './components/ui'
 import { ACTIONABLE, RECON_TYPES, TRIAGE_TYPES, initials } from './lib'
+import { Analytics } from './pages/Analytics'
 import { AuditSystem } from './pages/AuditSystem'
 import { InputNote } from './pages/InputNote'
 import { MedDiff } from './pages/MedDiff'
@@ -106,7 +109,8 @@ export default function App() {
     analysis ? analysis.report.findings.filter(f => types.has(f.type) && ACTIONABLE(f) && !analysis.decisions[f.id]).length : 0
 
   return (
-    <div className="min-h-full">
+    <>
+    <div className="min-h-full print:hidden">
       <a href="#main" className="skip-link">Skip to content</a>
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} page={page} setPage={setPage} version={meta.version} reviewer={reviewer} setReviewer={setReviewer}
         theme={theme} toggleTheme={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))} hasReport={!!analysis}
@@ -116,10 +120,18 @@ export default function App() {
           <div className="meta truncate">
             {note && page !== 'input' && page !== 'audit' ? <>{note.source} · <span className="text-ink-2">{note.label}</span> · analyzed {note.at}</> : null}
           </div>
+          <div className="flex items-center gap-3">
+          {analysis && note && page !== 'input' && (
+            <button onClick={() => window.print()} title="Print or save as PDF"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-ink hover:bg-surface-2 cursor-pointer">
+              <Printer size={15} strokeWidth={1.75} aria-hidden />Print summary
+            </button>
+          )}
           <div role="img" aria-label={reviewer.name ? `Reviewer ${reviewer.name}` : 'No reviewer set'}
             title={reviewer.name ? `${reviewer.name} · ${reviewer.role}` : 'No reviewer set'}
             className="grid size-10 place-items-center rounded-full bg-accent text-sm font-semibold text-accent-ink">
             {reviewer.name ? initials(reviewer.name) : '?'}
+          </div>
           </div>
         </header>
         <main id="main" tabIndex={-1} className="px-6 py-8 outline-none lg:px-8">
@@ -138,12 +150,19 @@ export default function App() {
           {page === 'meds' && analysis && note && (
             <Medications a={analysis} analyzedAt={note.at} reviewer={reviewer.name} onCorrect={correctMedications} />
           )}
+          {page === 'analytics' && <Analytics a={analysis} meta={meta} refreshKey={auditKey} />}
           {page === 'audit' && <AuditSystem meta={meta} mode={mode} setMode={setMode} llmOnline={llmOnline} refreshKey={auditKey} />}
-          {page !== 'input' && page !== 'audit' && !analysis && (
+          {page !== 'input' && page !== 'audit' && page !== 'analytics' && !analysis && (
             <div className="mx-auto max-w-md pt-20 text-center text-sm text-muted">Analyze a note first.</div>
           )}
         </main>
       </div>
     </div>
+    {analysis && note && (
+      <div className="hidden print:block">
+        <CaseSummary a={analysis} meta={meta} note={note} reviewer={reviewer} />
+      </div>
+    )}
+    </>
   )
 }

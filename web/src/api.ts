@@ -23,5 +23,14 @@ export const api = {
   correct: (body: { report_hash: string; reviewer: string; medications: any[];
     comment?: string | null; text?: string | null }) =>
     req<Analysis>('/api/correct', body),
+  extract: async (file: File) => {
+    const res = await fetch(`/api/extract?filename=${encodeURIComponent(file.name)}`, { method: 'POST', body: file })
+    if (!res.ok) {
+      let msg = `${res.status} ${res.statusText}`
+      try { msg = (await res.json()).detail ?? msg } catch { /* not JSON */ }
+      throw new Error(msg)
+    }
+    return res.json() as Promise<{ name: string; text: string }>
+  },
   audit: () => req<{ chain_ok: boolean; broken_at: number | null; entries: Decision[] }>('/api/audit'),
 }

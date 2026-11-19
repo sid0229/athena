@@ -1,15 +1,18 @@
-import { Download, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { ChevronDown, Download, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Decision, Meta } from '../types'
 import { fmtTs, shortHash } from '../lib'
 import { Button, Spinner, cx } from '../components/ui'
 
+const RECENT = 5  // newest decisions shown before "show all"
+
 export function AuditSystem({ meta, mode, setMode, llmOnline, refreshKey }: {
   meta: Meta; mode: string; setMode: (m: string) => void; llmOnline: boolean; refreshKey: number
 }) {
   const [log, setLog] = useState<{ chain_ok: boolean; broken_at: number | null; entries: Decision[] } | null>(null)
   const [open, setOpen] = useState<number | null>(null)
+  const [showAll, setShowAll] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [verified, setVerified] = useState<string | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -43,7 +46,7 @@ export function AuditSystem({ meta, mode, setMode, llmOnline, refreshKey }: {
         {loadError && <div role="alert" className="px-3 py-6 text-sm text-critical">{loadError}</div>}
         {!log && !loadError && <div className="px-3 py-6"><Spinner /></div>}
         {log && log.entries.length === 0 && <div className="px-3 py-8 text-center text-sm text-muted">No decisions recorded yet.</div>}
-        {log?.entries.map(e => {
+        {log?.entries.slice(0, showAll ? undefined : RECENT).map(e => {
           const isOpen = open === e.id
           const target = e.title.split(': ').slice(1).join(': ') || e.title
           return (
@@ -62,19 +65,26 @@ export function AuditSystem({ meta, mode, setMode, llmOnline, refreshKey }: {
               {isOpen && (
                 <div className="mx-3 mb-3 rounded-md border border-line bg-surface-2 px-3.5 py-3">
                   <div className="flex items-center justify-between">
-                    <span className="eyebrow">{e.case_id} · {e.finding_type.replace('_', ' ').toLowerCase()}</span>
+                    <span className="eyebrow"><span className="font-mono">{e.case_id}</span> · {e.finding_type.replace('_', ' ').toLowerCase()}</span>
                     <span className={cx('eyebrow', e.tier === 'critical' ? 'text-critical' : e.tier === 'review' ? 'text-review' : '')}>Tier: {e.tier}</span>
                   </div>
                   <p className="mt-1.5 text-sm text-ink">
                     {e.action === 'override' ? (meta.override_reasons[e.reason_code ?? ''] ?? 'Override') : e.action === 'correct' ? 'Medication list corrected by reviewer.' : 'Finding confirmed by the reviewer.'}
                     {e.comment ? ` — ${e.comment}` : ''}
                   </p>
-                  <p className="meta mt-2">{e.title} · report {shortHash(e.report_hash, 12)} · row {shortHash(e.row_hash, 12)}</p>
+                  <p className="meta mt-2">{e.title} · report <span className="font-mono">{shortHash(e.report_hash, 12)}</span> · row <span className="font-mono">{shortHash(e.row_hash, 12)}</span></p>
                 </div>
               )}
             </div>
           )
         })}
+        {log && log.entries.length > RECENT && (
+          <button onClick={() => setShowAll(v => !v)} aria-expanded={showAll}
+            className="meta flex w-full items-center justify-center gap-1.5 border-t border-line px-3 py-3 hover:text-ink cursor-pointer">
+            <ChevronDown size={14} strokeWidth={1.75} className={cx('transition-transform', showAll && 'rotate-180')} aria-hidden />
+            {showAll ? 'Show only the latest 5' : `Show all ${log.entries.length} entries (${log.entries.length - RECENT} older)`}
+          </button>
+        )}
       </div>
 
       <div className="mt-14" />
@@ -84,7 +94,7 @@ export function AuditSystem({ meta, mode, setMode, llmOnline, refreshKey }: {
           <div className="flex rounded-md border border-line bg-surface-2 p-0.5">
             {Object.entries(meta.modes).map(([k, v]) => (
               <button key={k} onClick={() => setMode(k)} aria-pressed={mode === k}
-                className={cx('rounded px-3 py-1.5 font-mono text-xs cursor-pointer',
+                className={cx('rounded px-3 py-1.5 text-sm cursor-pointer',
                   mode === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink')}>{v}</button>
             ))}
           </div>
@@ -108,7 +118,7 @@ export function AuditSystem({ meta, mode, setMode, llmOnline, refreshKey }: {
         </div>
       )}
       <div className="mt-8 flex items-center justify-between border-t border-line pt-4">
-        <span className="eyebrow">Ledger head: {log?.entries[0] ? shortHash(log.entries[0].row_hash, 12) : '—'}</span>
+        <span className="eyebrow">Ledger head: <span className="font-mono">{log?.entries[0] ? shortHash(log.entries[0].row_hash, 12) : '—'}</span></span>
         <span className="eyebrow">Decision support only · not a medical device</span>
       </div>
     </div>

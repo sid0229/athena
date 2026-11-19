@@ -400,7 +400,7 @@ export function Medications({
                               <div>
                                 <div className="eyebrow mb-1.5">Confidence score</div>
                                 <div className="text-sm">
-                                  <span className="font-mono font-semibold text-ink">{m.confidence.toFixed(2)}</span>
+                                  <span className="tabular-nums font-semibold text-ink">{m.confidence.toFixed(2)}</span>
                                   <span className="meta">
                                     {' '}
                                     / 1.00 · {Object.entries(m.confidence_parts).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(' · ')}

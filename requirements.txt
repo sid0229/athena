@@ -30,6 +30,7 @@ matplotlib==3.11.2
 
 # App, config, tests
 fastapi==0.162.0          # local API for the web dashboard (app/server.py)
+pypdf==7.1.1              # text from digital PDF uploads (pure Python, no dependencies)
 uvicorn==0.54.0
 streamlit==1.65.0         # previous dashboard (app/streamlit_app.py)
 pyyaml==6.0.3
