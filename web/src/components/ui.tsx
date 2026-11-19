@@ -44,7 +44,7 @@ const TONE: Record<Tone, string> = {
   neutral: 'text-muted bg-surface-2 border-line',
 }
 export const Badge = ({ tone, children }: { tone: Tone; children: ReactNode }) =>
-  <span className={cx('inline-flex items-center gap-1 rounded border px-1.5 py-px font-mono text-xs', TONE[tone])}>{children}</span>
+  <span className={cx('inline-flex items-center gap-1 rounded border px-1.5 py-px text-xs font-semibold tabular-nums', TONE[tone])}>{children}</span>
 
 export function Tabs<T extends string>({ value, onChange, items }:
   { value: T; onChange: (v: T) => void; items: { id: T; label: ReactNode; icon?: ReactNode }[] }) {

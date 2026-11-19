@@ -1,13 +1,16 @@
 import type { Analysis, Finding, Medication } from './types'
+import { tallMan } from './tallman'
 
 export const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s)
 
-/** 'acetylsalicylic acid' -> 'Aspirin (acetylsalicylic acid)'; handles 'a + b'. Display only. */
+/** 'acetylsalicylic acid' -> 'Aspirin (acetylsalicylic acid)'; handles 'a + b'; look-alike names get
+ *  Tall Man lettering (hydrOXYzine / hydrALAZINE). Display only. */
 export function disp(name: string, names: Record<string, string>): string {
   return name.split(' + ').map(p => {
     const part = p.trim()
     const common = names[part.toLowerCase()]
-    return common ? `${cap(common)} (${part})` : cap(part)
+    const t = (x: string) => { const tm = tallMan(x); return tm === x ? cap(x) : tm }
+    return common ? `${t(common)} (${tallMan(part)})` : t(part)
   }).join(' + ')
 }
 

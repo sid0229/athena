@@ -22,14 +22,16 @@ from threading import Lock
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from fastapi import FastAPI, HTTPException  # noqa: E402
+from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.middleware.trustedhost import TrustedHostMiddleware  # noqa: E402
 from fastapi.responses import FileResponse, Response  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
+from starlette.concurrency import run_in_threadpool  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 from athena.extraction.pipeline import MedicationExtractor  # noqa: E402
 from athena.fusion.report import analyze  # noqa: E402
+from athena.ingest import MAX_BYTES, IngestError, extract_text  # noqa: E402
 from athena.review.audit import OVERRIDE_REASONS, AuditLog  # noqa: E402
 from athena.verification.checker import InteractionChecker  # noqa: E402
 
@@ -214,6 +216,20 @@ def api_analyze(body: AnalyzeIn):
     decisions = audit().latest_decisions(cid, r["meta"]["report_hash"])
     return {"report": r, "text": text, "case_id": cid, "display_names": display_names(r), "ml_signals": ml_signals(r),
             "decisions": {k: _entry(v) for k, v in decisions.items()}}
+
+
+@app.post("/api/extract")
+async def api_extract(request: Request, filename: str):
+    """Raw file bytes in the body (no multipart dependency) -> note text for the reviewer to check."""
+    data = b""
+    async for chunk in request.stream():
+        data += chunk
+        if len(data) > MAX_BYTES:
+            raise HTTPException(413, "File is larger than 20 MB.")
+    try:
+        return {"name": filename, "text": await run_in_threadpool(extract_text, filename, data)}
+    except IngestError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.post("/api/decision")

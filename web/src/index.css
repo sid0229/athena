@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/atkinson-hyperlegible-next";
+@import "@fontsource-variable/atkinson-hyperlegible-mono";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
@@ -70,8 +70,8 @@
 }
 
 @theme {
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --font-sans: "Atkinson Hyperlegible Next Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono Variable", ui-monospace, monospace;
   /* Type scale (the only sizes used in the UI) */
   --text-xs: 13px;   --text-xs--line-height: 1.5;
   --text-sm: 15px;   --text-sm--line-height: 1.6;
@@ -124,10 +124,18 @@ body {
 .skip-link { position: absolute; left: 12px; top: -48px; z-index: 50; padding: 8px 14px; border-radius: 8px;
   background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 .skip-link:focus { top: 12px; }
-.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .07em; font-weight: 500; text-transform: uppercase; color: var(--muted); }
-.meta { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+/* Small labels and captions: the reading font, sentence case (monospace is kept for hashes and IDs only). */
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .01em; color: var(--muted); }
+.meta { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
 .scroll-thin::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 8px; }
 mark.drug { background: var(--accent-soft); color: var(--accent-text); border-radius: 3px; padding: 0 2px; }
 mark.drug.hot { background: var(--critical-soft); color: var(--critical); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Printed case summary: always black on white, whatever the screen theme. */
+@media print {
+  @page { size: A4; margin: 14mm 12mm; }
+  html, html[data-theme], body, #root { background: #fff !important; color: #000 !important; color-scheme: light !important; height: auto; }
+  .case-summary h2 { break-after: avoid; }
+}

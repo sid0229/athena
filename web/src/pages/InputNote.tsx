@@ -2,6 +2,7 @@ import { Activity, ArrowRight, ChevronsUpDown, Clipboard, Upload, User } from 'l
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Meta } from '../types'
 import { sha256, shortHash } from '../lib'
+import { api } from '../api'
 import { Button, Card, ICON, PageHeader, Spinner, Tabs, cx } from '../components/ui'
 
 type Src = 'demo' | 'paste' | 'upload'
@@ -16,7 +17,18 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
   const [upload, setUpload] = useState<{ name: string; text: string } | null>(null)
   const [hash, setHash] = useState('')
   const [elapsed, setElapsed] = useState(0)
+  const [reading, setReading] = useState(false)
+  const [fileError, setFileError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function readFile(f: File) {
+    setFileError(null)
+    const ext = f.name.toLowerCase().split('.').pop()
+    if (ext === 'txt') { setUpload({ name: f.name, text: await f.text() }); return }
+    if (ext !== 'docx' && ext !== 'pdf') { setFileError('Unsupported file type: upload a .txt, .docx or .pdf file.'); return }
+    setReading(true)
+    try { setUpload(await api.extract(f)) } catch (e) { setFileError((e as Error).message) } finally { setReading(false) }
+  }
   const d = meta.demos.find(x => x.id === demo)
 
   const text = src === 'demo' ? d?.text ?? '' : src === 'paste' ? pasted : upload?.text ?? ''
@@ -33,7 +45,7 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
 
   return (
     <div className="mx-auto max-w-[1320px]">
-      <PageHeader title="Input Clinical Note" right={src === 'demo' && (
+      <PageHeader title="Med Input" right={src === 'demo' && (
         <label className="relative flex h-11 items-center gap-2 rounded-md border border-line-strong bg-surface pl-3 pr-8 text-sm">
           <span className="text-muted">Patient:</span>
           <select value={demo} onChange={e => setDemo(e.target.value)} aria-label="Demo patient"
@@ -46,7 +58,7 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
       <Tabs<Src> value={src} onChange={setSrc} items={[
         { id: 'demo', label: 'Demo Patient', icon: <User size={14} strokeWidth={1.75} /> },
         { id: 'paste', label: 'Paste Note', icon: <Clipboard size={14} strokeWidth={1.75} /> },
-        { id: 'upload', label: 'Upload .txt', icon: <Upload size={14} strokeWidth={1.75} /> },
+        { id: 'upload', label: 'Upload File', icon: <Upload size={14} strokeWidth={1.75} /> },
       ]} />
 
       <Card className="mt-6 overflow-hidden">
@@ -55,11 +67,12 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
             <span className={cx('size-1.5 rounded-full', text ? 'bg-ok' : 'bg-faint')} />
             Source document · raw plaintext
             {src === 'demo' && <span className="normal-case tracking-normal text-faint">· synthetic, fictional patient</span>}
+            {src === 'upload' && upload && <span className="normal-case tracking-normal text-faint">· {upload.name} · editable, check the text before analysis</span>}
           </div>
           <div className="flex items-center gap-4">
             <span className="meta">UTF-8</span>
             {src === 'paste' && pasted && <button onClick={() => setPasted('')} className="meta hover:text-ink cursor-pointer">Clear</button>}
-            {src === 'upload' && upload && <button onClick={() => setUpload(null)} className="meta hover:text-ink cursor-pointer">Clear</button>}
+            {src === 'upload' && upload && <button onClick={() => { setUpload(null); setFileError(null) }} className="meta hover:text-ink cursor-pointer">Clear</button>}
           </div>
         </div>
 
@@ -71,25 +84,29 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
             className="scroll-thin block h-[400px] w-full resize-y bg-transparent px-4 py-4 text-sm leading-[1.75] text-ink-2 outline-none placeholder:text-faint" />
         )}
         {src === 'upload' && (upload ? (
-          <pre className="scroll-thin h-[400px] overflow-auto whitespace-pre-wrap px-4 py-4 font-sans text-sm leading-[1.75] text-ink-2">{upload.text}</pre>
+          <textarea aria-label={`Text read from ${upload.name} — check and correct before analysis`} value={upload.text}
+            onChange={e => setUpload({ ...upload, text: e.target.value })}
+            className="scroll-thin block h-[400px] w-full resize-y bg-transparent px-4 py-4 text-sm leading-[1.75] text-ink-2 outline-none" />
         ) : (
           <button onClick={() => fileRef.current?.click()}
             onDragOver={e => e.preventDefault()}
             onDrop={async e => {
               e.preventDefault()
               const f = e.dataTransfer.files[0]
-              if (f && (f.type === 'text/plain' || f.name.toLowerCase().endsWith('.txt'))) setUpload({ name: f.name, text: await f.text() })
+              if (f) await readFile(f)
             }}
             className="flex h-[400px] w-full flex-col items-center justify-center gap-2 text-muted hover:text-ink cursor-pointer">
-            <Upload size={22} strokeWidth={1.5} />
-            <span className="text-sm">Drop a .txt file or click to choose</span>
-            <span className="meta">Read in the browser · stays on this device</span>
+            {reading ? <Spinner /> : <Upload size={22} strokeWidth={1.5} />}
+            <span className="text-sm">{reading ? 'Reading file…' : 'Drop a .txt, .docx or .pdf file or click to choose'}</span>
+            <span className="meta">Read on this device · digital PDFs only (no scans yet)</span>
+            {fileError && <span role="alert" className="mt-2 rounded-md border border-critical-line bg-critical-soft px-3 py-1.5 text-sm text-critical">{fileError}</span>}
           </button>
         ))}
-        <input ref={fileRef} type="file" accept=".txt,text/plain" hidden
+        <input ref={fileRef} type="file" hidden
+          accept=".txt,.docx,.pdf,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           onChange={async e => {
             const f = e.target.files?.[0]
-            if (f) setUpload({ name: f.name, text: await f.text() })
+            if (f) await readFile(f)
             e.target.value = ''  // picking the same file again after Clear must work
           }} />
 
@@ -121,7 +138,7 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
 
       <div className="mt-4 flex items-center justify-between px-1">
         <span className="meta">Engine: <span className="text-ink-2">Athena {meta.version} · {meta.modes[mode]}{mode !== 'rules' ? ` · ${meta.model}` : ''}</span></span>
-        {hash && <span className="meta">Note SHA-256: <span className="text-ink-2">{shortHash(hash)}</span></span>}
+        {hash && <span className="meta">Note SHA-256: <span className="font-mono text-ink-2">{shortHash(hash)}</span></span>}
       </div>
     </div>
   )

@@ -20,7 +20,7 @@ export function Medications({ a, analyzedAt }: { a: Analysis; analyzedAt: string
           <thead>
             <tr className="border-b border-line">
               {['Medication', 'Status', 'Stage', ''].map((h, i) => (
-                <th key={i} className={cx('eyebrow px-4 py-3 font-normal', i === 3 && 'text-right')}>{h || 'Details'}</th>
+                <th key={i} className={cx('eyebrow px-4 py-3', i === 3 && 'text-right')}>{h || 'Details'}</th>
               ))}
             </tr>
           </thead>
@@ -72,7 +72,7 @@ export function Medications({ a, analyzedAt }: { a: Analysis; analyzedAt: string
                           </div>
                           <div>
                             <div className="eyebrow mb-1.5">Confidence score</div>
-                            <div className="text-sm"><span className="font-mono font-semibold text-ink">{m.confidence.toFixed(2)}</span>
+                            <div className="text-sm"><span className="tabular-nums font-semibold text-ink">{m.confidence.toFixed(2)}</span>
                               <span className="meta"> / 1.00 · {Object.entries(m.confidence_parts).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(' · ')}</span></div>
                           </div>
                         </div>
