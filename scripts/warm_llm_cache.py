@@ -21,9 +21,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split")
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--use-corrections", action="store_true")
+    ap.add_argument("--corrections-split", default="train", choices=["train", "val"])
     args = ap.parse_args()
     cfg = load_config()["extraction"]
-    llm = OllamaExtractor()
+    if args.use_corrections:
+        from athena.extraction.corrections_fewshot import CorrectionRetriever, build_train_corrections_bank
+        bank = build_train_corrections_bank(split=args.corrections_split)
+        retriever = CorrectionRetriever(bank=bank, k=2)
+        llm = OllamaExtractor(use_corrections=True, retriever=retriever)
+    else:
+        llm = OllamaExtractor(use_corrections=False)
     notes = n2c2.load_split(args.split)[: args.limit]
     t0 = time.time()
     for i, note in enumerate(notes, 1):

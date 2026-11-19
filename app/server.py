@@ -293,6 +293,7 @@ def api_correct(body: CorrectIn):
         corrected_list=r["medications"],
         reviewer=body.reviewer.strip(),
         case_id=cid,
+        note_text=text,
     )
 
     try:

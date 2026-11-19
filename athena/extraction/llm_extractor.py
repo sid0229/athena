@@ -73,22 +73,48 @@ def _prompt() -> str:
 
 
 class OllamaExtractor:
-    def __init__(self, model: str | None = None, use_cache: bool = True):
-        cfg = load_config()["llm"]
-        self.model = model or cfg["model"]
-        self.options = {"temperature": cfg["temperature"], "seed": cfg["seed"], "num_ctx": cfg["num_ctx"],
+    def __init__(
+        self,
+        model: str | None = None,
+        use_cache: bool = True,
+        use_corrections: bool | None = None,
+        retriever: Any = None,
+    ):
+        cfg = load_config()
+        llm_cfg = cfg["llm"]
+        ext_cfg = cfg.get("extraction", {})
+        self.model = model or llm_cfg["model"]
+        self.options = {"temperature": llm_cfg["temperature"], "seed": llm_cfg["seed"], "num_ctx": llm_cfg["num_ctx"],
                         # Cap output: a stuck model repeating rows would otherwise run to num_ctx.
-                        "num_predict": cfg.get("num_predict", 1500)}
-        self.client = ollama.Client(host=cfg["host"], timeout=cfg["timeout_s"] * 3)
+                        "num_predict": llm_cfg.get("num_predict", 1500)}
+        self.client = ollama.Client(host=llm_cfg["host"], timeout=llm_cfg["timeout_s"] * 3)
         self.system = _prompt()
-        self.cache_dir = data_path("processed") / "llm_cache" / f"{self.model.replace(':', '_')}_{PROMPT_VERSION}"
         self.use_cache = use_cache
+
+        self.use_corrections = ext_cfg.get("use_corrections", False) if use_corrections is None else use_corrections
+        self.retriever = None
+        self.correction_bank_version = "v0_none"
+        if self.use_corrections:
+            from athena.extraction.corrections_fewshot import CorrectionRetriever
+            self.retriever = retriever or CorrectionRetriever()
+            self.correction_bank_version = self.retriever.version
+            cache_subdir = f"{self.model.replace(':', '_')}_{PROMPT_VERSION}_corr_{self.correction_bank_version}"
+        else:
+            cache_subdir = f"{self.model.replace(':', '_')}_{PROMPT_VERSION}"
+
+        self.cache_dir = data_path("processed") / "llm_cache" / cache_subdir
         self.stats = {"calls": 0, "cache_hits": 0, "parse_failures": 0, "seconds": 0.0, "gen_tokens": 0}
 
     def _cache_signature(self) -> dict:
         """What the cached outputs depend on besides (model, prompt version, chunk text)."""
-        return {"prompt_sha256": hashlib.sha256(self.system.encode()).hexdigest(),
-                "options": {k: self.options[k] for k in ("temperature", "num_ctx", "num_predict")}}
+        sig = {
+            "prompt_sha256": hashlib.sha256(self.system.encode()).hexdigest(),
+            "options": {k: self.options[k] for k in ("temperature", "num_ctx", "num_predict")},
+        }
+        if self.use_corrections:
+            sig["use_corrections"] = True
+            sig["correction_bank_version"] = self.correction_bank_version
+        return sig
 
     def check_cache(self) -> None:
         """Refuse stale cache: editing the prompt file or decoding options without bumping
@@ -107,7 +133,10 @@ class OllamaExtractor:
             meta.write_text(json.dumps(sig, indent=1))
 
     def _cache_path(self, text: str) -> Path:
-        h = hashlib.sha256(f"{self.model}|{PROMPT_VERSION}|{text}".encode()).hexdigest()[:24]
+        token = f"{self.model}|{PROMPT_VERSION}|{text}"
+        if self.use_corrections:
+            token = f"{token}|corr_{self.correction_bank_version}"
+        h = hashlib.sha256(token.encode()).hexdigest()[:24]
         return self.cache_dir / f"{h}.json"
 
     def extract_chunk(self, text: str) -> list[RawMed]:
@@ -132,11 +161,19 @@ class OllamaExtractor:
         return meds
 
     def _call(self, text: str) -> list[list[str]] | None:
+        messages = [{"role": "system", "content": self.system}]
+        if self.use_corrections and self.retriever:
+            examples = self.retriever.retrieve(text, k=2)
+            for ex_text, rows in examples:
+                messages.append({"role": "user", "content": ex_text})
+                messages.append({"role": "assistant", "content": json.dumps({"meds": rows})})
+        messages.append({"role": "user", "content": text})
+
         # A retry with another seed only differs when sampling; at temperature 0 it repeats itself.
         for attempt in range(2 if self.options["temperature"] > 0 else 1):
             resp = self.client.chat(
                 model=self.model,
-                messages=[{"role": "system", "content": self.system}, {"role": "user", "content": text}],
+                messages=messages,
                 format=_SCHEMA,
                 options=self.options if attempt == 0 else {**self.options, "seed": self.options["seed"] + 1},
             )

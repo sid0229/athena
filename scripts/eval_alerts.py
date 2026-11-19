@@ -58,17 +58,32 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--save", action="store_true")
+    ap.add_argument("--use-corrections", action="store_true")
+    ap.add_argument("--corrections-split", default="train", choices=["train", "val"])
+    ap.add_argument("--run-llm", action="store_true")
     args = ap.parse_args()
 
     cfg = load_config()["extraction"]
-    llm = OllamaExtractor()
-    llm.available = lambda: True  # cache only, never a silent rules fallback
+    if args.use_corrections:
+        from athena.extraction.corrections_fewshot import CorrectionRetriever, build_train_corrections_bank
+        bank = build_train_corrections_bank(split=args.corrections_split)
+        retriever = CorrectionRetriever(bank=bank, k=2)
+        llm = OllamaExtractor(use_corrections=True, retriever=retriever)
+    else:
+        llm = OllamaExtractor(use_corrections=False)
 
-    def _no_call(text):
-        raise RuntimeError("uncached chunk")
-    llm._call = _no_call
-    notes = [n for n in n2c2.load_split("test")[: args.limit]
-             if all(llm._cache_path(c.text).exists() for c in chunk_text(n.text, cfg["chunk_chars"], cfg["chunk_overlap_chars"]))]
+    if not args.run_llm:
+        llm.available = lambda: True  # cache only, never a silent rules fallback
+
+        def _no_call(text):
+            raise RuntimeError("uncached chunk")
+        llm._call = _no_call
+
+    if args.run_llm:
+        notes = list(n2c2.load_split("test")[: args.limit])
+    else:
+        notes = [n for n in n2c2.load_split("test")[: args.limit]
+                 if all(llm._cache_path(c.text).exists() for c in chunk_text(n.text, cfg["chunk_chars"], cfg["chunk_overlap_chars"]))]
     checker = InteractionChecker()
     ex = MedicationExtractor("hybrid", llm=llm, normalizer=checker.normalizer)
     tot = {"gold": 0, "sys": 0, "tp": 0, "gold_major": 0, "major_found": 0, "major_actionable": 0, "sys_actionable": 0,
@@ -110,7 +125,8 @@ def main():
         print(f"{k:32s} {res[k]}")
     print(tot)
     if args.save:
-        (ROOT / "docs/results/alerts_eval.json").write_text(json.dumps(res, indent=1))
+        out_name = "alerts_eval_corrections.json" if args.use_corrections else "alerts_eval.json"
+        (ROOT / "docs" / "results" / out_name).write_text(json.dumps(res, indent=1))
 
 
 if __name__ == "__main__":

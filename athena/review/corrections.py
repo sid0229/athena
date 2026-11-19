@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS corrections (
     original_extraction TEXT NOT NULL,
     corrected_list TEXT NOT NULL,
     reviewer TEXT NOT NULL,
-    case_id TEXT
+    case_id TEXT,
+    note_text TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_corrections_note ON corrections(note_hash);
 """
@@ -44,6 +45,7 @@ class CorrectionEntry:
     corrected_list: list[dict[str, Any]]
     reviewer: str
     case_id: str | None = None
+    note_text: str | None = None
 
 
 class CorrectionsDB:
@@ -58,13 +60,16 @@ class CorrectionsDB:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with closing(self._con()) as con, con:
             con.executescript(SCHEMA)
+            cols = {row[1] for row in con.execute("PRAGMA table_info(corrections)").fetchall()}
+            if "note_text" not in cols:
+                con.execute("ALTER TABLE corrections ADD COLUMN note_text TEXT")
 
     def _con(self) -> sqlite3.Connection:
         return sqlite3.connect(self.path)
 
     def record(self, *, note_hash: str, original_extraction: list[dict] | str,
                corrected_list: list[dict] | str, reviewer: str,
-               case_id: str | None = None) -> CorrectionEntry:
+               case_id: str | None = None, note_text: str | None = None) -> CorrectionEntry:
         if not reviewer.strip():
             raise ValueError("reviewer name is required")
         if not note_hash.strip():
@@ -76,9 +81,9 @@ class CorrectionsDB:
         ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
         with closing(self._con()) as con, con:
             cur = con.execute(
-                "INSERT INTO corrections (ts, note_hash, original_extraction, corrected_list, reviewer, case_id) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
-                (ts, note_hash, orig_json, corr_json, reviewer.strip(), case_id)
+                "INSERT INTO corrections (ts, note_hash, original_extraction, corrected_list, reviewer, case_id, note_text) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (ts, note_hash, orig_json, corr_json, reviewer.strip(), case_id, note_text)
             )
             cid = cur.lastrowid
 
@@ -92,10 +97,11 @@ class CorrectionsDB:
             corrected_list=corr_parsed,
             reviewer=reviewer.strip(),
             case_id=case_id,
+            note_text=note_text,
         )
 
     def entries(self, note_hash: str | None = None) -> list[CorrectionEntry]:
-        q = "SELECT id, ts, note_hash, original_extraction, corrected_list, reviewer, case_id FROM corrections"
+        q = "SELECT id, ts, note_hash, original_extraction, corrected_list, reviewer, case_id, note_text FROM corrections"
         params = ()
         if note_hash:
             q += " WHERE note_hash = ?"
@@ -112,6 +118,7 @@ class CorrectionsDB:
                 corrected_list=json.loads(r[4]),
                 reviewer=r[5],
                 case_id=r[6],
+                note_text=r[7] if len(r) > 7 else None,
             )
             for r in rows
         ]

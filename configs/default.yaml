@@ -29,6 +29,7 @@ extraction:
   chunk_overlap_chars: 300
   fuzzy_ground_threshold: 90        # rapidfuzz score to accept a near-verbatim span
   scispacy_model: en_ner_bc5cdr_md
+  use_corrections: false            # retrieve similar reviewer corrections into LLM prompt (Level 1 learning)
 
 normalize:
   fuzzy_match_threshold: 92
