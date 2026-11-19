@@ -173,25 +173,27 @@ This document details the design, implementation, and empirical evaluation of At
 - **Training Paradigm (`scripts/train_lora.py`)**:
   - Low-Rank Adaptation (QLoRA) utilizing Apple MLX (`mlx-lm`) on Apple Silicon unified memory.
   - Hyperparameters: Rank $r=16$, Scaling $\alpha=32$, Dropout $0.0$, 16 LoRA attention projection layers, batch size $2$, AdamW with learning rate $1\times 10^{-4}$.
-- **Packaging & Deployment**:
-  - `mlx_lm.fuse` merges the low-rank delta weights $\Delta W$ directly into the base weights.
-  - Converted / registered with Ollama via `Modelfile` as `llama3.2:3b-athena-lora`.
+  - Training performance: Loss dropped from 2.428 to 1.365 over iterations with validation loss improving from 2.400 to 1.920, training at ~578 tokens/sec on the Apple M2 GPU.
+- **Weight Fusion & Packaging**:
+  - `mlx_lm.fuse` successfully merges the low-rank delta weights $\Delta W$ directly into base model weights (`data/processed/lora/fused_model`).
 - **Model Version Tracking in Report Metadata**:
   - Updated `athena/fusion/report.py` to record `report["meta"]["model_version"]` and `report["meta"]["llm_model"]`, ensuring that downstream decision audits cryptographically seal the exact model checkpoint that produced the extraction.
 
-### 6.2 Gate Evaluation & Comparative Analysis
-- **Promotion Gate**:
-  - Test Micro F1 must be $\ge 0.8171$ (the baseline hybrid score).
-  - Test Major Interaction Recall must be $\ge 91.59\%$ (414 / 452).
-- **Comparative Trade-Offs (Level 1 Few-Shot vs Level 2 Parametric LoRA)**:
-  1. *Sample Efficiency & Real-Time Adaptation*:
-     - **Level 1 (Dynamic Few-Shot)** adapts instantly as soon as a reviewer clicks "Save & Re-run", because the correction is immediately written to `corrections.db` and indexable by the TF-IDF retriever.
-     - **Level 2 (LoRA)** requires batch retraining, parameter merging, GGUF quantization, and service restart.
-  2. *Inference Latency*:
-     - Level 1 adds ~400–600 prompt tokens per chunk, increasing latency from ~1.5s to ~2.8s.
-     - Level 2 maintains baseline latency (~1.5s per chunk) because the parameter weights are pre-fused and prompt length is unaugmented.
-  3. *Generalization vs. Narrowing*:
-     - Like Level 1, instruction fine-tuning on heavily structured medication lists risks overfitting to standard prescription formats, causing slight recall loss on narrative / conversational mentions.
-- **Promotion Status**:
-  - In alignment with Athena's validation gates, fine-tuned adapters remain in `exp/lora` as an experimental track until extensive real-world clinical drift justifies replacing the baseline instruction checkpoint.
+### 6.2 Empirical Findings & Negative Results
+1. **Ollama / GGUF Quantization Incompatibility**:
+   - `mlx-lm` fuses weights using Apple MLX Metal-specific quantization kernels.
+   - When attempting to register the fused safetensors directly with Ollama, Ollama's `llama.cpp` engine fails with:
+     `ollama._types.ResponseError: mlx runner failed: panic: mlx: [dequantize] Invalid quantization mode '' (status code: 500)`.
+   - Directly serving MLX-quantized models in Ollama requires an unquantized 16-bit intermediate base merged with unquantized weights, converted through `llama.cpp`'s `convert_hf_to_gguf.py`, and re-quantized to Q4_K_M GGUF format.
+2. **Hallucination of Continuing Lists Without Schema Constraints**:
+   - Running direct generation on the fused model in MLX demonstrated that without Ollama's strict grammar-guided decoding (`format: _SCHEMA`), a 3B model hallucinates synthetic continuations (generating extraneous medications 3, 4, 5... from medical pretraining knowledge) rather than terminating at the chunk boundary.
+3. **Comparative Analysis: In-Context Level 1 vs. Parametric Level 2**:
+   - **Sample Efficiency**: Level 1 incorporates feedback instantly into the retrieval index without batch retraining, GPU compilation, or weight merging.
+   - **Grammar Enforcement**: Level 1 leverages Ollama's native JSON schema constrained decoding, guaranteeing strict 8-column array rows and preventing list continuation hallucinations.
+   - **Inference Latency**: Level 2 retains baseline speed (~1.5s/chunk), while Level 1 incurs prompt token overhead (~2.8s/chunk).
+
+### 6.3 Promotion Gate Decision
+- **Gate Rule**: Only promote if test micro F1 and Major recall do not regress compared to baseline.
+- **Decision**: Due to the GGUF dequantization barrier in Ollama and the requirement for constrained grammar decoding to prevent list hallucinations, **the fine-tuned adapter is not promoted to production**. It remains preserved on branch `exp/lora` as an experimental milestone.
+
 
