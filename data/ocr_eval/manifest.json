@@ -1,0 +1,732 @@
+[
+  {
+    "id": "hw_photo_01",
+    "image_file": "hw_photo_01.png",
+    "transcript_file": "hw_photo_01.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Noteworthy.ttc",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "clarithromycin",
+      "simvastatin"
+    ]
+  },
+  {
+    "id": "hw_photo_02",
+    "image_file": "hw_photo_02.png",
+    "transcript_file": "hw_photo_02.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Bradley Hand Bold.ttf",
+    "expected_drugs": [
+      "metoprolol",
+      "furosemide",
+      "acetaminophen",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_photo_03",
+    "image_file": "hw_photo_03.png",
+    "transcript_file": "hw_photo_03.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Brush Script.ttf",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "sumatriptan",
+      "ondansetron",
+      "enoxaparin"
+    ]
+  },
+  {
+    "id": "hw_photo_04",
+    "image_file": "hw_photo_04.png",
+    "transcript_file": "hw_photo_04.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "ChalkboardSE.ttc",
+    "expected_drugs": [
+      "lorazepam",
+      "oxycodone",
+      "omeprazole",
+      "sertraline"
+    ]
+  },
+  {
+    "id": "hw_photo_05",
+    "image_file": "hw_photo_05.png",
+    "transcript_file": "hw_photo_05.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "MarkerFelt.ttc",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "spironolactone",
+      "potassium chloride",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "hw_photo_06",
+    "image_file": "hw_photo_06.png",
+    "transcript_file": "hw_photo_06.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Noteworthy.ttc",
+    "expected_drugs": [
+      "lisinopril",
+      "ibuprofen",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "hw_photo_07",
+    "image_file": "hw_photo_07.png",
+    "transcript_file": "hw_photo_07.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Bradley Hand Bold.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "oxycodone",
+      "acetaminophen",
+      "guaifenesin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_photo_08",
+    "image_file": "hw_photo_08.png",
+    "transcript_file": "hw_photo_08.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Brush Script.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "simvastatin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_photo_09",
+    "image_file": "hw_photo_09.png",
+    "transcript_file": "hw_photo_09.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "ChalkboardSE.ttc",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "ondansetron"
+    ]
+  },
+  {
+    "id": "hw_photo_10",
+    "image_file": "hw_photo_10.png",
+    "transcript_file": "hw_photo_10.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "MarkerFelt.ttc",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "amlodipine",
+      "spironolactone",
+      "ibuprofen"
+    ]
+  },
+  {
+    "id": "hw_photo_11",
+    "image_file": "hw_photo_11.png",
+    "transcript_file": "hw_photo_11.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Noteworthy.ttc",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "clarithromycin",
+      "simvastatin"
+    ]
+  },
+  {
+    "id": "hw_photo_12",
+    "image_file": "hw_photo_12.png",
+    "transcript_file": "hw_photo_12.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Bradley Hand Bold.ttf",
+    "expected_drugs": [
+      "metoprolol",
+      "furosemide",
+      "acetaminophen",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_photo_13",
+    "image_file": "hw_photo_13.png",
+    "transcript_file": "hw_photo_13.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "Brush Script.ttf",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "sumatriptan",
+      "ondansetron",
+      "enoxaparin"
+    ]
+  },
+  {
+    "id": "hw_photo_14",
+    "image_file": "hw_photo_14.png",
+    "transcript_file": "hw_photo_14.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "ChalkboardSE.ttc",
+    "expected_drugs": [
+      "lorazepam",
+      "oxycodone",
+      "omeprazole",
+      "sertraline"
+    ]
+  },
+  {
+    "id": "hw_photo_15",
+    "image_file": "hw_photo_15.png",
+    "transcript_file": "hw_photo_15.txt",
+    "doc_type": "handwritten",
+    "capture": "photo",
+    "font": "MarkerFelt.ttc",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "spironolactone",
+      "potassium chloride",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "hw_scan_01",
+    "image_file": "hw_scan_01.png",
+    "transcript_file": "hw_scan_01.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Noteworthy.ttc",
+    "expected_drugs": [
+      "lisinopril",
+      "ibuprofen",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "hw_scan_02",
+    "image_file": "hw_scan_02.png",
+    "transcript_file": "hw_scan_02.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Bradley Hand Bold.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "oxycodone",
+      "acetaminophen",
+      "guaifenesin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_scan_03",
+    "image_file": "hw_scan_03.png",
+    "transcript_file": "hw_scan_03.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Brush Script.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "simvastatin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_scan_04",
+    "image_file": "hw_scan_04.png",
+    "transcript_file": "hw_scan_04.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "ChalkboardSE.ttc",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "ondansetron"
+    ]
+  },
+  {
+    "id": "hw_scan_05",
+    "image_file": "hw_scan_05.png",
+    "transcript_file": "hw_scan_05.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "MarkerFelt.ttc",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "amlodipine",
+      "spironolactone",
+      "ibuprofen"
+    ]
+  },
+  {
+    "id": "hw_scan_06",
+    "image_file": "hw_scan_06.png",
+    "transcript_file": "hw_scan_06.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Noteworthy.ttc",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "clarithromycin",
+      "simvastatin"
+    ]
+  },
+  {
+    "id": "hw_scan_07",
+    "image_file": "hw_scan_07.png",
+    "transcript_file": "hw_scan_07.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Bradley Hand Bold.ttf",
+    "expected_drugs": [
+      "metoprolol",
+      "furosemide",
+      "acetaminophen",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_scan_08",
+    "image_file": "hw_scan_08.png",
+    "transcript_file": "hw_scan_08.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Brush Script.ttf",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "sumatriptan",
+      "ondansetron",
+      "enoxaparin"
+    ]
+  },
+  {
+    "id": "hw_scan_09",
+    "image_file": "hw_scan_09.png",
+    "transcript_file": "hw_scan_09.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "ChalkboardSE.ttc",
+    "expected_drugs": [
+      "lorazepam",
+      "oxycodone",
+      "omeprazole",
+      "sertraline"
+    ]
+  },
+  {
+    "id": "hw_scan_10",
+    "image_file": "hw_scan_10.png",
+    "transcript_file": "hw_scan_10.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "MarkerFelt.ttc",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "spironolactone",
+      "potassium chloride",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "hw_scan_11",
+    "image_file": "hw_scan_11.png",
+    "transcript_file": "hw_scan_11.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Noteworthy.ttc",
+    "expected_drugs": [
+      "lisinopril",
+      "ibuprofen",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "hw_scan_12",
+    "image_file": "hw_scan_12.png",
+    "transcript_file": "hw_scan_12.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Bradley Hand Bold.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "oxycodone",
+      "acetaminophen",
+      "guaifenesin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_scan_13",
+    "image_file": "hw_scan_13.png",
+    "transcript_file": "hw_scan_13.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "Brush Script.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "simvastatin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "hw_scan_14",
+    "image_file": "hw_scan_14.png",
+    "transcript_file": "hw_scan_14.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "ChalkboardSE.ttc",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "ondansetron"
+    ]
+  },
+  {
+    "id": "hw_scan_15",
+    "image_file": "hw_scan_15.png",
+    "transcript_file": "hw_scan_15.txt",
+    "doc_type": "handwritten",
+    "capture": "scan",
+    "font": "MarkerFelt.ttc",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "amlodipine",
+      "spironolactone",
+      "ibuprofen"
+    ]
+  },
+  {
+    "id": "pr_photo_01",
+    "image_file": "pr_photo_01.png",
+    "transcript_file": "pr_photo_01.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Times New Roman.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "clarithromycin",
+      "simvastatin"
+    ]
+  },
+  {
+    "id": "pr_photo_02",
+    "image_file": "pr_photo_02.png",
+    "transcript_file": "pr_photo_02.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Arial.ttf",
+    "expected_drugs": [
+      "metoprolol",
+      "furosemide",
+      "acetaminophen",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "pr_photo_03",
+    "image_file": "pr_photo_03.png",
+    "transcript_file": "pr_photo_03.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Courier New.ttf",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "sumatriptan",
+      "ondansetron",
+      "enoxaparin"
+    ]
+  },
+  {
+    "id": "pr_photo_04",
+    "image_file": "pr_photo_04.png",
+    "transcript_file": "pr_photo_04.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Georgia.ttf",
+    "expected_drugs": [
+      "lorazepam",
+      "oxycodone",
+      "omeprazole",
+      "sertraline"
+    ]
+  },
+  {
+    "id": "pr_photo_05",
+    "image_file": "pr_photo_05.png",
+    "transcript_file": "pr_photo_05.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Times New Roman.ttf",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "spironolactone",
+      "potassium chloride",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "pr_photo_06",
+    "image_file": "pr_photo_06.png",
+    "transcript_file": "pr_photo_06.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Arial.ttf",
+    "expected_drugs": [
+      "lisinopril",
+      "ibuprofen",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "pr_photo_07",
+    "image_file": "pr_photo_07.png",
+    "transcript_file": "pr_photo_07.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Courier New.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "oxycodone",
+      "acetaminophen",
+      "guaifenesin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "pr_photo_08",
+    "image_file": "pr_photo_08.png",
+    "transcript_file": "pr_photo_08.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Georgia.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "simvastatin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "pr_photo_09",
+    "image_file": "pr_photo_09.png",
+    "transcript_file": "pr_photo_09.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Times New Roman.ttf",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "ondansetron"
+    ]
+  },
+  {
+    "id": "pr_photo_10",
+    "image_file": "pr_photo_10.png",
+    "transcript_file": "pr_photo_10.txt",
+    "doc_type": "printed",
+    "capture": "photo",
+    "font": "Arial.ttf",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "amlodipine",
+      "spironolactone",
+      "ibuprofen"
+    ]
+  },
+  {
+    "id": "pr_scan_01",
+    "image_file": "pr_scan_01.png",
+    "transcript_file": "pr_scan_01.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Times New Roman.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "clarithromycin",
+      "simvastatin"
+    ]
+  },
+  {
+    "id": "pr_scan_02",
+    "image_file": "pr_scan_02.png",
+    "transcript_file": "pr_scan_02.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Arial.ttf",
+    "expected_drugs": [
+      "metoprolol",
+      "furosemide",
+      "acetaminophen",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "pr_scan_03",
+    "image_file": "pr_scan_03.png",
+    "transcript_file": "pr_scan_03.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Courier New.ttf",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "sumatriptan",
+      "ondansetron",
+      "enoxaparin"
+    ]
+  },
+  {
+    "id": "pr_scan_04",
+    "image_file": "pr_scan_04.png",
+    "transcript_file": "pr_scan_04.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Georgia.ttf",
+    "expected_drugs": [
+      "lorazepam",
+      "oxycodone",
+      "omeprazole",
+      "sertraline"
+    ]
+  },
+  {
+    "id": "pr_scan_05",
+    "image_file": "pr_scan_05.png",
+    "transcript_file": "pr_scan_05.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Times New Roman.ttf",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "spironolactone",
+      "potassium chloride",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "pr_scan_06",
+    "image_file": "pr_scan_06.png",
+    "transcript_file": "pr_scan_06.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Arial.ttf",
+    "expected_drugs": [
+      "lisinopril",
+      "ibuprofen",
+      "amlodipine",
+      "metformin"
+    ]
+  },
+  {
+    "id": "pr_scan_07",
+    "image_file": "pr_scan_07.png",
+    "transcript_file": "pr_scan_07.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Courier New.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "oxycodone",
+      "acetaminophen",
+      "guaifenesin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "pr_scan_08",
+    "image_file": "pr_scan_08.png",
+    "transcript_file": "pr_scan_08.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Georgia.ttf",
+    "expected_drugs": [
+      "warfarin",
+      "aspirin",
+      "furosemide",
+      "simvastatin",
+      "clarithromycin"
+    ]
+  },
+  {
+    "id": "pr_scan_09",
+    "image_file": "pr_scan_09.png",
+    "transcript_file": "pr_scan_09.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Times New Roman.ttf",
+    "expected_drugs": [
+      "sertraline",
+      "tramadol",
+      "ondansetron"
+    ]
+  },
+  {
+    "id": "pr_scan_10",
+    "image_file": "pr_scan_10.png",
+    "transcript_file": "pr_scan_10.txt",
+    "doc_type": "printed",
+    "capture": "scan",
+    "font": "Arial.ttf",
+    "expected_drugs": [
+      "insulin glargine",
+      "lisinopril",
+      "amlodipine",
+      "spironolactone",
+      "ibuprofen"
+    ]
+  }
+]

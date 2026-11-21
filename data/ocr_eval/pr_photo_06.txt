@@ -1,0 +1,8 @@
+Clinic Follow-Up Note
+
+Patient seen for medication review.
+Current medications:
+- Lisinopril 20 mg PO daily
+- Ibuprofen 400 mg PO TID prn joint pain
+- Amlodipine 10 mg PO daily
+- Metformin was stopped due to renal impairment

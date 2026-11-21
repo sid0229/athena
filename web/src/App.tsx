@@ -61,10 +61,10 @@ export default function App() {
   const setReviewer = (r: Reviewer) => { setReviewerState(r); store('athena-reviewer', r) }
   const setMode = (m: string) => { setModeState(m); store('athena-mode', m) }
 
-  const runAnalysis = useCallback(async (text: string, label: string, source: string, prior?: string) => {
+  const runAnalysis = useCallback(async (text: string, label: string, source: string, prior?: string, input_source?: string, ocr_engine?: string | null) => {
     setBusy(true); setError(null)
     try {
-      const a = await api.analyze(text, mode, prior)
+      const a = await api.analyze(text, mode, prior, input_source, ocr_engine)
       setAnalysis(a)
       setNote({ text, label, source, at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })
       if (!prior && pageRef.current === 'input') setPage('triage')  // don't pull the user off another page
@@ -118,7 +118,16 @@ export default function App() {
       <div className="transition-[padding] duration-200" style={{ paddingLeft: collapsed ? SIDEBAR_W.closed : SIDEBAR_W.open }}>
         <header className="sticky top-0 z-10 flex h-[68px] items-center justify-between border-b border-line bg-surface/90 px-6 backdrop-blur lg:px-8">
           <div className="meta truncate">
-            {note && page !== 'input' && page !== 'audit' ? <>{note.source} · <span className="text-ink-2">{note.label}</span> · analyzed {note.at}</> : null}
+            {note && page !== 'input' && page !== 'audit' ? (
+              <div className="flex items-center gap-2">
+                <span>{note.source} · <span className="text-ink-2">{note.label}</span> · analyzed {note.at}</span>
+                {analysis?.report.meta.input === 'ocr' && (
+                  <span className="rounded bg-accent/15 border border-accent/30 px-2 py-0.5 text-xs font-semibold text-accent uppercase tracking-wide">
+                    OCR ({analysis.report.meta.ocr_engine || 'vision'})
+                  </span>
+                )}
+              </div>
+            ) : null}
           </div>
           <div className="flex items-center gap-3">
           {analysis && note && page !== 'input' && (
@@ -142,7 +151,7 @@ export default function App() {
             </div>
           )}
           {page === 'input' && <InputNote meta={{ ...meta, llm_online: llmOnline }} mode={mode} busy={busy} error={error}
-            onAnalyze={(t, l, s) => runAnalysis(t, l, s)} />}
+            onAnalyze={(t, l, s, p, isrc, ocre) => runAnalysis(t, l, s, p, isrc, ocre)} />}
           {page === 'triage' && analysis && <Triage a={analysis} meta={meta} reviewer={reviewer.name} onDecide={decide} />}
           {page === 'diff' && analysis && note && <MedDiff key={analysis.report.meta.report_hash} a={analysis} meta={meta}
             reviewer={reviewer.name} busy={busy} onDecide={decide}

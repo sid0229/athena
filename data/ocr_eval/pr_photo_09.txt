@@ -1,0 +1,7 @@
+Prescription - Dr. Sharma
+
+Patient: Demo Patient (Synthetic)
+Date: 2026-10-12
+Rx 1: Sertraline HCl 100 mg tabs #30 Sig: 1 tab PO qd
+Rx 2: Tramadol 50 mg tabs #20 Sig: 1 tab PO q6h prn
+Rx 3: Ondansetron 4 mg ODT #10 Sig: 1 tab PO q8h prn nausea

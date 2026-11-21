@@ -1,0 +1,4372 @@
+[
+  {
+    "engine": "vision",
+    "total_samples": 50,
+    "total_seconds": 4.13,
+    "sec_per_page": 0.083,
+    "peak_memory_mb": 2299.4,
+    "overall": {
+      "count": 50,
+      "cer": 0.0139,
+      "wer": 0.108,
+      "drug_recall": 0.9747,
+      "med_recall": 0.9747,
+      "alert_recall": 0.96,
+      "sec_per_page": 0.074
+    },
+    "by_type": {
+      "handwritten": {
+        "count": 30,
+        "cer": 0.0183,
+        "wer": 0.1297,
+        "drug_recall": 0.9633,
+        "med_recall": 0.9633,
+        "alert_recall": 0.9556,
+        "sec_per_page": 0.078
+      },
+      "printed": {
+        "count": 20,
+        "cer": 0.0074,
+        "wer": 0.0754,
+        "drug_recall": 0.9917,
+        "med_recall": 0.9917,
+        "alert_recall": 0.9667,
+        "sec_per_page": 0.069
+      }
+    },
+    "by_capture": {
+      "photo": {
+        "count": 25,
+        "cer": 0.0142,
+        "wer": 0.1112,
+        "drug_recall": 0.972,
+        "med_recall": 0.972,
+        "alert_recall": 0.98,
+        "sec_per_page": 0.076
+      },
+      "scan": {
+        "count": 25,
+        "cer": 0.0137,
+        "wer": 0.1048,
+        "drug_recall": 0.9773,
+        "med_recall": 0.9773,
+        "alert_recall": 0.94,
+        "sec_per_page": 0.072
+      }
+    },
+    "detailed": [
+      {
+        "id": "hw_photo_01",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0116,
+        "wer": 0.1034,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.114,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_photo_02",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0237,
+        "wer": 0.1724,
+        "drug_recall": 0.75,
+        "med_recall": 0.75,
+        "alert_recall": 1.0,
+        "seconds": 0.089,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_03",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0887,
+        "wer": 0.4242,
+        "drug_recall": 0.8,
+        "med_recall": 0.8,
+        "alert_recall": 0.5,
+        "seconds": 0.082,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_04",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.085,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_05",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.081,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_06",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.08,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_07",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0233,
+        "wer": 0.175,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.075,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "hw_photo_08",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0226,
+        "wer": 0.1724,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.078,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_09",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0082,
+        "wer": 0.0652,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.089,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_10",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.075,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_11",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0116,
+        "wer": 0.1034,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.076,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_photo_12",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0237,
+        "wer": 0.1724,
+        "drug_recall": 0.75,
+        "med_recall": 0.75,
+        "alert_recall": 1.0,
+        "seconds": 0.073,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_13",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0394,
+        "wer": 0.2424,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.071,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "hw_photo_14",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.074,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_15",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.075,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_01",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.069,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_02",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0117,
+        "wer": 0.1,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.083,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "hw_scan_03",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0317,
+        "wer": 0.2069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.074,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_04",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0165,
+        "wer": 0.087,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.082,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_05",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.069,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_06",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0231,
+        "wer": 0.1724,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.068,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_scan_07",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0178,
+        "wer": 0.1379,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.07,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_08",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.069,
+        "wer": 0.3333,
+        "drug_recall": 0.8,
+        "med_recall": 0.8,
+        "alert_recall": 0.5,
+        "seconds": 0.067,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_09",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.072,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_scan_10",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.074,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_11",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0089,
+        "wer": 0.0882,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.082,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_12",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0117,
+        "wer": 0.1,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.077,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "hw_scan_13",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0407,
+        "wer": 0.2414,
+        "drug_recall": 0.8,
+        "med_recall": 0.8,
+        "alert_recall": 0.6667,
+        "seconds": 0.071,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_scan_14",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0123,
+        "wer": 0.087,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.084,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_15",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.072,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_01",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0116,
+        "wer": 0.1034,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.064,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "pr_photo_02",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.066,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_photo_03",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.071,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "pr_photo_04",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0122,
+        "wer": 0.1071,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.065,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "pr_photo_05",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.064,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_06",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.065,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_photo_07",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0039,
+        "wer": 0.05,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.086,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "pr_photo_08",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.067,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_09",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0123,
+        "wer": 0.087,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.075,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_10",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0087,
+        "wer": 0.0968,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.066,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_01",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.064,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "pr_scan_02",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.068,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_scan_03",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.065,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "pr_scan_04",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.069,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "pr_scan_05",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0134,
+        "wer": 0.0909,
+        "drug_recall": 0.8333,
+        "med_recall": 0.8333,
+        "alert_recall": 0.3333,
+        "seconds": 0.072,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "pr_scan_06",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.068,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_scan_07",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0039,
+        "wer": 0.05,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.07,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "pr_scan_08",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.009,
+        "wer": 0.1034,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.071,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_09",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0165,
+        "wer": 0.1087,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.085,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_10",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.066,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      }
+    ]
+  },
+  {
+    "engine": "qwen_vl",
+    "total_samples": 50,
+    "total_seconds": 272.37,
+    "sec_per_page": 5.447,
+    "peak_memory_mb": 2299.4,
+    "overall": {
+      "count": 50,
+      "cer": 0.0055,
+      "wer": 0.0634,
+      "drug_recall": 1.0,
+      "med_recall": 1.0,
+      "alert_recall": 1.0,
+      "sec_per_page": 5.422
+    },
+    "by_type": {
+      "handwritten": {
+        "count": 30,
+        "cer": 0.0054,
+        "wer": 0.0631,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "sec_per_page": 5.169
+      },
+      "printed": {
+        "count": 20,
+        "cer": 0.0057,
+        "wer": 0.0638,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "sec_per_page": 5.803
+      }
+    },
+    "by_capture": {
+      "photo": {
+        "count": 25,
+        "cer": 0.0055,
+        "wer": 0.0643,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "sec_per_page": 5.29
+      },
+      "scan": {
+        "count": 25,
+        "cer": 0.0056,
+        "wer": 0.0625,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "sec_per_page": 5.555
+      }
+    },
+    "detailed": [
+      {
+        "id": "hw_photo_01",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.998,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_photo_02",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.574,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_03",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.86,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "hw_photo_04",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.523,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_05",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.959,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_06",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.669,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_07",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0039,
+        "wer": 0.05,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.286,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "hw_photo_08",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.606,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_09",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0082,
+        "wer": 0.0652,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.492,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_10",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.035,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_11",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.721,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_photo_12",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.722,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_13",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.965,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "hw_photo_14",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.683,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_15",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.192,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_01",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.992,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_02",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0039,
+        "wer": 0.05,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.554,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "hw_scan_03",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.814,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_04",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0082,
+        "wer": 0.0652,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.637,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_05",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.155,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_06",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.055,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_scan_07",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 4.988,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_08",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.272,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "hw_scan_09",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.096,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_scan_10",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.737,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_11",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.017,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_12",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0039,
+        "wer": 0.05,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.622,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "hw_scan_13",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0136,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.059,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_14",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0041,
+        "wer": 0.0435,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.421,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_15",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.352,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_01",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.03,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "pr_photo_02",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.018,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_photo_03",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.368,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "pr_photo_04",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.401,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "pr_photo_05",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.554,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_06",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.441,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_photo_07",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0039,
+        "wer": 0.05,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.095,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "pr_photo_08",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.324,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_09",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0123,
+        "wer": 0.0652,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 7.003,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_10",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.738,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_01",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.532,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "pr_scan_02",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.461,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_scan_03",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.804,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "pr_scan_04",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.498,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "pr_scan_05",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.107,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_06",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.627,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_scan_07",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0039,
+        "wer": 0.05,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.591,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "pr_scan_08",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 5.585,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_09",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0123,
+        "wer": 0.0652,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.804,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_10",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 6.087,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      }
+    ]
+  },
+  {
+    "engine": "tesseract",
+    "total_samples": 50,
+    "total_seconds": 6.88,
+    "sec_per_page": 0.138,
+    "peak_memory_mb": 2299.4,
+    "overall": {
+      "count": 50,
+      "cer": 0.0442,
+      "wer": 0.1666,
+      "drug_recall": 0.8847,
+      "med_recall": 0.8853,
+      "alert_recall": 0.8783,
+      "sec_per_page": 0.128
+    },
+    "by_type": {
+      "handwritten": {
+        "count": 30,
+        "cer": 0.067,
+        "wer": 0.2226,
+        "drug_recall": 0.8078,
+        "med_recall": 0.8089,
+        "alert_recall": 0.7972,
+        "sec_per_page": 0.129
+      },
+      "printed": {
+        "count": 20,
+        "cer": 0.01,
+        "wer": 0.0827,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "sec_per_page": 0.128
+      }
+    },
+    "by_capture": {
+      "photo": {
+        "count": 25,
+        "cer": 0.0328,
+        "wer": 0.1527,
+        "drug_recall": 0.9013,
+        "med_recall": 0.9013,
+        "alert_recall": 0.89,
+        "sec_per_page": 0.129
+      },
+      "scan": {
+        "count": 25,
+        "cer": 0.0555,
+        "wer": 0.1806,
+        "drug_recall": 0.868,
+        "med_recall": 0.8693,
+        "alert_recall": 0.8667,
+        "sec_per_page": 0.127
+      }
+    },
+    "detailed": [
+      {
+        "id": "hw_photo_01",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0173,
+        "wer": 0.1379,
+        "drug_recall": 0.8,
+        "med_recall": 0.8,
+        "alert_recall": 0.5,
+        "seconds": 0.127,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_02",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0651,
+        "wer": 0.2759,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.118,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_03",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.1133,
+        "wer": 0.3939,
+        "drug_recall": 0.6,
+        "med_recall": 0.6,
+        "alert_recall": 0.5,
+        "seconds": 0.118,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_04",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.131,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_05",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0089,
+        "wer": 0.0909,
+        "drug_recall": 0.8333,
+        "med_recall": 0.8333,
+        "alert_recall": 1.0,
+        "seconds": 0.144,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_06",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0536,
+        "wer": 0.2941,
+        "drug_recall": 0.5,
+        "med_recall": 0.5,
+        "alert_recall": 1.0,
+        "seconds": 0.139,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 2,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_07",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0545,
+        "wer": 0.275,
+        "drug_recall": 0.8,
+        "med_recall": 0.8,
+        "alert_recall": 0.75,
+        "seconds": 0.146,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_08",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.2624,
+        "wer": 0.5172,
+        "drug_recall": 0.6,
+        "med_recall": 0.6,
+        "alert_recall": 0.3333,
+        "seconds": 0.116,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_09",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0082,
+        "wer": 0.0652,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.145,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_10",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0173,
+        "wer": 0.1613,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.134,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_photo_11",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0231,
+        "wer": 0.1379,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.12,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_photo_12",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0237,
+        "wer": 0.1379,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.125,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_photo_13",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0739,
+        "wer": 0.3333,
+        "drug_recall": 0.4,
+        "med_recall": 0.4,
+        "alert_recall": 0.1667,
+        "seconds": 0.118,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 2,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_14",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.123,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_photo_15",
+        "doc_type": "handwritten",
+        "capture": "photo",
+        "cer": 0.0089,
+        "wer": 0.0909,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.132,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_01",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0312,
+        "wer": 0.2059,
+        "drug_recall": 0.75,
+        "med_recall": 0.75,
+        "alert_recall": 1.0,
+        "seconds": 0.118,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_02",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0428,
+        "wer": 0.25,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 0.75,
+        "seconds": 0.146,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_03",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.3303,
+        "wer": 0.6207,
+        "drug_recall": 0.2,
+        "med_recall": 0.2,
+        "alert_recall": 0.0,
+        "seconds": 0.107,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "furosemide"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 1,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_04",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0165,
+        "wer": 0.087,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.148,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_05",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0216,
+        "wer": 0.1935,
+        "drug_recall": 0.8,
+        "med_recall": 0.8333,
+        "alert_recall": 1.0,
+        "seconds": 0.133,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_06",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0462,
+        "wer": 0.2069,
+        "drug_recall": 0.8,
+        "med_recall": 0.8,
+        "alert_recall": 1.0,
+        "seconds": 0.114,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "hw_scan_07",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0237,
+        "wer": 0.1724,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.118,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_08",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.1281,
+        "wer": 0.3939,
+        "drug_recall": 0.4,
+        "med_recall": 0.4,
+        "alert_recall": 0.1667,
+        "seconds": 0.116,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 2,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_scan_09",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.119,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "hw_scan_10",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.128,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_11",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0268,
+        "wer": 0.2059,
+        "drug_recall": 0.75,
+        "med_recall": 0.75,
+        "alert_recall": 1.0,
+        "seconds": 0.134,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_12",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0428,
+        "wer": 0.25,
+        "drug_recall": 0.8,
+        "med_recall": 0.8,
+        "alert_recall": 0.75,
+        "seconds": 0.163,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_13",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.5204,
+        "wer": 0.6897,
+        "drug_recall": 0.2,
+        "med_recall": 0.2,
+        "alert_recall": 0.0,
+        "seconds": 0.103,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 1,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "hw_scan_14",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.0123,
+        "wer": 0.087,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.15,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "hw_scan_15",
+        "doc_type": "handwritten",
+        "capture": "scan",
+        "cer": 0.013,
+        "wer": 0.129,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.126,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_01",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.109,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "pr_photo_02",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0178,
+        "wer": 0.1379,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.112,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_photo_03",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0099,
+        "wer": 0.0909,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.14,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "pr_photo_04",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.11,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "pr_photo_05",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.123,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_06",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.126,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_photo_07",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0078,
+        "wer": 0.075,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.173,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "pr_photo_08",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0045,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.129,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_09",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0123,
+        "wer": 0.0652,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.132,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_photo_10",
+        "doc_type": "printed",
+        "capture": "photo",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.145,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_01",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0058,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.119,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "clarithromycin",
+          "simvastatin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 2,
+        "ocr_alerts_count": 2
+      },
+      {
+        "id": "pr_scan_02",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0059,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.11,
+        "expected_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "metoprolol",
+          "furosemide",
+          "acetaminophen",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_scan_03",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0049,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.133,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "sumatriptan",
+          "ondansetron",
+          "enoxaparin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 6,
+        "ocr_alerts_count": 6
+      },
+      {
+        "id": "pr_scan_04",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0061,
+        "wer": 0.0714,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.107,
+        "expected_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "found_drugs": [
+          "lorazepam",
+          "oxycodone",
+          "omeprazole",
+          "sertraline"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 1,
+        "ocr_alerts_count": 1
+      },
+      {
+        "id": "pr_scan_05",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0606,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.122,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "spironolactone",
+          "potassium chloride",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_06",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.0588,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.123,
+        "expected_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "found_drugs": [
+          "lisinopril",
+          "ibuprofen",
+          "amlodipine",
+          "metformin"
+        ],
+        "gt_meds_count": 4,
+        "ocr_meds_count": 4,
+        "gt_alerts_count": 0,
+        "ocr_alerts_count": 0
+      },
+      {
+        "id": "pr_scan_07",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0778,
+        "wer": 0.325,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.168,
+        "expected_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "oxycodone",
+          "acetaminophen",
+          "guaifenesin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 4,
+        "ocr_alerts_count": 4
+      },
+      {
+        "id": "pr_scan_08",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0045,
+        "wer": 0.069,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.129,
+        "expected_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "found_drugs": [
+          "warfarin",
+          "aspirin",
+          "furosemide",
+          "simvastatin",
+          "clarithromycin"
+        ],
+        "gt_meds_count": 5,
+        "ocr_meds_count": 5,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_09",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0041,
+        "wer": 0.0435,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.125,
+        "expected_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "found_drugs": [
+          "sertraline",
+          "tramadol",
+          "ondansetron"
+        ],
+        "gt_meds_count": 3,
+        "ocr_meds_count": 3,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      },
+      {
+        "id": "pr_scan_10",
+        "doc_type": "printed",
+        "capture": "scan",
+        "cer": 0.0043,
+        "wer": 0.0645,
+        "drug_recall": 1.0,
+        "med_recall": 1.0,
+        "alert_recall": 1.0,
+        "seconds": 0.125,
+        "expected_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "found_drugs": [
+          "insulin glargine",
+          "lisinopril",
+          "amlodipine",
+          "spironolactone",
+          "ibuprofen"
+        ],
+        "gt_meds_count": 6,
+        "ocr_meds_count": 6,
+        "gt_alerts_count": 3,
+        "ocr_alerts_count": 3
+      }
+    ]
+  }
+]

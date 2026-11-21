@@ -58,6 +58,8 @@ export interface Report {
     }
     llm_model: string | null
     report_hash: string
+    input?: string
+    ocr_engine?: string | null
   }
 }
 

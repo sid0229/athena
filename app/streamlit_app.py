@@ -69,8 +69,8 @@ def llm_online() -> bool:
 
 
 @st.cache_data(show_spinner=False, max_entries=32)
-def run_analysis(text: str, mode: str) -> dict:
-    return analyze(text, extractor(mode), checker()).to_dict()
+def run_analysis(text: str, mode: str, input_source: str = "digital", ocr_engine: str | None = None) -> dict:
+    return analyze(text, extractor(mode), checker(), input_source=input_source, ocr_engine=ocr_engine).to_dict()
 
 
 def kb_meta() -> dict:
@@ -167,10 +167,12 @@ def _note_stats(text: str) -> str:
     return f"{lines:,} lines · {len(text):,} characters"
 
 
-def _set_note(text: str, label_: str, source: str):
+def _set_note(text: str, label_: str, source: str, input_source: str = "digital", ocr_engine: str | None = None):
     st.session_state.note = text
     st.session_state.note_label = label_
     st.session_state.note_source = source
+    st.session_state.input_source = input_source
+    st.session_state.ocr_engine = ocr_engine
     st.session_state.analyzed_at = datetime.now().strftime("%H:%M")
     st.rerun()
 
@@ -245,7 +247,8 @@ def sidebar():
 
 # ---------------------------------------------------------------- input workspace
 
-def _action_bar(text: str | None, button_label: str, key: str, source: str, label_: str):
+def _action_bar(text: str | None, button_label: str, key: str, source: str, label_: str,
+                input_source: str = "digital", ocr_engine: str | None = None):
     mode = st.session_state.get("mode", "hybrid")
     left, right = st.columns([3, 1.25], vertical_alignment="center")
     with left:
@@ -256,14 +259,14 @@ def _action_bar(text: str | None, button_label: str, key: str, source: str, labe
     with right:
         if st.button(button_label, type="primary", key=key, disabled=not (text and text.strip()),
                      icon=":material/arrow_forward:", icon_position="right", width="stretch"):
-            _set_note(text, label_, source)
+            _set_note(text, label_, source, input_source=input_source, ocr_engine=ocr_engine)
 
 
 def note_input():
     header("Medication reconciliation", "Review a discharge summary",
            "Extract medications, reconcile admission vs discharge, and verify active medication pairs "
            "against trusted interaction data.")
-    t1, t2, t3 = st.tabs(["Demo patients", "Paste note", "Upload .txt"])
+    t1, t2, t3 = st.tabs(["Demo patients", "Paste note", "Upload note or scan"])
     with t1:
         notes = demo_notes()
         with st.container(key="panel-demo"):
@@ -291,13 +294,38 @@ def note_input():
     with t3:
         with st.container(key="panel-upload"):
             st.html(label("Input"))
-            up = st.file_uploader("Upload a plain-text note", type=["txt"], label_visibility="collapsed")
-            text = up.getvalue().decode("utf-8", errors="replace") if up is not None else None
-            if text:
-                st.html(f'<div class="doc doc-preview" tabindex="0" aria-label="Uploaded note">{esc(text)}</div>')
-            st.html('<div class="rule" style="margin:12px 0"></div>')
-            _action_bar(text, "Analyze uploaded note", "go-up", "Uploaded file",
-                        up.name if up is not None else "Uploaded note")
+            up = st.file_uploader(
+                "Upload a note, scanned PDF, or photo (.txt, .docx, .pdf, .png, .jpg, .heic)",
+                type=["txt", "docx", "pdf", "png", "jpg", "jpeg", "heic"],
+                label_visibility="collapsed",
+            )
+            if up is not None:
+                from athena.ingest import IngestError, extract_document
+                try:
+                    res = extract_document(up.name, up.getvalue())
+                    if res.source == "ocr":
+                        st.html(f"""<div class="notice warn" style="margin-bottom:12px">
+                          {icon("triangle-alert", 16)}<div><b>Text read by OCR. Check it against the original before analysis.</b>
+                          Engine: {esc(res.ocr_engine or 'vision').title()} · {res.page_count} page(s) · {res.seconds:.2f}s</div></div>""")
+                        c_img, c_txt = st.columns([1, 1.3], gap="medium")
+                        with c_img:
+                            st.html(label("Original document"))
+                            if res.preview_images:
+                                st.image(res.preview_images[0], use_container_width=True)
+                        with c_txt:
+                            st.html(label("OCR Text (editable)"))
+                            ocr_text = st.text_area("OCR text", value=res.text, height=360, key="ocr_text_edit", label_visibility="collapsed")
+                            if res.low_confidence_words:
+                                low_pills = " ".join(f'<span class="badge tier-review">{esc(w["word"])} ({int(w["confidence"]*100)}%)</span>' for w in res.low_confidence_words[:12])
+                                st.html(f'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Low-confidence words to check: {low_pills}</div>')
+                        st.html('<div class="rule" style="margin:12px 0"></div>')
+                        _action_bar(ocr_text, "Analyze OCR note", "go-up", "OCR Scan", up.name, input_source="ocr", ocr_engine=res.ocr_engine)
+                    else:
+                        st.html(f'<div class="doc doc-preview" tabindex="0" aria-label="Uploaded note">{esc(res.text)}</div>')
+                        st.html('<div class="rule" style="margin:12px 0"></div>')
+                        _action_bar(res.text, "Analyze uploaded note", "go-up", "Uploaded file", up.name, input_source="digital")
+                except IngestError as e:
+                    st.error(str(e))
 
 
 # ---------------------------------------------------------------- results
@@ -609,7 +637,11 @@ def run_details(r: dict, cid: str = ""):
     for w in m["warnings"]:
         st.html(f'<div class="notice warn" style="margin-bottom:12px">{icon("triangle-alert", 16)}<div>{esc(w)}</div></div>')
     c = m["counts"]
+    input_str = esc(m.get('input', 'digital').upper())
+    if m.get('ocr_engine'):
+        input_str += f" ({esc(m['ocr_engine']).title()})"
     st.html(f"""<table class="kv"><tbody>
+      <tr><td>Input source</td><td>{input_str}</td></tr>
       <tr><td>Extraction mode</td><td>{esc(m['extraction_mode'])}</td></tr>
       <tr><td>Local model</td><td>{esc(m.get('llm_model') or '—')}</td></tr>
       <tr><td>Processing time</td><td>{m['extraction_seconds']} s</td></tr>
@@ -648,8 +680,10 @@ def review_page():
         note_input()
         return
     mode = st.session_state.get("mode", "hybrid")
+    input_source = st.session_state.get("input_source", "digital")
+    ocr_engine = st.session_state.get("ocr_engine", None)
     with st.spinner("Reading the note on this device and checking every medication pair…"):
-        r = run_analysis(text, mode)
+        r = run_analysis(text, mode, input_source=input_source, ocr_engine=ocr_engine)
     cid = case_id_for(text)
     decisions = audit().latest_decisions(cid, r["meta"]["report_hash"])
     actionable = [f for f in r["findings"] if f["tier"] in ("critical", "review")]
@@ -658,8 +692,10 @@ def review_page():
     label_ = st.session_state.get("note_label") or cid
     source = st.session_state.get("note_source") or "Discharge summary"
     when = st.session_state.get("analyzed_at")
+    ocr_badge = f'<span>{icon("scan", 14)} OCR-sourced ({esc(ocr_engine or "vision")})</span>' if input_source == "ocr" else ""
     meta = (f'<div class="meta-line"><span>{icon("file-text", 14)} {esc(source)}</span>'
             + (f'<span>{icon("clock", 14)} Analyzed {esc(when)}</span>' if when else "")
+            + ocr_badge
             + f'<span>{icon("cpu", 14)} {esc(MODES[mode])}</span></div>')
     header("Medication reconciliation", label_, meta_html=meta)
 

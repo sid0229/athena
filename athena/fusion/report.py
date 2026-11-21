@@ -424,7 +424,8 @@ def _build_report_from_entries(entries: list[MedEntry], sections: list[Section],
 
 
 def analyze(text: str, extractor: MedicationExtractor | None = None,
-            checker: InteractionChecker | None = None, fusion_cfg: dict | None = None) -> Report:
+            checker: InteractionChecker | None = None, fusion_cfg: dict | None = None,
+            input_source: str = "digital", ocr_engine: str | None = None) -> Report:
     full_cfg = load_config()
     cfg = fusion_cfg or full_cfg["fusion"]
     ablation = full_cfg.get("ablation", {})
@@ -443,6 +444,8 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
         "warnings": ex.warnings,
         "llm_model": getattr(extractor.llm, "model", None),
         "model_version": getattr(extractor.llm, "model", None),
+        "input": input_source,
+        "ocr_engine": ocr_engine,
     }
     return _build_report_from_entries(entries, sections, checker, cfg, meta_base)
 
@@ -451,7 +454,9 @@ def analyze_medications(medications: list[dict | MedEntry], text: str = "",
                         checker: InteractionChecker | None = None,
                         fusion_cfg: dict | None = None,
                         sections: list[Section] | None = None,
-                        extraction_mode: str = "corrected") -> Report:
+                        extraction_mode: str = "corrected",
+                        input_source: str = "digital",
+                        ocr_engine: str | None = None) -> Report:
     full_cfg = load_config()
     cfg = fusion_cfg or full_cfg["fusion"]
     ablation = full_cfg.get("ablation", {})
@@ -525,5 +530,7 @@ def analyze_medications(medications: list[dict | MedEntry], text: str = "",
         "warnings": [],
         "llm_model": None,
         "corrected": True,
+        "input": input_source,
+        "ocr_engine": ocr_engine,
     }
     return _build_report_from_entries(entries, sections, checker, cfg, meta_base)

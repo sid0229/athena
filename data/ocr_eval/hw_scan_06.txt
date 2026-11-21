@@ -1,0 +1,7 @@
+Discharge Medication Order
+
+Rx: Warfarin 5 mg PO daily
+Aspirin 81 mg PO daily
+Furosemide 40 mg PO daily
+Clarithromycin 500 mg PO BID x 5 days
+Simvastatin 40 mg PO qhs (HELD)

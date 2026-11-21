@@ -21,7 +21,7 @@ export function CaseSummary({ a, meta, note, reviewer }: {
       <header className="flex items-start justify-between border-b-2 border-black pb-2">
         <div>
           <h1 className="text-[18pt] font-bold">Athena — medication review summary</h1>
-          <p className="text-[10pt]">{note.source} · {note.label} · {a.case_id}</p>
+          <p className="text-[10pt]">{note.source} · {note.label} · {a.case_id}{r.meta.input === 'ocr' ? ` · OCR (${r.meta.ocr_engine || 'vision'})` : ''}</p>
         </div>
         <div className="text-right text-[9pt]">
           <div>Printed {new Date().toLocaleString()}</div>
@@ -86,7 +86,7 @@ export function CaseSummary({ a, meta, note, reviewer }: {
       </section>
 
       <footer className="mt-5 border-t border-black pt-1.5 text-[8pt] leading-tight">
-        Engine: Athena {meta.version} · {meta.modes[r.meta.extraction_mode] ?? r.meta.extraction_mode}{r.meta.llm_model ? ` · ${r.meta.llm_model}` : ''} ·
+        Engine: Athena {meta.version} · {meta.modes[r.meta.extraction_mode] ?? r.meta.extraction_mode}{r.meta.llm_model ? ` · ${r.meta.llm_model}` : ''}{r.meta.input === 'ocr' ? ` · OCR (${r.meta.ocr_engine || 'vision'})` : ''} ·
         KB {meta.kb.concepts.toLocaleString()} drugs / {meta.kb.pairs.toLocaleString()} pairs ({meta.kb.sources ?? 'DrugBank, DDInter'}) ·
         report {shortHash(r.meta.report_hash, 16)}. Interaction flags come from DrugBank and DDInter, never from the language model.
         Decisions are recorded in a hash-chained audit log. Decision support only — not a medical device; the reviewing clinician is responsible for all decisions.
