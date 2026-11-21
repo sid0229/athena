@@ -1,0 +1,8 @@
+Discharge Medication Reconciliation
+
+Medications on Discharge:
+1. Coumadin 5 mg PO every evening
+2. Percocet 5-325 mg PO q6h prn severe pain
+3. Acetaminophen 500 mg PO q6h prn fever
+4. Guaifenesin 100 mg/5 mL PO q4h prn cough
+5. Clarithromycin 500 mg PO BID

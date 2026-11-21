@@ -63,6 +63,12 @@ fusion:                             # v1 — see README §2.4; to be calibrated 
     discharge_list: 1.0
     inferred: 0.6
 
+ocr:
+  engine: vision                   # vision (Apple Vision, default) | qwen_vl (Ollama) | tesseract (portable fallback)
+  low_confidence_threshold: 0.70   # words below this are highlighted for reviewer verification
+  max_pages: 10                    # maximum pages allowed for document uploads
+  qwen_vl_model: qwen2.5vl:3b
+
 ablation:
   grounding_guard: true
   section_parser: true

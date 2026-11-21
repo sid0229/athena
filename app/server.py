@@ -29,9 +29,10 @@ from fastapi.staticfiles import StaticFiles  # noqa: E402
 from starlette.concurrency import run_in_threadpool  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
+from athena.config import load_config  # noqa: E402
 from athena.extraction.pipeline import MedicationExtractor  # noqa: E402
 from athena.fusion.report import analyze, analyze_medications  # noqa: E402
-from athena.ingest import MAX_BYTES, IngestError, extract_text  # noqa: E402
+from athena.ingest import MAX_BYTES, IngestError, extract_document, extract_text  # noqa: E402
 from athena.review.audit import OVERRIDE_REASONS, AuditLog  # noqa: E402
 from athena.review.corrections import CorrectionsDB  # noqa: E402
 from athena.verification.checker import InteractionChecker  # noqa: E402
@@ -91,14 +92,14 @@ def corrections() -> CorrectionsDB:
     return CorrectionsDB(os.environ.get("ATHENA_CORRECTIONS_DB") or None)
 
 
-_cache: OrderedDict[tuple[str, str], dict] = OrderedDict()   # (note sha, mode) -> report
+_cache: OrderedDict[tuple[str, str, str, str | None], dict] = OrderedDict()   # (note sha, mode, source, ocr_engine) -> report
 _reports: OrderedDict[str, dict] = OrderedDict()              # report_hash -> {report, text, case_id}
 _lock = Lock()        # one analysis at a time: the 8 GB laptop runs a single local model
 _cache_lock = Lock()  # cache dicts are touched from FastAPI's worker threads
 
 
-def run_analysis(text: str, mode: str) -> dict:
-    key = (hashlib.sha256(text.encode()).hexdigest(), mode)
+def run_analysis(text: str, mode: str, input_source: str = "digital", ocr_engine: str | None = None) -> dict:
+    key = (hashlib.sha256(text.encode()).hexdigest(), mode, input_source, ocr_engine)
     with _cache_lock:
         if key in _cache:
             _cache.move_to_end(key)
@@ -106,7 +107,7 @@ def run_analysis(text: str, mode: str) -> dict:
             _reports.setdefault(r["meta"]["report_hash"], {"report": r, "text": text, "case_id": case_id_for(text)})
             return r
     with _lock:
-        r = analyze(text, extractor(mode), checker()).to_dict()
+        r = analyze(text, extractor(mode), checker(), input_source=input_source, ocr_engine=ocr_engine).to_dict()
     with _cache_lock:
         # A run that fell back to rules (LLM offline) is not cached under the requested mode.
         if r["meta"]["extraction_mode"] == mode:
@@ -185,6 +186,8 @@ class AnalyzeIn(BaseModel):
     text: str
     mode: str = "hybrid"
     prior_list: str | None = None
+    input_source: str = "digital"     # "digital" | "ocr"
+    ocr_engine: str | None = None     # "vision" | "qwen_vl" | "tesseract"
 
 
 class DecisionIn(BaseModel):
@@ -202,6 +205,8 @@ class CorrectIn(BaseModel):
     medications: list[dict]
     comment: str | None = None
     text: str | None = None
+    input_source: str = "digital"
+    ocr_engine: str | None = None
 
 
 @app.get("/api/meta")
@@ -209,10 +214,12 @@ def meta():
     kb = dict(checker().kb.con.execute("SELECT key, value FROM meta"))
     demos = [{"id": p.stem, "name": _pretty_title(p.stem.split("_", 1)[-1]), "text": p.read_text()}
              for p in sorted(DEMO_DIR.glob("*.txt"))]
+    ocr_cfg = load_config().get("ocr", {})
     return {"version": VERSION, "model": extractor("hybrid").llm.model, "llm_online": llm_online(),
             "kb": {"concepts": int(kb["concepts"]), "pairs": int(kb["pairs"]), "built": kb.get("built"),
                    "sources": kb.get("sources")},
-            "modes": MODES, "override_reasons": OVERRIDE_REASONS, "demos": demos}
+            "modes": MODES, "override_reasons": OVERRIDE_REASONS, "demos": demos,
+            "ocr": {"engine": ocr_cfg.get("engine", "vision"), "low_confidence_threshold": ocr_cfg.get("low_confidence_threshold", 0.70)}}
 
 
 @app.post("/api/analyze")
@@ -225,7 +232,7 @@ def api_analyze(body: AnalyzeIn):
         text = f"{PRIOR_LIST_HEADER}\n{body.prior_list.strip()}\n\nDischarge Summary:\n{body.text}"
     if not text.strip():
         raise HTTPException(400, "empty note")
-    r = run_analysis(text, body.mode)
+    r = run_analysis(text, body.mode, input_source=body.input_source, ocr_engine=body.ocr_engine)
     cid = case_id_for(text)
     decisions = audit().latest_decisions(cid, r["meta"]["report_hash"])
     return {"report": r, "text": text, "case_id": cid, "display_names": display_names(r), "ml_signals": ml_signals(r),
@@ -233,15 +240,25 @@ def api_analyze(body: AnalyzeIn):
 
 
 @app.post("/api/extract")
-async def api_extract(request: Request, filename: str):
-    """Raw file bytes in the body (no multipart dependency) -> note text for the reviewer to check."""
+async def api_extract(request: Request, filename: str, ocr_engine: str | None = None):
+    """Raw file bytes in the body (no multipart dependency) -> note text, source, OCR details."""
     data = b""
     async for chunk in request.stream():
         data += chunk
         if len(data) > MAX_BYTES:
             raise HTTPException(413, "File is larger than 20 MB.")
     try:
-        return {"name": filename, "text": await run_in_threadpool(extract_text, filename, data)}
+        doc = await run_in_threadpool(extract_document, filename, data, ocr_engine)
+        return {
+            "name": filename,
+            "text": doc.text,
+            "source": doc.source,
+            "ocr_engine": doc.ocr_engine,
+            "low_confidence_words": doc.low_confidence_words,
+            "page_count": doc.page_count,
+            "seconds": doc.seconds,
+            "preview_images": doc.preview_images,
+        }
     except IngestError as e:
         raise HTTPException(400, str(e))
 
@@ -284,7 +301,8 @@ def api_correct(body: CorrectIn):
         raise HTTPException(409, "This report is no longer loaded on the server — analyze the note again.")
 
     with _lock:
-        r = analyze_medications(body.medications, text=text, checker=checker()).to_dict()
+        r = analyze_medications(body.medications, text=text, checker=checker(),
+                                input_source=body.input_source, ocr_engine=body.ocr_engine).to_dict()
 
     note_hash = hashlib.sha256(text.encode()).hexdigest()
     corrections().record(

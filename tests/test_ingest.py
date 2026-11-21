@@ -53,7 +53,7 @@ def test_digital_pdf():
 
 
 def test_scanned_pdf_and_bad_files_get_clear_errors():
-    with pytest.raises(IngestError, match="no text layer"):
+    with pytest.raises(IngestError, match="No text found in this scanned PDF"):
         extract_text("scan.pdf", _pdf([]))
     with pytest.raises(IngestError, match="not a readable .docx"):
         extract_text("old.docx", b"\xd0\xcf\x11\xe0 legacy doc")

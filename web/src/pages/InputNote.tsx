@@ -7,14 +7,23 @@ import { Button, Card, ICON, PageHeader, Spinner, Tabs, cx } from '../components
 
 type Src = 'demo' | 'paste' | 'upload'
 
+interface UploadData {
+  name: string
+  text: string
+  source: 'digital' | 'ocr'
+  ocr_engine?: string | null
+  low_confidence_words: { word: string; confidence: number; start: number; end: number; page: number; bbox?: number[] | null }[]
+  preview_images: string[]
+}
+
 export function InputNote({ meta, mode, busy, error, onAnalyze }: {
   meta: Meta; mode: string; busy: boolean; error: string | null
-  onAnalyze: (text: string, label: string, source: string) => void
+  onAnalyze: (text: string, label: string, source: string, prior?: string, input_source?: string, ocr_engine?: string | null) => void
 }) {
   const [src, setSrc] = useState<Src>('demo')
   const [demo, setDemo] = useState(meta.demos[0]?.id ?? '')
   const [pasted, setPasted] = useState('')
-  const [upload, setUpload] = useState<{ name: string; text: string } | null>(null)
+  const [upload, setUpload] = useState<UploadData | null>(null)
   const [hash, setHash] = useState('')
   const [elapsed, setElapsed] = useState(0)
   const [reading, setReading] = useState(false)
@@ -24,10 +33,25 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
   async function readFile(f: File) {
     setFileError(null)
     const ext = f.name.toLowerCase().split('.').pop()
-    if (ext === 'txt') { setUpload({ name: f.name, text: await f.text() }); return }
-    if (ext !== 'docx' && ext !== 'pdf') { setFileError('Unsupported file type: upload a .txt, .docx or .pdf file.'); return }
+    if (ext === 'txt') {
+      const text = await f.text()
+      setUpload({ name: f.name, text, source: 'digital', low_confidence_words: [], preview_images: [] })
+      return
+    }
+    const validExts = ['docx', 'pdf', 'png', 'jpg', 'jpeg', 'heic']
+    if (!validExts.includes(ext || '')) {
+      setFileError('Unsupported file type: upload a .txt, .docx, .pdf, .png, .jpg, .jpeg or .heic file.')
+      return
+    }
     setReading(true)
-    try { setUpload(await api.extract(f)) } catch (e) { setFileError((e as Error).message) } finally { setReading(false) }
+    try {
+      const res = await api.extract(f)
+      setUpload(res)
+    } catch (e) {
+      setFileError((e as Error).message)
+    } finally {
+      setReading(false)
+    }
   }
   const d = meta.demos.find(x => x.id === demo)
 
@@ -76,6 +100,20 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
           </div>
         </div>
 
+        {src === 'upload' && upload?.source === 'ocr' && (
+          <div className="flex items-center justify-between border-b border-accent/25 bg-accent/10 px-4 py-2.5 text-sm text-accent">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">Text read by OCR.</span>
+              <span>Check it against the original before analysis.</span>
+            </div>
+            {upload.ocr_engine && (
+              <span className="rounded bg-accent/20 px-2 py-0.5 text-xs font-mono font-medium uppercase tracking-wider">
+                Engine: {upload.ocr_engine}
+              </span>
+            )}
+          </div>
+        )}
+
         {src === 'demo' && (
           <pre className="scroll-thin h-[400px] overflow-auto whitespace-pre-wrap px-4 py-4 font-sans text-sm leading-[1.75] text-ink-2">{text}</pre>
         )}
@@ -84,9 +122,31 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
             className="scroll-thin block h-[400px] w-full resize-y bg-transparent px-4 py-4 text-sm leading-[1.75] text-ink-2 outline-none placeholder:text-faint" />
         )}
         {src === 'upload' && (upload ? (
-          <textarea aria-label={`Text read from ${upload.name} — check and correct before analysis`} value={upload.text}
-            onChange={e => setUpload({ ...upload, text: e.target.value })}
-            className="scroll-thin block h-[400px] w-full resize-y bg-transparent px-4 py-4 text-sm leading-[1.75] text-ink-2 outline-none" />
+          <div className={cx(upload.preview_images?.length ? 'grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-line' : '')}>
+            {upload.preview_images?.length > 0 && (
+              <div className="p-4 bg-surface-2/40 overflow-auto max-h-[460px] flex flex-col items-center justify-start">
+                <div className="eyebrow self-start mb-2">Original Document Preview</div>
+                <img src={upload.preview_images[0]} alt="Uploaded document" className="rounded border border-line shadow-sm max-h-[400px] object-contain" />
+              </div>
+            )}
+            <div className="flex flex-col">
+              <textarea aria-label={`Text read from ${upload.name} — check and correct before analysis`} value={upload.text}
+                onChange={e => setUpload({ ...upload, text: e.target.value })}
+                className="scroll-thin block h-[380px] w-full resize-y bg-transparent px-4 py-4 text-sm leading-[1.75] text-ink-2 outline-none" />
+              {upload.low_confidence_words.length > 0 && (
+                <div className="border-t border-line px-4 py-2 bg-surface-2/60 text-xs">
+                  <div className="font-medium text-warn mb-1">Low-confidence words to verify ({upload.low_confidence_words.length}):</div>
+                  <div className="flex flex-wrap gap-1.5 max-h-[70px] overflow-auto">
+                    {upload.low_confidence_words.map((w, i) => (
+                      <span key={i} className="rounded bg-warn/15 border border-warn/30 px-1.5 py-0.5 font-mono text-warn">
+                        {w.word} ({Math.round(w.confidence * 100)}%)
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           <button onClick={() => fileRef.current?.click()}
             onDragOver={e => e.preventDefault()}
@@ -97,13 +157,13 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
             }}
             className="flex h-[400px] w-full flex-col items-center justify-center gap-2 text-muted hover:text-ink cursor-pointer">
             {reading ? <Spinner /> : <Upload size={22} strokeWidth={1.5} />}
-            <span className="text-sm">{reading ? 'Reading file…' : 'Drop a .txt, .docx or .pdf file or click to choose'}</span>
-            <span className="meta">Read on this device · digital PDFs only (no scans yet)</span>
+            <span className="text-sm">{reading ? 'Reading file…' : 'Drop a note, scanned PDF, or photo (.png, .jpg, .heic) or click to choose'}</span>
+            <span className="meta">Read locally on this device · Apple Vision OCR for scans & photos</span>
             {fileError && <span role="alert" className="mt-2 rounded-md border border-critical-line bg-critical-soft px-3 py-1.5 text-sm text-critical">{fileError}</span>}
           </button>
         ))}
         <input ref={fileRef} type="file" hidden
-          accept=".txt,.docx,.pdf,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          accept=".txt,.docx,.pdf,.png,.jpg,.jpeg,.heic,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,image/heic"
           onChange={async e => {
             const f = e.target.files?.[0]
             if (f) await readFile(f)
@@ -116,7 +176,7 @@ export function InputNote({ meta, mode, busy, error, onAnalyze }: {
             <span className="text-faint">·</span><span className="text-faint">no network calls</span>
           </div>
           <Button kind="primary" className="h-11 px-5" disabled={!text.trim() || busy}
-            onClick={() => onAnalyze(text, label, source)}
+            onClick={() => onAnalyze(text, label, source, undefined, upload?.source, upload?.ocr_engine)}
             icon={busy ? <Spinner /> : <Activity {...ICON} />}>
             {busy ? `Analyzing… ${elapsed}s` : <>Analyze Note <ArrowRight size={15} strokeWidth={1.75} /></>}
           </Button>
