@@ -20,6 +20,9 @@ export const api = {
   decide: (body: { report_hash: string; finding_id: string; reviewer: string; action: string;
     reason_code?: string | null; comment?: string | null }) =>
     req<{ decisions: Record<string, Decision> }>('/api/decision', body),
+  correct: (body: { report_hash: string; reviewer: string; medications: any[];
+    comment?: string | null; text?: string | null }) =>
+    req<Analysis>('/api/correct', body),
   extract: async (file: File) => {
     const res = await fetch(`/api/extract?filename=${encodeURIComponent(file.name)}`, { method: 'POST', body: file })
     if (!res.ok) {

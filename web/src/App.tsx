@@ -84,6 +84,19 @@ export default function App() {
     setAuditKey(k => k + 1)
   }, [analysis, reviewer.name])
 
+  const correctMedications = useCallback(async (meds: any[], comment?: string) => {
+    if (!analysis) return
+    const updated = await api.correct({
+      report_hash: analysis.report.meta.report_hash,
+      reviewer: reviewer.name,
+      medications: meds,
+      comment: comment ?? null,
+      text: note?.text ?? null,
+    })
+    setAnalysis(updated)
+    setAuditKey(k => k + 1)
+  }, [analysis, reviewer.name, note?.text])
+
   if (metaError) return (
     <div className="grid h-full place-items-center p-8 text-center">
       <div><div className="text-lg font-semibold text-ink">Cannot reach the local Athena server</div>
@@ -134,7 +147,9 @@ export default function App() {
           {page === 'diff' && analysis && note && <MedDiff key={analysis.report.meta.report_hash} a={analysis} meta={meta}
             reviewer={reviewer.name} busy={busy} onDecide={decide}
             onPriorList={p => runAnalysis(note.text, `${note.label} + prior list`, note.source, p)} />}
-          {page === 'meds' && analysis && note && <Medications a={analysis} analyzedAt={note.at} />}
+          {page === 'meds' && analysis && note && (
+            <Medications a={analysis} analyzedAt={note.at} reviewer={reviewer.name} onCorrect={correctMedications} />
+          )}
           {page === 'analytics' && <Analytics a={analysis} meta={meta} refreshKey={auditKey} />}
           {page === 'audit' && <AuditSystem meta={meta} mode={mode} setMode={setMode} llmOnline={llmOnline} refreshKey={auditKey} />}
           {page !== 'input' && page !== 'audit' && page !== 'analytics' && !analysis && (

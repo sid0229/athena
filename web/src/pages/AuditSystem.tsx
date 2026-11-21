@@ -55,8 +55,8 @@ export function AuditSystem({ meta, mode, setMode, llmOnline, refreshKey }: {
                 <span className="meta">{fmtTs(e.ts)}</span>
                 <span className="text-sm text-muted">Reviewer <span className="text-ink">{e.reviewer}</span></span>
                 <span className="min-w-0 flex-1 truncate text-sm text-muted">Target <span className="text-ink">{target}</span></span>
-                <span className={cx('flex items-center gap-1.5 text-sm', e.action === 'confirm' ? 'text-ok' : 'text-critical')}>
-                  <span className="size-2 bg-current" />{e.action === 'confirm' ? 'Confirmed' : 'Overridden with clinical reason'}
+                <span className={cx('flex items-center gap-1.5 text-sm', e.action === 'confirm' ? 'text-ok' : e.action === 'correct' ? 'text-review' : 'text-critical')}>
+                  <span className="size-2 bg-current" />{e.action === 'confirm' ? 'Confirmed' : e.action === 'correct' ? 'Medication list corrected' : 'Overridden with clinical reason'}
                 </span>
                 <button onClick={() => setOpen(isOpen ? null : e.id)} className="meta hover:text-ink cursor-pointer">
                   [{isOpen ? '− hide' : '+ details'}]
@@ -69,7 +69,7 @@ export function AuditSystem({ meta, mode, setMode, llmOnline, refreshKey }: {
                     <span className={cx('eyebrow', e.tier === 'critical' ? 'text-critical' : e.tier === 'review' ? 'text-review' : '')}>Tier: {e.tier}</span>
                   </div>
                   <p className="mt-1.5 text-sm text-ink">
-                    {e.action === 'override' ? (meta.override_reasons[e.reason_code ?? ''] ?? 'Override') : 'Finding confirmed by the reviewer.'}
+                    {e.action === 'override' ? (meta.override_reasons[e.reason_code ?? ''] ?? 'Override') : e.action === 'correct' ? 'Medication list corrected by reviewer.' : 'Finding confirmed by the reviewer.'}
                     {e.comment ? ` — ${e.comment}` : ''}
                   </p>
                   <p className="meta mt-2">{e.title} · report <span className="font-mono">{shortHash(e.report_hash, 12)}</span> · row <span className="font-mono">{shortHash(e.row_hash, 12)}</span></p>

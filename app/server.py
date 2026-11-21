@@ -30,9 +30,10 @@ from starlette.concurrency import run_in_threadpool  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 from athena.extraction.pipeline import MedicationExtractor  # noqa: E402
-from athena.fusion.report import analyze  # noqa: E402
+from athena.fusion.report import analyze, analyze_medications  # noqa: E402
 from athena.ingest import MAX_BYTES, IngestError, extract_text  # noqa: E402
 from athena.review.audit import OVERRIDE_REASONS, AuditLog  # noqa: E402
+from athena.review.corrections import CorrectionsDB  # noqa: E402
 from athena.verification.checker import InteractionChecker  # noqa: E402
 
 VERSION = "0.4"
@@ -83,6 +84,11 @@ def ml_signals(r: dict) -> list[dict]:
 @lru_cache(maxsize=1)
 def audit() -> AuditLog:
     return AuditLog(os.environ.get("ATHENA_AUDIT_DB") or None)
+
+
+@lru_cache(maxsize=1)
+def corrections() -> CorrectionsDB:
+    return CorrectionsDB(os.environ.get("ATHENA_CORRECTIONS_DB") or None)
 
 
 _cache: OrderedDict[tuple[str, str], dict] = OrderedDict()   # (note sha, mode) -> report
@@ -190,6 +196,14 @@ class DecisionIn(BaseModel):
     comment: str | None = None
 
 
+class CorrectIn(BaseModel):
+    report_hash: str
+    reviewer: str
+    medications: list[dict]
+    comment: str | None = None
+    text: str | None = None
+
+
 @app.get("/api/meta")
 def meta():
     kb = dict(checker().kb.con.execute("SELECT key, value FROM meta"))
@@ -250,6 +264,66 @@ def api_decision(body: DecisionIn):
         raise HTTPException(400, str(e))
     decisions = audit().latest_decisions(cid, r["meta"]["report_hash"])
     return {"decisions": {k: _entry(v) for k, v in decisions.items()}}
+
+
+@app.post("/api/correct")
+def api_correct(body: CorrectIn):
+    if not body.reviewer or not body.reviewer.strip():
+        raise HTTPException(400, "reviewer name is required")
+    with _cache_lock:
+        saved = _reports.get(body.report_hash)
+    if saved is not None:
+        text = saved["text"]
+        cid = saved["case_id"]
+        orig_meds = saved["report"]["medications"]
+    elif body.text and body.text.strip():
+        text = body.text
+        cid = case_id_for(text)
+        orig_meds = []
+    else:
+        raise HTTPException(409, "This report is no longer loaded on the server — analyze the note again.")
+
+    with _lock:
+        r = analyze_medications(body.medications, text=text, checker=checker()).to_dict()
+
+    note_hash = hashlib.sha256(text.encode()).hexdigest()
+    corrections().record(
+        note_hash=note_hash,
+        original_extraction=orig_meds,
+        corrected_list=r["medications"],
+        reviewer=body.reviewer.strip(),
+        case_id=cid,
+    )
+
+    try:
+        audit().record(
+            reviewer=body.reviewer.strip(),
+            case_id=cid,
+            report_hash=r["meta"]["report_hash"],
+            finding_id="CORRECTION",
+            finding_type="MEDICATION_CORRECTION",
+            tier="info",
+            title=f"Medication list corrected ({len(r['medications'])} medications)",
+            action="correct",
+            comment=body.comment,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    with _cache_lock:
+        _reports[r["meta"]["report_hash"]] = {"report": r, "text": text, "case_id": cid}
+        if len(_reports) > 256:
+            _reports.popitem(last=False)
+
+    decisions = audit().latest_decisions(cid, r["meta"]["report_hash"])
+    return {
+        "report": r,
+        "text": text,
+        "case_id": cid,
+        "display_names": display_names(r),
+        "ml_signals": ml_signals(r),
+        "decisions": {k: _entry(v) for k, v in decisions.items()},
+    }
 
 
 @app.get("/api/audit")

@@ -6,6 +6,8 @@ data/processed/llm_cache/
 # Runtime review log
 data/processed/audit.db
 data/processed/audit.db.head
+data/corrections.db
+data/corrections.db*
 audit/
 *.sqlite
 *.sqlite3
