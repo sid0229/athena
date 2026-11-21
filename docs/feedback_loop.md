@@ -162,11 +162,38 @@ This document details the design, implementation, and empirical evaluation of At
 
 ---
 
-## 6. Level 2: Supervised Instruction Fine-Tuning (LoRA / MLX)
+## 6. Level 2: Supervised Instruction Fine-Tuning (LoRA / MLX) (`exp/lora`)
 
-### 6.1 Exploration Overview
-- Target Model: `llama3.2:3b`.
-- Dataset: High-confidence reviewer corrections merged with the n2c2 training gold standard formatted in the Athena 8-column JSON schema.
-- Training Paradigm: QLoRA (4-bit quantization, rank $r=16$, $\alpha=32$) using Apple MLX (`mlx-lm`) optimized for unified memory on Apple Silicon.
-- Deployment Path: Convert trained LoRA adapters to GGUF format for zero-overhead local execution in Ollama.
-- Gate Requirement: Model adapter is promoted to production only if test micro F1 and Major interaction recall do not regress compared to the base baseline.
+### 6.1 Exploration & Architecture
+- **Target Model**: `llama3.2:3b-instruct` (4-bit quantized base via `mlx-community/Llama-3.2-3B-Instruct-4bit`).
+- **Data Preparation (`scripts/prepare_lora_data.py`)**:
+  - Training dataset: 5,399 clinical chunk examples combining n2c2 2018 Track 2 train gold notes and train-split snippet corrections formatted as JSONL chat messages.
+  - Validation dataset: 134 clinical chunks from n2c2 validation gold notes.
+  - Formatted strictly to the 8-column schema: `[drug, strength, dosage, form, route, frequency, duration, status]`.
+- **Training Paradigm (`scripts/train_lora.py`)**:
+  - Low-Rank Adaptation (QLoRA) utilizing Apple MLX (`mlx-lm`) on Apple Silicon unified memory.
+  - Hyperparameters: Rank $r=16$, Scaling $\alpha=32$, Dropout $0.0$, 16 LoRA attention projection layers, batch size $2$, AdamW with learning rate $1\times 10^{-4}$.
+  - Training performance: Loss dropped from 2.428 to 1.365 over iterations with validation loss improving from 2.400 to 1.920, training at ~578 tokens/sec on the Apple M2 GPU.
+- **Weight Fusion & Packaging**:
+  - `mlx_lm.fuse` successfully merges the low-rank delta weights $\Delta W$ directly into base model weights (`data/processed/lora/fused_model`).
+- **Model Version Tracking in Report Metadata**:
+  - Updated `athena/fusion/report.py` to record `report["meta"]["model_version"]` and `report["meta"]["llm_model"]`, ensuring that downstream decision audits cryptographically seal the exact model checkpoint that produced the extraction.
+
+### 6.2 Empirical Findings & Negative Results
+1. **Ollama / GGUF Quantization Incompatibility**:
+   - `mlx-lm` fuses weights using Apple MLX Metal-specific quantization kernels.
+   - When attempting to register the fused safetensors directly with Ollama, Ollama's `llama.cpp` engine fails with:
+     `ollama._types.ResponseError: mlx runner failed: panic: mlx: [dequantize] Invalid quantization mode '' (status code: 500)`.
+   - Directly serving MLX-quantized models in Ollama requires an unquantized 16-bit intermediate base merged with unquantized weights, converted through `llama.cpp`'s `convert_hf_to_gguf.py`, and re-quantized to Q4_K_M GGUF format.
+2. **Hallucination of Continuing Lists Without Schema Constraints**:
+   - Running direct generation on the fused model in MLX demonstrated that without Ollama's strict grammar-guided decoding (`format: _SCHEMA`), a 3B model hallucinates synthetic continuations (generating extraneous medications 3, 4, 5... from medical pretraining knowledge) rather than terminating at the chunk boundary.
+3. **Comparative Analysis: In-Context Level 1 vs. Parametric Level 2**:
+   - **Sample Efficiency**: Level 1 incorporates feedback instantly into the retrieval index without batch retraining, GPU compilation, or weight merging.
+   - **Grammar Enforcement**: Level 1 leverages Ollama's native JSON schema constrained decoding, guaranteeing strict 8-column array rows and preventing list continuation hallucinations.
+   - **Inference Latency**: Level 2 retains baseline speed (~1.5s/chunk), while Level 1 incurs prompt token overhead (~2.8s/chunk).
+
+### 6.3 Promotion Gate Decision
+- **Gate Rule**: Only promote if test micro F1 and Major recall do not regress compared to baseline.
+- **Decision**: Due to the GGUF dequantization barrier in Ollama and the requirement for constrained grammar decoding to prevent list hallucinations, **the fine-tuned adapter is not promoted to production**. It remains preserved on branch `exp/lora` as an experimental milestone.
+
+

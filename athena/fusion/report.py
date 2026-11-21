@@ -442,6 +442,7 @@ def analyze(text: str, extractor: MedicationExtractor | None = None,
         "extraction_seconds": round(ex.seconds, 2),
         "warnings": ex.warnings,
         "llm_model": getattr(extractor.llm, "model", None),
+        "model_version": getattr(extractor.llm, "model", None),
     }
     return _build_report_from_entries(entries, sections, checker, cfg, meta_base)
 
