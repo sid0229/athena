@@ -57,6 +57,7 @@ def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--model", default=None, help="override LLM model name")
     ap.add_argument("--save", action="store_true")
     ap.add_argument("--use-corrections", action="store_true")
     ap.add_argument("--corrections-split", default="train", choices=["train", "val"])
@@ -68,9 +69,9 @@ def main():
         from athena.extraction.corrections_fewshot import CorrectionRetriever, build_train_corrections_bank
         bank = build_train_corrections_bank(split=args.corrections_split)
         retriever = CorrectionRetriever(bank=bank, k=2)
-        llm = OllamaExtractor(use_corrections=True, retriever=retriever)
+        llm = OllamaExtractor(model=args.model, use_corrections=True, retriever=retriever)
     else:
-        llm = OllamaExtractor(use_corrections=False)
+        llm = OllamaExtractor(model=args.model, use_corrections=False)
 
     if not args.run_llm:
         llm.available = lambda: True  # cache only, never a silent rules fallback
@@ -125,7 +126,13 @@ def main():
         print(f"{k:32s} {res[k]}")
     print(tot)
     if args.save:
-        out_name = "alerts_eval_corrections.json" if args.use_corrections else "alerts_eval.json"
+        if args.use_corrections:
+            out_name = "alerts_eval_corrections.json"
+        elif llm.model != "llama3.2:3b":
+            model_slug = llm.model.replace(":", "_").replace(".", "_")
+            out_name = f"alerts_eval_{model_slug}.json"
+        else:
+            out_name = "alerts_eval.json"
         (ROOT / "docs" / "results" / out_name).write_text(json.dumps(res, indent=1))
 
 

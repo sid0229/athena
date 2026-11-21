@@ -44,6 +44,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split", choices=["train", "val", "test"])
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--model", default=None, help="override LLM model name")
+    ap.add_argument("--compare-baseline", action="store_true", help="compare against baseline llama3.2:3b hybrid")
     ap.add_argument("--modes", default="scispacy,rules,llm,hybrid")
     ap.add_argument("--run-llm", action="store_true")
     ap.add_argument("--save", action="store_true")
@@ -61,9 +63,9 @@ def main():
         from athena.extraction.corrections_fewshot import CorrectionRetriever, build_train_corrections_bank
         bank = build_train_corrections_bank(split=args.corrections_split)
         retriever = CorrectionRetriever(bank=bank, k=2)
-        llm = OllamaExtractor(use_corrections=True, retriever=retriever)
+        llm = OllamaExtractor(model=args.model, use_corrections=True, retriever=retriever)
     else:
-        llm = OllamaExtractor(use_corrections=False)
+        llm = OllamaExtractor(model=args.model, use_corrections=False)
     if not args.run_llm:
         # Cache-only scoring: never call the model and never fall back to rules silently
         # (MedicationExtractor falls back to rules when Ollama is not running).
@@ -85,13 +87,14 @@ def main():
 
     results = {}
     mode_names = [m.strip() for m in args.modes.split(",") if m.strip()]
-    if args.use_corrections and "baseline_hybrid" not in mode_names and "hybrid" in mode_names:
+    should_compare = args.use_corrections or args.compare_baseline or (args.model and args.model != "llama3.2:3b")
+    if should_compare and "baseline_hybrid" not in mode_names and "hybrid" in mode_names:
         mode_names.append("baseline_hybrid")
     mode_note_scores = {m: [] for m in mode_names}
 
     baseline_llm = None
-    if args.use_corrections:
-        baseline_llm = OllamaExtractor(use_corrections=False)
+    if should_compare:
+        baseline_llm = OllamaExtractor(model="llama3.2:3b", use_corrections=False)
         if not args.run_llm:
             baseline_llm.available = lambda: True
             def _no_call_b(text):
@@ -227,7 +230,7 @@ def main():
         print(f"Lenient diff: {pl['diff']:+.4f} (95% CI [{pl['ci95'][0]:+.4f}, {pl['ci95'][1]:+.4f}])")
 
     if paired_baseline_summary:
-        print("\n== Paired Difference: Hybrid (with corrections) - Baseline Hybrid")
+        print(f"\n== Paired Difference: Hybrid ({llm.model}) - Baseline Hybrid (llama3.2:3b)")
         ps = paired_baseline_summary["strict"]
         pl = paired_baseline_summary["lenient"]
         print(f"Strict  diff: {ps['diff']:+.4f} (95% CI [{ps['ci95'][0]:+.4f}, {ps['ci95'][1]:+.4f}])")
@@ -243,7 +246,11 @@ def main():
                 "bank_version": getattr(llm, "correction_bank_version", "none"),
                 "date": time.strftime("%Y-%m-%d")}
         bank_suffix = "_corrections" if args.use_corrections else ""
-        path = out / f"extraction_{args.split}_{len(eligible)}notes{bank_suffix}.json"
+        if llm.model != "llama3.2:3b" and not args.use_corrections:
+            model_slug = llm.model.replace(":", "_").replace(".", "_")
+            path = out / f"extraction_{args.split}_{len(eligible)}notes_{model_slug}.json"
+        else:
+            path = out / f"extraction_{args.split}_{len(eligible)}notes{bank_suffix}.json"
         payload = {
             "meta": meta,
             "results": results,

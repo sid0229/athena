@@ -162,38 +162,77 @@ This document details the design, implementation, and empirical evaluation of At
 
 ---
 
-## 6. Level 2: Supervised Instruction Fine-Tuning (LoRA / MLX) (`exp/lora`)
+## 6. Level 2: Supervised Instruction Fine-Tuning (LoRA / MLX) (`exp/lora-eval`)
 
 ### 6.1 Exploration & Architecture
-- **Target Model**: `llama3.2:3b-instruct` (4-bit quantized base via `mlx-community/Llama-3.2-3B-Instruct-4bit`).
-- **Data Preparation (`scripts/prepare_lora_data.py`)**:
-  - Training dataset: 5,399 clinical chunk examples combining n2c2 2018 Track 2 train gold notes and train-split snippet corrections formatted as JSONL chat messages.
-  - Validation dataset: 134 clinical chunks from n2c2 validation gold notes.
+- **Target Model**: `llama3.2:3b-instruct` (4-bit base via `mlx-community/Llama-3.2-3B-Instruct-4bit`).
+- **Data Preparation & Leakage Separation (`scripts/prepare_lora_data.py`)**:
+  - **Training split**: 5,399 clinical chunk examples combining n2c2 2018 Track 2 train gold notes and train-split snippet corrections formatted as JSONL chat messages.
+  - **Validation split**: 134 clinical chunks from n2c2 validation gold notes.
+  - **Test split**: 0 test examples used during preparation or training (strictly zero leakage). Out-of-sample evaluation was performed entirely on the held-out 202 test notes (769 chunks).
   - Formatted strictly to the 8-column schema: `[drug, strength, dosage, form, route, frequency, duration, status]`.
 - **Training Paradigm (`scripts/train_lora.py`)**:
   - Low-Rank Adaptation (QLoRA) utilizing Apple MLX (`mlx-lm`) on Apple Silicon unified memory.
   - Hyperparameters: Rank $r=16$, Scaling $\alpha=32$, Dropout $0.0$, 16 LoRA attention projection layers, batch size $2$, AdamW with learning rate $1\times 10^{-4}$.
-  - Training performance: Loss dropped from 2.428 to 1.365 over iterations with validation loss improving from 2.400 to 1.920, training at ~578 tokens/sec on the Apple M2 GPU.
-- **Weight Fusion & Packaging**:
-  - `mlx_lm.fuse` successfully merges the low-rank delta weights $\Delta W$ directly into base model weights (`data/processed/lora/fused_model`).
-- **Model Version Tracking in Report Metadata**:
-  - Updated `athena/fusion/report.py` to record `report["meta"]["model_version"]` and `report["meta"]["llm_model"]`, ensuring that downstream decision audits cryptographically seal the exact model checkpoint that produced the extraction.
+  - Training performance: Loss dropped from 2.428 to 1.365 over iterations with validation loss improving from 2.400 to 1.920, training at ~578 tokens/sec on Apple M-series GPU.
 
-### 6.2 Empirical Findings & Negative Results
-1. **Ollama / GGUF Quantization Incompatibility**:
-   - `mlx-lm` fuses weights using Apple MLX Metal-specific quantization kernels.
-   - When attempting to register the fused safetensors directly with Ollama, Ollama's `llama.cpp` engine fails with:
-     `ollama._types.ResponseError: mlx runner failed: panic: mlx: [dequantize] Invalid quantization mode '' (status code: 500)`.
-   - Directly serving MLX-quantized models in Ollama requires an unquantized 16-bit intermediate base merged with unquantized weights, converted through `llama.cpp`'s `convert_hf_to_gguf.py`, and re-quantized to Q4_K_M GGUF format.
-2. **Hallucination of Continuing Lists Without Schema Constraints**:
-   - Running direct generation on the fused model in MLX demonstrated that without Ollama's strict grammar-guided decoding (`format: _SCHEMA`), a 3B model hallucinates synthetic continuations (generating extraneous medications 3, 4, 5... from medical pretraining knowledge) rather than terminating at the chunk boundary.
-3. **Comparative Analysis: In-Context Level 1 vs. Parametric Level 2**:
-   - **Sample Efficiency**: Level 1 incorporates feedback instantly into the retrieval index without batch retraining, GPU compilation, or weight merging.
-   - **Grammar Enforcement**: Level 1 leverages Ollama's native JSON schema constrained decoding, guaranteeing strict 8-column array rows and preventing list continuation hallucinations.
-   - **Inference Latency**: Level 2 retains baseline speed (~1.5s/chunk), while Level 1 incurs prompt token overhead (~2.8s/chunk).
+### 6.2 Uncompressed Fusion, GGUF Conversion, & Ollama Serving
+1. **Resolving the Ollama Dequantization Blocker**:
+   - Initial attempts to register 4-bit MLX safetensors directly with Ollama failed (`panic: mlx: [dequantize] Invalid quantization mode ''`).
+   - The adapter was re-fused with full dequantization into uncompressed 16-bit safetensors at `data/processed/lora/fused_fp16` (6.4 GB):
+     ```bash
+     .venv/bin/python3 -m mlx_lm fuse --model mlx-community/Llama-3.2-3B-Instruct-4bit \
+       --adapter-path data/processed/lora/adapters \
+       --save-path data/processed/lora/fused_fp16 --dequantize
+     ```
+2. **GGUF Conversion & Quantization**:
+   - Converted the uncompressed weights to standard GGUF format via `convert_hf_to_gguf.py` (`data/processed/lora/athena-lora-f16.gguf`).
+   - Quantized the GGUF model to 4-bit `Q4_K_M` using `llama-quantize` (`data/processed/lora/athena-lora-q4_k_m.gguf`, 1.9 GB):
+     ```bash
+     llama-quantize data/processed/lora/athena-lora-f16.gguf data/processed/lora/athena-lora-q4_k_m.gguf Q4_K_M
+     ```
+   - Created the Ollama model `athena-lora:3b` with the standard Llama 3.2 chat template.
+3. **Constrained Grammar Decoding**:
+   - In MLX unconstrained generation, 3B models tend to produce synthetic list continuations (hallucinating extra drugs past the chunk boundary).
+   - Under Ollama, Athena passes the strict 8-string JSON schema (`format: _SCHEMA`), guaranteeing valid JSON row syntax and preventing run-away hallucinations.
 
-### 6.3 Promotion Gate Decision
-- **Gate Rule**: Only promote if test micro F1 and Major recall do not regress compared to baseline.
-- **Decision**: Due to the GGUF dequantization barrier in Ollama and the requirement for constrained grammar decoding to prevent list hallucinations, **the fine-tuned adapter is not promoted to production**. It remains preserved on branch `exp/lora` as an experimental milestone.
+### 6.3 Test Set Evaluation (202 Notes)
+
+#### Extraction Performance
+Scored on all 202 held-out test notes (769 chunks) using `scripts/eval_extraction.py test --modes llm,hybrid --save`:
+
+| Configuration | Strict Micro F1 (95% CI) | Lenient Micro F1 (95% CI) | Ungrounded Attr Discard | Sec / Note |
+|---|:---:|:---:|:---:|:---:|
+| **LLM-only (`athena-lora:3b`)** | 0.5555 [0.5278, 0.5807] | 0.6117 [0.5819, 0.6380] | **15.3%** (1,320 / 8,600) | — |
+| **Baseline Hybrid (`llama3.2:3b`)** | 0.8171 [0.8064, 0.8274] | 0.8802 [0.8721, 0.8880] | 43.0% (7,953 / 18,481) | 71.3 s |
+| **Fine-Tuned Hybrid (`athena-lora:3b`)** | **0.8174** [0.8071, 0.8269] | **0.8831** [0.8758, 0.8901] | **15.3%** (1,320 / 8,600) | **25.2 s** |
+
+**Paired Bootstrap Differences (2,000 resamples: `athena-lora:3b` vs `llama3.2:3b`)**:
+- **Strict Micro F1**: $+0.0003$ ($95\%\text{ CI } [-0.0068, +0.0072]$) — statistically indistinguishable from baseline.
+- **Lenient Micro F1**: $+0.0029$ ($95\%\text{ CI } [-0.0015, +0.0079]$).
+- **Grounding Discard Rate**: Ungrounded LLM attribute spans dropped dramatically from **43.0% down to 15.3%** (a 2.8x hallucination reduction).
+- **Inference Speed**: Total cache generation for 202 notes was 5,085.6 seconds (**25.2 s / note**), representing a **2.8x speedup** over baseline `llama3.2:3b` (71.3 s / note) due to compact, non-redundant token generation.
+
+#### Alert-Level Evaluation
+Scored through the full clinical pipeline (discharge sectioning, status inference, DDInter/DrugBank verification, high-alert rules, and fusion) on the 202 test notes:
+
+| Metric | Baseline (`llama3.2:3b`) | Fine-Tuned (`athena-lora:3b`) | Difference |
+|---|:---:|:---:|:---:|
+| **Major Alert Recall** | **91.59%** (414 / 452) | **91.15%** (412 / 452) | **-0.44%** (-2 pairs) |
+| **Major Reaching Actionable Tier** | 91.59% (414 / 452) | 91.15% (412 / 452) | -0.44% |
+| **Pair Precision** | 98.74% (7,515 / 7,611) | 98.11% (7,389 / 7,531) | -0.63% |
+| **Pair Recall** | 92.06% (7,515 / 8,163) | 90.52% (7,389 / 8,163) | -1.54% |
+| **Actionable Alert Precision** | 99.55% (1,986 / 1,995) | 99.16% (1,885 / 1,901) | -0.39% |
+| **Actionable Alerts / Note** | 9.88 | 9.41 | -0.47 |
+
+### 6.4 Promotion Gate Decision
+- **Gate Rule**: Promote to default model only if hybrid test F1 does not drop ($\ge 0.8171$) AND Major alert recall does not drop ($\ge 91.59\%$).
+- **Evaluation Finding**:
+  - Hybrid strict F1 met the threshold ($0.8174 \ge 0.8171$, paired difference $+0.0003$, $95\%\text{ CI } [-0.0068, +0.0072]$).
+  - Major alert recall regressed slightly by $-0.44\%$ ($91.15\% < 91.59\%$, finding 412 instead of 414 Major interactions).
+- **Decision**: **FAILS the strict promotion gate for default adoption.**
+- **Architectural Conclusion**:
+  - `llama3.2:3b` remains the default production model in `configs/default.yaml`.
+  - `athena-lora:3b` is preserved and documented as an optional model configuration (`llm.model: athena-lora:3b`). It provides substantial operational benefits for high-throughput or resource-constrained deployments (2.8x faster inference at 25.2s/note and 2.8x fewer ungrounded attribute hallucinations) while maintaining near-parity on safety-critical alerts (91.15% vs 91.59% Major recall).
 
 
