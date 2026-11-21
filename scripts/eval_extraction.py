@@ -49,11 +49,21 @@ def main():
     ap.add_argument("--save", action="store_true")
     ap.add_argument("--allow-partial", action="store_true",
                     help="score only the fully cached notes (e.g. the 35-note subset) instead of stopping")
+    ap.add_argument("--use-corrections", action="store_true",
+                    help="enable Level 1 learning retrieval from train corrections bank")
+    ap.add_argument("--corrections-split", default="train", choices=["train", "val"],
+                    help="split to build benchmark correction bank from (never test!)")
     args = ap.parse_args()
 
     cfg = load_config()
     notes = n2c2.load_split(args.split)[: args.limit]
-    llm = OllamaExtractor()
+    if args.use_corrections:
+        from athena.extraction.corrections_fewshot import CorrectionRetriever, build_train_corrections_bank
+        bank = build_train_corrections_bank(split=args.corrections_split)
+        retriever = CorrectionRetriever(bank=bank, k=2)
+        llm = OllamaExtractor(use_corrections=True, retriever=retriever)
+    else:
+        llm = OllamaExtractor(use_corrections=False)
     if not args.run_llm:
         # Cache-only scoring: never call the model and never fall back to rules silently
         # (MedicationExtractor falls back to rules when Ollama is not running).
@@ -75,15 +85,31 @@ def main():
 
     results = {}
     mode_names = [m.strip() for m in args.modes.split(",") if m.strip()]
+    if args.use_corrections and "baseline_hybrid" not in mode_names and "hybrid" in mode_names:
+        mode_names.append("baseline_hybrid")
     mode_note_scores = {m: [] for m in mode_names}
 
+    baseline_llm = None
+    if args.use_corrections:
+        baseline_llm = OllamaExtractor(use_corrections=False)
+        if not args.run_llm:
+            baseline_llm.available = lambda: True
+            def _no_call_b(text):
+                raise RuntimeError("LLM baseline output not cached for a chunk")
+            baseline_llm._call = _no_call_b
+
     for mode in mode_names:
-        ex = MedicationExtractor(mode, llm=llm)
+        if mode == "baseline_hybrid":
+            ex = MedicationExtractor("hybrid", llm=baseline_llm)
+            actual_mode = "hybrid"
+        else:
+            ex = MedicationExtractor(mode, llm=llm)
+            actual_mode = mode
         use = eligible  # every mode on the same notes, so scores are comparable
         scores, t0, dropped, total = Scores(), time.time(), 0, 0
         for note in use:
             r = ex.extract(note.text)
-            assert r.mode == mode, f"{note.id}: scored as {r.mode}, not {mode} ({r.warnings})"
+            assert r.mode == actual_mode, f"{note.id}: scored as {r.mode}, not {actual_mode} ({r.warnings})"
             n_score = score_note(note, r.mentions)
             score_note(note, r.mentions, scores)
 
@@ -164,18 +190,46 @@ def main():
             },
         }
 
+    paired_baseline_summary = {}
+    if "hybrid" in mode_boot_samples and "baseline_hybrid" in mode_boot_samples:
+        diff_strict = mode_boot_samples["hybrid"]["strict"] - mode_boot_samples["baseline_hybrid"]["strict"]
+        diff_lenient = mode_boot_samples["hybrid"]["lenient"] - mode_boot_samples["baseline_hybrid"]["lenient"]
+        h_s = results["hybrid"]["strict"]["micro"]["f1"]
+        b_s = results["baseline_hybrid"]["strict"]["micro"]["f1"]
+        h_l = results["hybrid"]["lenient"]["micro"]["f1"]
+        b_l = results["baseline_hybrid"]["lenient"]["micro"]["f1"]
+        paired_baseline_summary = {
+            "strict": {
+                "diff": round(h_s - b_s, 4),
+                "ci95": [round(float(np.percentile(diff_strict, 2.5)), 4),
+                         round(float(np.percentile(diff_strict, 97.5)), 4)],
+            },
+            "lenient": {
+                "diff": round(h_l - b_l, 4),
+                "ci95": [round(float(np.percentile(diff_lenient, 2.5)), 4),
+                         round(float(np.percentile(diff_lenient, 97.5)), 4)],
+            },
+        }
+
     print("\n== 95% Bootstrap Confidence Intervals (2,000 resamples over notes)")
-    print(f"{'Mode':12s} {'Strict Micro F1 (95% CI)':>30s} {'Lenient Micro F1 (95% CI)':>30s}")
+    print(f"{'Mode':18s} {'Strict Micro F1 (95% CI)':>30s} {'Lenient Micro F1 (95% CI)':>30s}")
     for mode in mode_names:
         bs = bootstrap_summary[mode]
         s_ci = f"{bs['strict_micro_f1']:.4f} [{bs['strict_micro_f1_ci95'][0]:.4f}, {bs['strict_micro_f1_ci95'][1]:.4f}]"
         l_ci = f"{bs['lenient_micro_f1']:.4f} [{bs['lenient_micro_f1_ci95'][0]:.4f}, {bs['lenient_micro_f1_ci95'][1]:.4f}]"
-        print(f"{mode:12s} {s_ci:>30s} {l_ci:>30s}")
+        print(f"{mode:18s} {s_ci:>30s} {l_ci:>30s}")
 
     if paired_summary:
         print("\n== Paired Difference: Hybrid - Rules")
         ps = paired_summary["strict"]
         pl = paired_summary["lenient"]
+        print(f"Strict  diff: {ps['diff']:+.4f} (95% CI [{ps['ci95'][0]:+.4f}, {ps['ci95'][1]:+.4f}])")
+        print(f"Lenient diff: {pl['diff']:+.4f} (95% CI [{pl['ci95'][0]:+.4f}, {pl['ci95'][1]:+.4f}])")
+
+    if paired_baseline_summary:
+        print("\n== Paired Difference: Hybrid (with corrections) - Baseline Hybrid")
+        ps = paired_baseline_summary["strict"]
+        pl = paired_baseline_summary["lenient"]
         print(f"Strict  diff: {ps['diff']:+.4f} (95% CI [{ps['ci95'][0]:+.4f}, {ps['ci95'][1]:+.4f}])")
         print(f"Lenient diff: {pl['diff']:+.4f} (95% CI [{pl['ci95'][0]:+.4f}, {pl['ci95'][1]:+.4f}])")
 
@@ -185,13 +239,17 @@ def main():
         from athena.extraction.llm_extractor import PROMPT_VERSION
         meta = {"split": args.split, "limit": args.limit, "model": llm.model,
                 "prompt": PROMPT_VERSION, "chunk_chars": cfg["extraction"]["chunk_chars"],
+                "use_corrections": args.use_corrections,
+                "bank_version": getattr(llm, "correction_bank_version", "none"),
                 "date": time.strftime("%Y-%m-%d")}
-        path = out / f"extraction_{args.split}_{len(eligible)}notes.json"
+        bank_suffix = "_corrections" if args.use_corrections else ""
+        path = out / f"extraction_{args.split}_{len(eligible)}notes{bank_suffix}.json"
         payload = {
             "meta": meta,
             "results": results,
             "bootstrap": bootstrap_summary,
             "paired_hybrid_vs_rules": paired_summary,
+            "paired_corrections_vs_baseline": paired_baseline_summary,
         }
         path.write_text(json.dumps(payload, indent=1))
         print(f"\nsaved {path.relative_to(ROOT)}")

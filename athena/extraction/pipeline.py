@@ -57,6 +57,8 @@ class MedicationExtractor:
         llm: OllamaExtractor | None = None,
         normalizer: DrugNormalizer | None = None,
         fewshot: bool = False,
+        use_corrections: bool | None = None,
+        retriever: Any = None,
     ):
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
@@ -66,12 +68,16 @@ class MedicationExtractor:
         self.ablation = full_cfg.get("ablation", {})
         self.normalizer = normalizer or DrugNormalizer()
         self.fewshot = fewshot or isinstance(llm, FewShotExtractor)
+        self.use_corrections = self.cfg.get("use_corrections", False) if use_corrections is None else use_corrections
         uses_llm = mode in ("llm", "hybrid")
 
         if llm is not None:
             self.llm = llm
         elif uses_llm:
-            self.llm = FewShotExtractor() if fewshot else OllamaExtractor()
+            if self.fewshot:
+                self.llm = FewShotExtractor()
+            else:
+                self.llm = OllamaExtractor(use_corrections=self.use_corrections, retriever=retriever)
         else:
             self.llm = None
 
