@@ -57,6 +57,7 @@ export interface Report {
       no_known_interaction: number; not_covered: number; tiers: Record<Tier, number>
     }
     llm_model: string | null
+    corrected?: boolean
     report_hash: string
   }
 }

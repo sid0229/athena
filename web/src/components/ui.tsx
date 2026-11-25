@@ -9,7 +9,7 @@ export function cx(...c: (string | false | null | undefined)[]) { return c.filte
 
 type BtnKind = 'primary' | 'outline' | 'ghost'
 export function Button({ kind = 'outline', icon, children, className, ...p }:
-  { kind?: BtnKind; icon?: ReactNode; children?: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  { kind?: BtnKind; icon?: ReactNode; children?: ReactNode; ref?: React.Ref<HTMLButtonElement> } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button {...p} className={cx(
       'inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium h-10 px-4 transition-colors',
