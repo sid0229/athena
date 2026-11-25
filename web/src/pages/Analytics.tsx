@@ -237,7 +237,7 @@ function StackBar({ parts, label, on }: { parts: [string, number, string][]; lab
 function ReviewCharts({ entries, meta, on }: { entries: Decision[]; meta: Meta; on: On }) {
   const latest = useMemo(() => {   // entries arrive newest first: keep the first decision per finding
     const seen = new Set<string>()
-    return entries.filter(e => {
+    return entries.filter(e => e.action === 'confirm' || e.action === 'override').filter(e => {
       const k = `${e.case_id}|${e.report_hash}|${e.finding_id}`
       if (seen.has(k)) return false
       seen.add(k); return true
@@ -252,6 +252,7 @@ function ReviewCharts({ entries, meta, on }: { entries: Decision[]; meta: Meta; 
   const overridden = latest.length - confirmed
   const cases = new Set(latest.map(e => e.case_id)).size
   const reviewers = new Set(latest.map(e => e.reviewer)).size
+  const nCorrections = entries.filter(e => e.action === 'correct').length
 
   const byTier = TIERS.map(t => {
     const rows = latest.filter(e => e.tier === t)
@@ -276,7 +277,7 @@ function ReviewCharts({ entries, meta, on }: { entries: Decision[]; meta: Meta; 
         <Stat label="Findings decided" value={latest.length} note={`${entries.length} audit entries in total`} />
         <Stat label="Confirmed" value={`${Math.round((confirmed / latest.length) * 100)}%`} note={`${confirmed} of ${latest.length}`} />
         <Stat label="Overridden" value={overridden} note="each with a clinical reason" />
-        <Stat label="Cases reviewed" value={cases} note={`${reviewers} reviewer${reviewers === 1 ? '' : 's'}`} />
+        <Stat label="Cases reviewed" value={cases} note={`${reviewers} reviewer${reviewers === 1 ? '' : 's'} · ${nCorrections} list correction${nCorrections === 1 ? '' : 's'}`} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartCard title="Decisions by tier" sub="Does the pharmacist agree with Athena's priority?">

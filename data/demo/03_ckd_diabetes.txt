@@ -16,7 +16,7 @@ Amlodipine 10 mg PO daily
 Ibuprofen 400 mg PO tid prn knee pain
 
 Brief Hospital Course:
-Metformin was discontinued given eGFR 28. Started on insulin glargine with sliding scale.
+Metformin was discontinued given eGFR 28. Started on insulin glargine with sliding scale; tirzepatide started for weight and glucose control.
 Spironolactone added for edema. Potassium 5.4 on discharge labs; recheck in 3 days.
 
 Discharge Medications:
@@ -26,6 +26,7 @@ Discharge Medications:
 4. potassium chloride 20 mEq Tablet, ER Particles/Crystals Sig: One (1) Tablet PO DAILY (Daily).
 5. amlodipine 5 mg Tablet Sig: One (1) Tablet PO DAILY (Daily).
 6. ibuprofen 400 mg Tablet Sig: One (1) Tablet PO Q8H (every 8 hours) as needed for pain.
+7. tirzepatide 2.5 mg/0.5 mL Pen Injector Sig: 2.5 mg Subcutaneous once a week.
 
 Discharge Disposition:
 Home

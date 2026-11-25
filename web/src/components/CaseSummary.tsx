@@ -35,6 +35,11 @@ export function CaseSummary({ a, meta, note, reviewer }: {
         <Box label="Decided" value={`${decidable.length - pending.length} of ${decidable.length}`} />
         <Box label="Overridden" value={String(overridden)} />
       </section>
+      {r.meta.corrected && (
+        <p className="mt-2 border border-black px-2 py-1 text-[10pt]">
+          Medication list corrected by the reviewer; findings were recomputed from the corrected list.
+        </p>
+      )}
       {pending.length > 0 && (
         <p className="mt-2 border-2 border-black px-2 py-1 text-[10pt] font-semibold">
           ⚠ Review incomplete: {pending.length} actionable finding{pending.length === 1 ? '' : 's'} not yet confirmed or overridden.

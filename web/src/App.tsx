@@ -1,9 +1,9 @@
-import { Printer } from 'lucide-react'
+import { FilePlus2, Printer } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from './api'
 import { SIDEBAR_W, Sidebar, type Page } from './components/Sidebar'
 import { CaseSummary } from './components/CaseSummary'
-import { Spinner } from './components/ui'
+import { Button, Spinner } from './components/ui'
 import { ACTIONABLE, RECON_TYPES, TRIAGE_TYPES, initials } from './lib'
 import { Analytics } from './pages/Analytics'
 import { AuditSystem } from './pages/AuditSystem'
@@ -33,6 +33,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [llmOnline, setLlmOnline] = useState(false)
   const [auditKey, setAuditKey] = useState(0)
+  const [inputKey, setInputKey] = useState(0)  // bumped to remount Med Input empty
+  const [confirmNew, setConfirmNew] = useState(false)
   const [collapsed, setCollapsedState] = useState<boolean>(() => stored('athena-sidebar-collapsed', false))
   const setCollapsed = (c: boolean) => { setCollapsedState(c); store('athena-sidebar-collapsed', c) }
 
@@ -73,6 +75,15 @@ export default function App() {
     } finally { setBusy(false) }
   }, [mode])
 
+  // Clears the loaded case and returns to an empty Med Input. Decisions are already in the audit log,
+  // so re-analysing the same note restores them.
+  const startNewNote = useCallback(() => {
+    setConfirmNew(false)
+    setAnalysis(null); setNote(null); setError(null)
+    setInputKey(k => k + 1)
+    setPage('input')
+  }, [])
+
   const decide = useCallback(async (f: Finding, action: 'confirm' | 'override', reason?: string, comment?: string) => {
     if (!analysis) return
     const hash = analysis.report.meta.report_hash
@@ -107,6 +118,8 @@ export default function App() {
 
   const pending = (types: Set<string>) =>
     analysis ? analysis.report.findings.filter(f => types.has(f.type) && ACTIONABLE(f) && !analysis.decisions[f.id]).length : 0
+  const undecided = analysis ? analysis.report.findings.filter(f => ACTIONABLE(f) && !analysis.decisions[f.id]).length : 0
+  const requestNewNote = () => (undecided > 0 ? setConfirmNew(true) : startNewNote())
 
   return (
     <>
@@ -121,6 +134,10 @@ export default function App() {
             {note && page !== 'input' && page !== 'audit' ? <>{note.source} · <span className="text-ink-2">{note.label}</span> · analyzed {note.at}</> : null}
           </div>
           <div className="flex items-center gap-3">
+          {analysis && (
+            <Button onClick={requestNewNote} disabled={busy} title="Clear this case and start a new note"
+              icon={<FilePlus2 size={15} strokeWidth={1.75} aria-hidden />}>New note</Button>
+          )}
           {analysis && note && page !== 'input' && (
             <button onClick={() => window.print()} title="Print or save as PDF"
               className="inline-flex h-10 items-center gap-1.5 rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-ink hover:bg-surface-2 cursor-pointer">
@@ -141,7 +158,7 @@ export default function App() {
               <button onClick={() => setError(null)} className="font-medium underline cursor-pointer">Dismiss</button>
             </div>
           )}
-          {page === 'input' && <InputNote meta={{ ...meta, llm_online: llmOnline }} mode={mode} busy={busy} error={error}
+          {page === 'input' && <InputNote key={inputKey} meta={{ ...meta, llm_online: llmOnline }} mode={mode} busy={busy} error={error}
             onAnalyze={(t, l, s) => runAnalysis(t, l, s)} />}
           {page === 'triage' && analysis && <Triage a={analysis} meta={meta} reviewer={reviewer.name} onDecide={decide} />}
           {page === 'diff' && analysis && note && <MedDiff key={analysis.report.meta.report_hash} a={analysis} meta={meta}
@@ -158,11 +175,38 @@ export default function App() {
         </main>
       </div>
     </div>
+    {confirmNew && <ConfirmNewNote count={undecided} onCancel={() => setConfirmNew(false)} onConfirm={startNewNote} />}
     {analysis && note && (
       <div className="hidden print:block">
         <CaseSummary a={analysis} meta={meta} note={note} reviewer={reviewer} />
       </div>
     )}
     </>
+  )
+}
+
+function ConfirmNewNote({ count, onCancel, onConfirm }: { count: number; onCancel: () => void; onConfirm: () => void }) {
+  const keep = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    keep.current?.focus()  // the safe choice gets focus, so Enter keeps the review going
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [onCancel])
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/30 p-4 print:hidden" onClick={onCancel}>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="new-note-title" aria-describedby="new-note-desc"
+        onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-lg border border-line bg-surface p-6 shadow-xl">
+        <h2 id="new-note-title" className="text-base font-semibold text-ink">Start a new note?</h2>
+        <p id="new-note-desc" className="mt-2 text-sm text-muted">
+          {count} {count === 1 ? 'alert has' : 'alerts have'} not been reviewed yet. Decisions you already made are saved in the
+          audit log, but the unreviewed alerts will be closed without a decision.
+        </p>
+        <div className="mt-6 flex justify-end gap-2">
+          <button onClick={onConfirm} className="h-10 rounded-md px-4 text-sm font-medium text-critical hover:bg-critical-soft cursor-pointer">Start new note</button>
+          <Button kind="primary" ref={keep} onClick={onCancel}>Keep reviewing</Button>
+        </div>
+      </div>
+    </div>
   )
 }
